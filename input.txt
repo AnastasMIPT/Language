@@ -1,0 +1,10 @@
+start
+
+x = tg(x+5) + 10
+if (x equal 5)
+{
+x = x + 1
+}
+
+
+end
