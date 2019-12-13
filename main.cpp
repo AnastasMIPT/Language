@@ -56,7 +56,8 @@ const int WordSize = 40;
 const int ColNodes = 200;
 const int ProgramSize = 500;
 const int DataSize = 50;
-const int VarNum = 30;
+const int VarNum = 40;
+const int FuncNum = 30;
 int ind = 0;
 
 struct IdsArray
@@ -130,14 +131,17 @@ int MaklorenElement (Node* root, int num, FILE* f_out);
 void MaklorenSeries (Node* root, int num, FILE* f_out);
 void PrintMaclorenElement (int num, Node* d_root, FILE* f_out);
 void DropSpace ();
-Node** Tocens (IdsArray* Ids, int* KeyWords);
+Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords);
 void ReadProgramFromFile (FILE* f_in);
 int Hash (const char* str);
 int* KeyWordsArray ();
 IdsArray* IdArrayCostruct (IdsArray* Ids);
+void IdFuncArrayInit (IdsArray* Ids);
 int KeyWordNum (const char* word, int* KeyWordsArr);
 Node* NewIdOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords);
 void AddNewVar (IdsArray* Ids, const char* var);
+
+
 
 Node* operator+ (Node a, Node b) {
     return CreateNode (SUM, "+", (&(a)), (&(b)));
@@ -150,8 +154,12 @@ int main () {
 
     ReadProgramFromFile (f_in);
     IdsArray* Ids = IdArrayCostruct (Ids);
+    IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
+    IdFuncArrayInit (IdsFunc);
+    //for (int i = 0; i < IdsFunc->free; i++) printf ("%d\n", IdsFunc->data[i]);
+
     int* KeyWordsArr = KeyWordsArray ();
-    Node** Nodes = Tocens (Ids, KeyWordsArr);
+    Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
 
     Node* root = Prog (Nodes);
     Simplification (root);
@@ -298,69 +306,78 @@ Node* GetF () {
 
     Node* val = nullptr;
     if (NT == SIN) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _SIN (val);
+        val->right =  GetP ();
+        return val;
     }
 
     if (NT == COS) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _COS (val);
+        val->right =  GetP ();
+        return val;
     }
 
     if (NT == TG) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _TG (val);
+        val->right =  GetP ();
+        return val;
     }
 
     if (NT == CTG) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _CTG (val);
+        val->right =  GetP ();
+        return val;
     }
 
     if (NT == LN) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _LN (val);
+        val->right =  GetP ();
+        return val;
     }
 
-    if (NT == ARCCTG) {
+    if (NT == ARCTG) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _ARCTG (val);
+        val->right =  GetP ();
+        return val;
     }
 
     if (NT == SH) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _SH (val);
+        val->right =  GetP ();
+        return val;
     }
 
     if (NT == CH) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _CH (val);
+        val->right =  GetP ();
+        return val;
     }
 
     if (NT == TH) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _TH (val);
+        val->right =  GetP ();
+        return val;
     }
 
     if (NT == CTH) {
+        val = Nods[ind];
         ind++;
-        val = GetP ();
-        return _CTH (val);
+        val->right =  GetP ();
+        return val;
     }
 //functions
 
     return val;
 }
-
 
 Node* GetN () {
     Node* res = Nods[ind];
@@ -392,6 +409,13 @@ IdsArray* IdArrayCostruct (IdsArray* Ids) {
     Ids->data = (int*) calloc (VarNum, sizeof (int));
     Ids->free = 0;
     return Ids;
+}
+
+void IdFuncArrayInit (IdsArray* Ids) {
+    for (int i = COL_WORDS + 1; i < FUNCCOL; i++) {
+        Ids->data[Ids->free] = Hash (Words[i]);
+        Ids->free++;
+    }
 }
 
 int VarIsInArr (IdsArray* Ids, const char* var) {
@@ -472,13 +496,37 @@ void DropSpace () {
     }
 }
 
-Node* NewFunctionNode (char* word) {
 
-
+Node* NewFunctionNode (IdsArray* FuncArray, char* IdsFunc) {
+    int num = VarIsInArr (FuncArray, IdsFunc) + COL_WORDS + 1;
+    if (num != -1) {
+        switch (num) {
+            case SIN:
+                return _SIN (nullptr);
+            case COS:
+                return _COS (nullptr);
+            case TG:
+                return _TG (nullptr);
+            case CTG:
+                return _CTG (nullptr);
+            case ARCTG:
+                return _ARCTG (nullptr);
+            case LN:
+                return _LN (nullptr);
+            case SH:
+                return _SH (nullptr);
+            case CH:
+                return _CH (nullptr);
+            case TH:
+                return _TH (nullptr);
+            case CTH:
+                return _CTH (nullptr);
+        }
+    }
     return nullptr;
 }
 
-Node** Tocens (IdsArray* Ids, int* KeyWords) {
+Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
     int n = 0;
     Node** Nodes = (Node**) calloc (ColNodes, sizeof (Node*));
 
@@ -489,11 +537,10 @@ Node** Tocens (IdsArray* Ids, int* KeyWords) {
     char* word = (char*) calloc (WordSize, sizeof (char));
     while (*s != '\0') {
         if (isalpha (*s)) {
-            sscanf (s, "%[^()\n\t=+-*/; ]%n", word, &n);
+            sscanf (s, "%[^()\n\t=^+-*/; ]%n", word, &n);
             s += n;
             if (*s == '(') {
-                assert (0);
-                Nodes[i] = NewFunctionNode (word);
+                Nodes[i] = NewFunctionNode (IdsFunc, word);
             }
             else
                 Nodes[i] = NewIdOrKeyWordNode (word, Ids, KeyWords);
