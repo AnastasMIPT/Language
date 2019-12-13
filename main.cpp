@@ -29,21 +29,16 @@
 #define dR DifNode (node->right)
 #define _L root->left
 #define _R root->right
-
+#define NT Nods[ind]->type
 #define NewEl(TYPE, symbl)                                                  \
 case symbl:                                                       \
-    Nodes[i] = CreateNode (BLOCK_ST, #symbl, nullptr, nullptr);       \
+    Nodes[i] = CreateNode (TYPE, #symbl, nullptr, nullptr);       \
     printf ("%s *\n", Nodes[i]->data);                       \
     i++;                                                           \
     s++;                                                           \
     break;                                                         \
 
-const char* s = "";
-const int WordSize = 40;
-const int ColNodes = 200;
-const int ProgramSize = 500;
-const int DataSize = 50;
-const int VarNum = 30;
+
 
 struct Node
 {
@@ -54,13 +49,35 @@ struct Node
     int type;
 };
 
+
+const char* s = "";
+Node** Nods = nullptr;
+const int WordSize = 40;
+const int ColNodes = 200;
+const int ProgramSize = 500;
+const int DataSize = 50;
+const int VarNum = 30;
+int ind = 0;
+
 struct IdsArray
 {
     int* data;
     int free;
 };
 
-Node* GetG (const char* str);
+
+Node* Prog (Node** Nodes);
+Node* Func ();
+Node* Strings ();
+Node* Operator ();
+Node* Assign ();
+Node* If ();
+Node* While ();
+Node* Cond ();
+Node* Block ();
+
+
+Node* GetG ();
 Node* GetE ();
 Node* GetT ();
 Node* GetStep ();
@@ -129,14 +146,16 @@ Node* operator+ (Node a, Node b) {
 int main () {
 
     FILE* f_in = fopen ("input.txt", "r");
+    FILE* f_out = fopen ("F:\\Graphs\\output.dot", "w");
 
     ReadProgramFromFile (f_in);
     IdsArray* Ids = IdArrayCostruct (Ids);
     int* KeyWordsArr = KeyWordsArray ();
-    Node** Nodes = Tocens(Ids, KeyWordsArr);
+    Node** Nodes = Tocens (Ids, KeyWordsArr);
 
-    Node* root = GetG ("tg(x)");
+    Node* root = Prog (Nodes);
 
+    TreePrint (root, f_out);
     DeleteTree (root);
     free (Nodes);
     free (Ids->data);
@@ -145,21 +164,74 @@ int main () {
     return 0;
 }
 
-Node* GetG (const char* str) {
-    s = str;
+Node* Prog (Node** Nodes) {
+
+    Nods = Nodes;
+    Node* val = nullptr;
+    assert (NT == START);
+    val = Nods[ind];
+    ind++;
+    while (NT != END) {
+        val->right = Block();
+    }
+
+    assert (NT == END);
+
+    return val;
+}
+
+Node* Block () {
+    Node* val = CreateNode (BLOCK, "{}", nullptr, nullptr);
+    //printf ("****    %d    *****\n", NT);
+    assert (NT == BLOCK_ST);
+    ind++;
+    if (NT != BLOCK_END) {
+        val->right = Operator ();
+    }
+    assert (NT == BLOCK_END);
+    ind++;
+    return val;
+}
+Node* Operator () {
+    Node* val = CreateNode (OP, "OP", nullptr, nullptr);
+    switch (NT) {
+        case VAR:
+            val->left = Assign();
+            break;
+    }
+    if (NT != BLOCK_END) {
+        val->right = Operator ();
+    }
+    return val;
+}
+
+Node* Assign() {
+    ind++;
+    Nods[ind]->left = Nods[ind - 1];
+    Node* val =  Nods[ind];
+    ind++;
+
+    val->right = GetE ();
+    assert (NT == COMMA_POINT);
+    ind++;
+
+    return val;
+}
+Node* GetG () {
     Node* val = GetE ();
-    assert (*s == '\0');
+    assert (NT == COMMA_POINT);
+    ind++;
     return val;
 }
 
 Node* GetE () {
     Node* val = nullptr;
     val = GetT ();
-    while (*s == '+' || *s == '-') {
-        char op = *s;
-        s++;
+    while (NT == SUM || NT == SUB) {
+        int type = NT;
+        ind++;
         Node* val2 = GetT ();
-        if (op == '+') {
+        if (type == SUM) {
             val = _SUM (val, val2);
         }
         else
@@ -170,12 +242,14 @@ Node* GetE () {
 
 Node* GetT () {
     Node* val = nullptr;
-    val = GetStep ();
-    while (*s == '*' || *s == '/') {
-        char op = *s;
-        s++;
-        Node* val2 = GetStep ();
-        if (op == '*') {
+    //val = GetStep ();
+    val = GetP ();
+    while (NT == MUL || NT == DIV) {
+        int type = NT;
+        ind++;
+        //Node* val2 = GetStep ();
+        Node* val2 = GetP ();
+        if (type == MUL) {
             val = _MUL (val, val2);
             //val *= val2;
         }
@@ -200,21 +274,24 @@ Node* GetStep () {
 
 Node* GetP () {
     Node* val = nullptr;
-    if (*s == '(') {
-        s++;
-        val = GetE();
-        assert (*s == ')');
-        s++;
+    if (NT == SKOBKA1) {
+        ind++;
+        val = GetE ();
+        assert (NT == SKOBKA2);
+        ind++;
         return val;
     }
-    else if (*s == 'x') {
-        s++;
-        return _VAR("x");
+    else if (NT == VAR) {
+        val = Nods[ind];
+        ind++;
+        return val;
     }
-    else if ('0' <= *s && *s <= '9')
+    else if (NT == NUM)
         return GetN ();
-    else
-        return GetF ();
+//    else
+//
+//       return GetF ();
+    return val;
 }
 
 Node* GetF () {
@@ -286,13 +363,8 @@ Node* GetF () {
 
 
 Node* GetN () {
-    Node* res = nullptr;
-    double val = 0.0;
-    int n = 0;
-
-    sscanf (s, "%lf%n", &val, &n);
-    s += n;
-    res = _NUM (val);
+    Node* res = Nods[ind];
+    ind++;
     return res;
 }
 
@@ -384,6 +456,8 @@ Node* NewIdOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords) {
                 return _KEYWORD (EQUAL);
             case ABOVE:
                 return _KEYWORD (ABOVE);
+            case COMMA_POINT:
+                return _KEYWORD (COMMA_POINT);
         }
     } else if (VarIsInArr (IdArr, word) == -1) {
         AddNewVar (IdArr, word);
@@ -409,7 +483,7 @@ Node** Tocens (IdsArray* Ids, int* KeyWords) {
     char* word = (char*) calloc (WordSize, sizeof (char));
     while (*s != '\0') {
         if (isalpha (*s)) {
-            sscanf (s, "%[^()\n\t=+-*/ ] %n", word, &n);
+            sscanf (s, "%[^()\n\t=+-*/; ]%n", word, &n);
             s += n;
             Nodes[i] = NewIdOrKeyWordNode (word, Ids, KeyWords);
             printf ("%s %s\n", word, Nodes[i]->data);
@@ -417,7 +491,8 @@ Node** Tocens (IdsArray* Ids, int* KeyWords) {
             //printf ("%s\n", word);
         }
         else if (isdigit (*s)) {
-            sscanf (s, "%lg %n", &num, &n);
+            sscanf (s, "%lg%n", &num, &n);
+            //printf ("%d", n);
             s += n;
             Nodes[i] = _NUM (num);
             printf ("%lf\n", Nodes[i]->num);
@@ -428,7 +503,9 @@ Node** Tocens (IdsArray* Ids, int* KeyWords) {
                 case ' ':
                     DropSpace ();
                     break;
-                NewEl (NEW_LINE, '\n')
+                case '\n':
+                    DropSpace();
+                    break;
                 NewEl (BLOCK_ST, '{')
                 NewEl (BLOCK_END, '}')
                 NewEl (SKOBKA1, '(')
@@ -437,8 +514,9 @@ Node** Tocens (IdsArray* Ids, int* KeyWords) {
                 NewEl (SUB, '-')
                 NewEl (MUL, '*')
                 NewEl (DIV, '/')
-                NewEl (ASSIGN, '=')
-                NewEl (ASSIGN, '>')
+                NewEl (EQUAL, '=')
+                NewEl (ABOVE, '>')
+                NewEl (COMMA_POINT, ';')
             }
 
         }
