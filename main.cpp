@@ -154,7 +154,7 @@ int main () {
     Node** Nodes = Tocens (Ids, KeyWordsArr);
 
     Node* root = Prog (Nodes);
-
+    Simplification (root);
     TreePrint (root, f_out);
     DeleteTree (root);
     free (Nodes);
@@ -217,6 +217,7 @@ Node* Assign() {
 
     return val;
 }
+
 Node* GetG () {
     Node* val = GetE ();
     assert (NT == COMMA_POINT);
@@ -551,26 +552,26 @@ void Simplification (Node* root) {
     if (root) {
         Node* NewNode = nullptr;
         if (_L && _R) {
-            Simplification(_L);
-            Simplification(_R);
+            Simplification (_L);
+            Simplification (_R);
             if (_L->type == NUM && _R->type == NUM) {
                 switch (root->type) {
                     case SUM:
                         NewNode = _NUM (_L->num + _R->num);
-                        CopyTo(root, NewNode);
+                        CopyTo (root, NewNode);
                         break;
                     case SUB:
                         NewNode = _NUM (_L->num - _R->num);
-                        CopyTo(root, NewNode);
+                        CopyTo (root, NewNode);
                         break;
                     case MUL:
                         NewNode = _NUM (_L->num * _R->num);
-                        CopyTo(root, NewNode);
+                        CopyTo (root, NewNode);
                         break;
                     case DIV:
                         if (_R->num) {
                             NewNode = _NUM (_L->num / _R->num);
-                            CopyTo(root, NewNode);
+                            CopyTo (root, NewNode);
                         }
                         break;
                     case POW:
@@ -678,6 +679,8 @@ void Simplification (Node* root) {
                         break;
                 }
             }
+        } else if (_L) {
+            Simplification (_L);
         }
 
         //if (NewNode) free (NewNode);
