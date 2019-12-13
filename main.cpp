@@ -69,7 +69,6 @@ struct IdsArray
 
 Node* Prog (Node** Nodes);
 Node* Func ();
-Node* Strings ();
 Node* Operator ();
 Node* Assign ();
 Node* If ();
@@ -179,11 +178,26 @@ Node* Prog (Node** Nodes) {
     assert (NT == START);
     val = Nods[ind];
     ind++;
-    while (NT != END) {
-        val->right = Block();
+    if (NT != END) {
+        val->right = Func();
     }
 
     assert (NT == END);
+
+    return val;
+}
+
+Node* Func () {
+    assert (NT == DEF);
+    ind++;
+    assert (NT = VAR);
+    Node* val = Nods[ind];
+    ind++;
+    val->left = Block ();
+
+    if (NT != END) {
+        val->right = Func();
+    }
 
     return val;
 }
@@ -495,7 +509,6 @@ void DropSpace () {
         s++;
     }
 }
-
 
 Node* NewFunctionNode (IdsArray* FuncArray, char* IdsFunc) {
     int num = VarIsInArr (FuncArray, IdsFunc) + COL_WORDS + 1;
