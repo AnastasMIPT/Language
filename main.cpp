@@ -182,7 +182,6 @@ Node* Prog (Node** Nodes) {
 
 Node* Block () {
     Node* val = CreateNode (BLOCK, "{}", nullptr, nullptr);
-    //printf ("****    %d    *****\n", NT);
     assert (NT == BLOCK_ST);
     ind++;
     if (NT != BLOCK_END) {
@@ -192,6 +191,7 @@ Node* Block () {
     ind++;
     return val;
 }
+
 Node* Operator () {
     Node* val = CreateNode (OP, "OP", nullptr, nullptr);
     switch (NT) {
@@ -243,13 +243,13 @@ Node* GetE () {
 
 Node* GetT () {
     Node* val = nullptr;
-    //val = GetStep ();
-    val = GetP ();
+    val = GetStep ();
+    //val = GetP ();
     while (NT == MUL || NT == DIV) {
         int type = NT;
         ind++;
-        //Node* val2 = GetStep ();
-        Node* val2 = GetP ();
+        Node* val2 = GetStep ();
+        //Node* val2 = GetP ();
         if (type == MUL) {
             val = _MUL (val, val2);
             //val *= val2;
@@ -264,8 +264,8 @@ Node* GetT () {
 Node* GetStep () {
     Node* val = nullptr;
     val = GetP ();
-    while (*s == '^') {
-        s++;
+    while (NT == POW) {
+        ind++;
         Node* val2 = GetP ();
         val = _POW (val, val2);
     }
@@ -289,71 +289,70 @@ Node* GetP () {
     }
     else if (NT == NUM)
         return GetN ();
-//    else
-//
-//       return GetF ();
-    return val;
+    else
+       return GetF ();
+
 }
 
 Node* GetF () {
 
     Node* val = nullptr;
-    if (strncmp (s, "sin", 3) == 0) {
-        s += 3;
+    if (NT == SIN) {
+        ind++;
         val = GetP ();
         return _SIN (val);
     }
 
-    if (strncmp (s, "cos", 3) == 0) {
-        s += 3;
+    if (NT == COS) {
+        ind++;
         val = GetP ();
         return _COS (val);
     }
 
-    if (strncmp (s, "tg", 2) == 0) {
-        s += 2;
+    if (NT == TG) {
+        ind++;
         val = GetP ();
         return _TG (val);
     }
 
-    if (strncmp (s, "ctg", 3) == 0) {
-        s += 3;
+    if (NT == CTG) {
+        ind++;
         val = GetP ();
         return _CTG (val);
     }
 
-    if (strncmp (s, "ln", 2) == 0) {
-        s += 2;
+    if (NT == LN) {
+        ind++;
         val = GetP ();
         return _LN (val);
     }
 
-    if (strncmp (s, "arctg", 5) == 0) {
-        s += 5;
+    if (NT == ARCCTG) {
+        ind++;
         val = GetP ();
         return _ARCTG (val);
     }
 
-    if (strncmp (s, "sh", 2) == 0) {
-        s += 2;
+    if (NT == SH) {
+        ind++;
         val = GetP ();
         return _SH (val);
     }
 
-    if (strncmp (s, "ch", 2) == 0) {
-        s += 2;
+    if (NT == CH) {
+        ind++;
         val = GetP ();
         return _CH (val);
     }
 
-    if (strncmp (s, "th", 2) == 0) {
-        s += 2;
+    if (NT == TH) {
+        ind++;
         val = GetP ();
         return _TH (val);
     }
 
-    if (strncmp (s, "cth", 3) == 0) {
-        s += 3;
+    if (NT == CTH) {
+        ind++;
         val = GetP ();
         return _CTH (val);
     }
@@ -473,6 +472,12 @@ void DropSpace () {
     }
 }
 
+Node* NewFunctionNode (char* word) {
+
+
+    return nullptr;
+}
+
 Node** Tocens (IdsArray* Ids, int* KeyWords) {
     int n = 0;
     Node** Nodes = (Node**) calloc (ColNodes, sizeof (Node*));
@@ -486,7 +491,12 @@ Node** Tocens (IdsArray* Ids, int* KeyWords) {
         if (isalpha (*s)) {
             sscanf (s, "%[^()\n\t=+-*/; ]%n", word, &n);
             s += n;
-            Nodes[i] = NewIdOrKeyWordNode (word, Ids, KeyWords);
+            if (*s == '(') {
+                assert (0);
+                Nodes[i] = NewFunctionNode (word);
+            }
+            else
+                Nodes[i] = NewIdOrKeyWordNode (word, Ids, KeyWords);
             printf ("%s %s\n", word, Nodes[i]->data);
             i++;
             //printf ("%s\n", word);
@@ -515,6 +525,7 @@ Node** Tocens (IdsArray* Ids, int* KeyWords) {
                 NewEl (SUB, '-')
                 NewEl (MUL, '*')
                 NewEl (DIV, '/')
+                NewEl (POW, '^')
                 NewEl (EQUAL, '=')
                 NewEl (ABOVE, '>')
                 NewEl (COMMA_POINT, ';')
