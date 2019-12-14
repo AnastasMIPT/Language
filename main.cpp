@@ -27,13 +27,13 @@
 #define cR CopyNode (node->right)
 #define dL DifNode (node->left)
 #define dR DifNode (node->right)
-#define _L root->left
+#define _Lf root->left
 #define _R root->right
 #define NT Nods[ind]->type
 #define NewEl(TYPE, symbl)                                                  \
 case symbl:                                                       \
     Nodes[i] = CreateNode (TYPE, #symbl, nullptr, nullptr);       \
-    printf ("%s *\n", Nodes[i]->data);                       \
+    printf ("%s %d\n", Nodes[i]->data, Nodes[i]->type);                       \
     i++;                                                           \
     s++;                                                           \
     break;                                                         \
@@ -68,6 +68,10 @@ struct IdsArray
 
 
 Node* Prog (Node** Nodes);
+Node* Declare ();
+Node* VarlistDef ();
+Node* VarlistE ();
+Node* Call ();
 Node* Func ();
 Node* Operator ();
 Node* Assign ();
@@ -75,7 +79,6 @@ Node* If ();
 Node* While ();
 Node* Cond ();
 Node* Block ();
-
 
 Node* GetG ();
 Node* GetE ();
@@ -96,6 +99,7 @@ Node* GetN ();
 *	@return Указатель на созданный узел
 *
 */
+Node* CreateNode (int type, const char* data, Node* left, Node* right, double num);
 Node* CreateNode (int type, const char* data, Node* left, Node* right);
 Node* CreateNode (double num);
 
@@ -107,6 +111,7 @@ Node* CreateNode (double num);
 *
 */
 Node* CopyNode (Node* root);
+
 /*! Функция дифференцирования дерева
 *
 *	@param [in] node Корень дерева
@@ -135,12 +140,14 @@ void ReadProgramFromFile (FILE* f_in);
 int Hash (const char* str);
 int* KeyWordsArray ();
 IdsArray* IdArrayCostruct (IdsArray* Ids);
+IdsArray* IdArrayDistruct (IdsArray* Ids);
 void IdFuncArrayInit (IdsArray* Ids);
 int KeyWordNum (const char* word, int* KeyWordsArr);
-Node* NewIdOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords);
-void AddNewVar (IdsArray* Ids, const char* var);
-
-
+Node* NewFuncOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords);
+Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords);
+int AddNewEL (IdsArray* Ids, const char* var);
+void SaveTreeToFile (Node* root, FILE* f_sav);
+Node* GetTreeFromFile (Node* root, FILE* f_in);
 
 Node* operator+ (Node a, Node b) {
     return CreateNode (SUM, "+", (&(a)), (&(b)));
@@ -148,26 +155,38 @@ Node* operator+ (Node a, Node b) {
 
 int main () {
 
-    FILE* f_in = fopen ("input.txt", "r");
+    FILE* f_in = fopen ("input2.txt", "r");
     FILE* f_out = fopen ("F:\\Graphs\\output.dot", "w");
+    FILE* f_sav = fopen ("tree.txt", "w");
 
+    setbuf (stdout, NULL);
     ReadProgramFromFile (f_in);
     IdsArray* Ids = IdArrayCostruct (Ids);
     IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
     IdFuncArrayInit (IdsFunc);
-    //for (int i = 0; i < IdsFunc->free; i++) printf ("%d\n", IdsFunc->data[i]);
-
+    //for (int i = 0; i < Ids->free; i++) printf ("%d\n", IdsFunc->data[i]);
     int* KeyWordsArr = KeyWordsArray ();
     Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
+    for (int i = 0; i < ColNodes; i++) {
+        if (Nodes[i] && Nodes[i]->type == VAR) printf ("**** %s  %lg\n", Nodes[i]->data, Nodes[i]->num);
+    }
 
     Node* root = Prog (Nodes);
     Simplification (root);
     TreePrint (root, f_out);
+    SaveTreeToFile (root, stdout);
+
+    IdArrayDistruct (Ids);
+    IdArrayDistruct (IdsFunc);
     DeleteTree (root);
+    free (KeyWordsArr);
     free (Nodes);
     free (Ids->data);
     free (Ids);
     free (Nodes);
+    fclose (f_in);
+    fclose (f_out);
+    fclose (f_sav);
     return 0;
 }
 
@@ -179,7 +198,7 @@ Node* Prog (Node** Nodes) {
     val = Nods[ind];
     ind++;
     if (NT != END) {
-        val->right = Func();
+        val->right = Declare();
     }
 
     assert (NT == END);
@@ -187,23 +206,72 @@ Node* Prog (Node** Nodes) {
     return val;
 }
 
+Node* Declare () {
+    Node* val = CreateNode (DECLARE, "D", nullptr, nullptr);
+    val->right = Func ();
+    if (NT != END) {
+        val->left = Declare();
+    }
+    return val;
+}
+
 Node* Func () {
     assert (NT == DEF);
-    ind++;
-    assert (NT = VAR);
     Node* val = Nods[ind];
     ind++;
-    val->left = Block ();
 
-    if (NT != END) {
-        val->right = Func();
-    }
+    assert (NT == FUNC);
+    val->right = Nods[ind];
+    ind++;
+    assert (NT == SKOBKA1);
+    ind++;
+    if (NT == VAR)
+        val->left = VarlistDef();
+    assert (NT == SKOBKA2);
+    ind++;
+    val->right->right = Block ();
 
     return val;
 }
 
+
+Node* VarlistDef () {
+    Node* val = CreateNode (COMMA, ",", nullptr, Nods[ind]);
+    ind++;
+    if (NT == COMMA) {
+        ind++;
+        assert (NT == VAR);
+        val->left = VarlistDef();
+    }
+    return val;
+}
+
+Node* VarlistE () {
+    Node* val = CreateNode (COMMA, ",", nullptr, GetE ());
+
+    if (NT == COMMA) {
+        ind++;
+        val->left = VarlistE ();
+    }
+    return val;
+}
+
+Node* Call () {
+    assert (NT == FUNC);
+    Node* val = CreateNode (CALL, "CALL", nullptr, Nods[ind]);
+    ind++;
+    assert (NT == SKOBKA1);
+    ind++;
+    if (NT != SKOBKA2) {
+        val->left = VarlistE ();
+    }
+    assert (NT == SKOBKA2);
+    ind++;
+    return val;
+}
+
 Node* Block () {
-    Node* val = CreateNode (BLOCK, "{}", nullptr, nullptr);
+    Node* val = CreateNode (BLOCK, "B", nullptr, nullptr);
     assert (NT == BLOCK_ST);
     ind++;
     if (NT != BLOCK_END) {
@@ -218,16 +286,24 @@ Node* Operator () {
     Node* val = CreateNode (OP, "OP", nullptr, nullptr);
     switch (NT) {
         case VAR:
-            val->left = Assign();
+            val->right = Assign ();
+            break;
+        case IF:
+            val->right = If ();
+            break;
+        case WHILE:
+            val->right = While ();
             break;
     }
     if (NT != BLOCK_END) {
-        val->right = Operator ();
+        val->left = Operator ();
     }
     return val;
 }
 
 Node* Assign() {
+    assert (NT == VAR);
+    printf ("ASSIGN %s\n", Nods[ind]->data);
     ind++;
     Nods[ind]->left = Nods[ind - 1];
     Node* val =  Nods[ind];
@@ -239,6 +315,43 @@ Node* Assign() {
 
     return val;
 }
+
+Node* If () {
+    assert (NT == IF);
+    Node* val = Nods[ind];
+    ind++;
+    assert (NT == SKOBKA1);
+    ind++;
+    val->left = Cond ();
+    assert (NT == SKOBKA2);
+    ind++;
+    val->right = Block ();
+    return val;
+}
+
+Node* While () {
+    assert (NT == WHILE);
+    Node* val = Nods[ind];
+    ind++;
+    assert (NT == SKOBKA1);
+    ind++;
+    val->left = Cond ();
+    assert (NT == SKOBKA2);
+    ind++;
+    val->right = Block ();
+    return val;
+}
+
+Node* Cond () {
+    Node* val1 = GetE ();
+    Node* val = CreateNode (NT, Words[NT], val1, nullptr);
+    ind++;
+    Node* val2 = GetE ();
+    val->right = val2;
+
+    return val;
+}
+
 
 Node* GetG () {
     Node* val = GetE ();
@@ -311,6 +424,8 @@ Node* GetP () {
     }
     else if (NT == NUM)
         return GetN ();
+    else if (NT == FUNC)
+        return Call ();
     else
        return GetF ();
 
@@ -399,6 +514,42 @@ Node* GetN () {
     return res;
 }
 
+void SaveTreeToFile (Node* root, FILE* f_sav) {
+    if (root) {
+        fprintf (f_sav, "(");
+        free (malloc (100));
+        if (root->type != NUM) fprintf (f_sav, "%s", root->data);
+        else
+            fprintf (f_sav, "%lg", root->num);
+        SaveTreeToFile (root->left, f_sav);
+        SaveTreeToFile (root->right, f_sav);
+        fprintf(f_sav, ")");
+    }
+}
+
+Node* GetTreeFromFile (Node* root, FILE* f_in) {
+
+    fscanf (f_in, "(");
+    char* data = (char*) calloc (DataSize, sizeof (char));
+    int n = 0;
+    fscanf (f_in, "%[^()]%n", data, &n);
+    if (n == 0)
+        return nullptr;
+//    int type = Object;
+//    if (*data == '?') type = Question;
+//    if (type == Question) data = data + 1;
+   // root = CreateNode (data, type);
+    root->left  = GetTreeFromFile (root->left, f_in);
+    root->right = GetTreeFromFile (root->left, f_in);
+    fscanf (f_in,")");
+    return root;
+}
+
+IdsArray* IdArrayDistruct (IdsArray* Ids) {
+    free (Ids->data);
+    free (Ids);
+}
+
 void ReadProgramFromFile (FILE* f_in) {
     int offset = 0;
     int CountRead = 1;
@@ -413,6 +564,7 @@ int* KeyWordsArray () {
     int* KeyWords = (int*) calloc (COL_WORDS, sizeof (int));
     for (int i = 0; i < COL_WORDS; i++) {
         KeyWords[i] = Hash (Words[i]);
+        //printf ("@ %s  %d\n", Words[i], KeyWords[i]);
     }
 
     return KeyWords;
@@ -432,7 +584,7 @@ void IdFuncArrayInit (IdsArray* Ids) {
     }
 }
 
-int VarIsInArr (IdsArray* Ids, const char* var) {
+int ElementIsInArr (IdsArray* Ids, const char* var) {
 
     int hash = Hash (var);
     for (int i = 0; i < Ids->free; i++) {
@@ -443,9 +595,11 @@ int VarIsInArr (IdsArray* Ids, const char* var) {
     return -1;
 }
 
-void AddNewVar (IdsArray* Ids, const char* var) {
+int AddNewEL (IdsArray* Ids, const char* var) {
     Ids->data[Ids->free] = Hash (var);
     Ids->free++;
+
+    return Ids->free - 1;
 }
 
 int Hash (const char* str) {
@@ -466,7 +620,7 @@ int KeyWordNum (const char* word, int* KeyWordsArr) {
     return -1;
 }
 
-Node* NewIdOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords) {
+Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords) {
     int num = KeyWordNum (word, KeyWords);
     if (num != -1) {
         switch (num) {
@@ -497,52 +651,99 @@ Node* NewIdOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords) {
             case COMMA_POINT:
                 return _KEYWORD (COMMA_POINT);
         }
-    } else if (VarIsInArr (IdArr, word) == -1) {
-        AddNewVar (IdArr, word);
+    } else {
+        num = ElementIsInArr (FuncArray, word) + COL_WORDS + 1;
+        if (num  != COL_WORDS) {
+            switch (num) {
+                case SIN:
+                    return _SIN (nullptr);
+                case COS:
+                    return _COS (nullptr);
+                case TG:
+                    return _TG (nullptr);
+                case CTG:
+                    return _CTG (nullptr);
+                case ARCTG:
+                    return _ARCTG (nullptr);
+                case LN:
+                    return _LN (nullptr);
+                case SH:
+                    return _SH (nullptr);
+                case CH:
+                    return _CH (nullptr);
+                case TH:
+                    return _TH (nullptr);
+                case CTH:
+                    return _CTH (nullptr);
+            }
+        }
+        else
+        {
+            num = AddNewEL(FuncArray, word);
+        }
     }
-    return _VAR (word);
-    return nullptr;
+
+    return CreateNode (FUNC, word, nullptr, nullptr, (double) num);
 }
 
 void DropSpace () {
-    while (*s == ' ' || *s == '\t' || *s == '\n') {
+    while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r') {
         s++;
     }
 }
 
-Node* NewFunctionNode (IdsArray* FuncArray, char* IdsFunc) {
-    int num = VarIsInArr (FuncArray, IdsFunc) + COL_WORDS + 1;
+//Node* VarNode (IdsArray* VarArray, char* word) {
+//    int num = ElementIsInArr (VarArray, word);
+//    if (num == -1)
+//    {
+//        num = AddNewEL(VarArray, word);
+//    }
+//
+//    return CreateNode (VAR, word, nullptr, nullptr, (double) num);
+//}
+
+Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) {
+    int num = KeyWordNum (word, KeyWords);
     if (num != -1) {
         switch (num) {
-            case SIN:
-                return _SIN (nullptr);
-            case COS:
-                return _COS (nullptr);
-            case TG:
-                return _TG (nullptr);
-            case CTG:
-                return _CTG (nullptr);
-            case ARCTG:
-                return _ARCTG (nullptr);
-            case LN:
-                return _LN (nullptr);
-            case SH:
-                return _SH (nullptr);
-            case CH:
-                return _CH (nullptr);
-            case TH:
-                return _TH (nullptr);
-            case CTH:
-                return _CTH (nullptr);
+            case START:
+                return _KEYWORD (START);
+            case END:
+                return _KEYWORD (END);
+            case IF:
+                return _KEYWORD (IF);
+            case WHILE:
+                return _KEYWORD (WHILE);
+            case BLOCK_ST:
+                return _KEYWORD (BLOCK_ST);
+            case BLOCK_END:
+                return _KEYWORD (BLOCK_END);
+            case SKOBKA1:
+                return _KEYWORD (SKOBKA1);
+            case SKOBKA2:
+                return _KEYWORD (SKOBKA2);
+            case ASSIGN:
+                return _KEYWORD (ASSIGN);
+            case DEF:
+                return _KEYWORD (DEF);
+            case EQUAL:
+                return _KEYWORD (EQUAL);
+            case ABOVE:
+                return _KEYWORD (ABOVE);
+        }
+    } else {
+        num = ElementIsInArr (VarArray, word);
+        if (num == -1)
+        {
+            num = AddNewEL (VarArray, word);
         }
     }
-    return nullptr;
+    return CreateNode (VAR, word, nullptr, nullptr, (double) num);
 }
 
 Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
     int n = 0;
     Node** Nodes = (Node**) calloc (ColNodes, sizeof (Node*));
-
 
     int i = 0;
 
@@ -550,15 +751,17 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
     char* word = (char*) calloc (WordSize, sizeof (char));
     while (*s != '\0') {
         if (isalpha (*s)) {
-            sscanf (s, "%[^()\n\t=^+-*/; ]%n", word, &n);
+            sscanf (s, "%[^()\n\t\r=^+-*/><!&|;, ]%n", word, &n);
             s += n;
+            DropSpace();
             if (*s == '(') {
-                Nodes[i] = NewFunctionNode (IdsFunc, word);
+                Nodes[i] = NewFuncOrKeyWordNode (word, IdsFunc, KeyWords);
             }
             else
-                Nodes[i] = NewIdOrKeyWordNode (word, Ids, KeyWords);
-            printf ("%s %s\n", word, Nodes[i]->data);
+                Nodes[i] = NewVarOrKeyWordNode (word, Ids, KeyWords);
+            printf ("%s %s %d\n", word, Nodes[i]->data, Nodes[i]->type);
             i++;
+            //printf ("********* %d  %d  %d********\n", KeyWords[10], KeyWords[11], Hash ("def"));
             //printf ("%s\n", word);
         }
         else if (isdigit (*s)) {
@@ -577,6 +780,9 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
                 case '\n':
                     DropSpace();
                     break;
+                case '\r':
+                    DropSpace();
+                    break;
                 NewEl (BLOCK_ST, '{')
                 NewEl (BLOCK_END, '}')
                 NewEl (SKOBKA1, '(')
@@ -589,6 +795,7 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
                 NewEl (EQUAL, '=')
                 NewEl (ABOVE, '>')
                 NewEl (COMMA_POINT, ';')
+                NewEl (COMMA, ',')
             }
 
         }
@@ -606,8 +813,23 @@ Node* CreateNode (int type, const char* data, Node* left, Node* right) {
     node->right = right;
     node->type  = type;
 
+
     return node;
 }
+
+Node* CreateNode (int type, const char* data, Node* left, Node* right, double num) {
+
+    Node* node  = (Node*) calloc (1, sizeof (Node));
+    node->data  = (char*) calloc (DataSize, sizeof (char));
+    strcpy (node->data, data);
+    node->left  = left;
+    node->right = right;
+    node->type  = type;
+    node->num = num;
+
+    return node;
+}
+
 
 Node* CreateNode (double num) {
     Node* node  = (Node*) calloc (1, sizeof (Node));
@@ -622,84 +844,84 @@ Node* CreateNode (double num) {
 void Simplification (Node* root) {
     if (root) {
         Node* NewNode = nullptr;
-        if (_L && _R) {
-            Simplification (_L);
+        if (_Lf && _R) {
+            Simplification (_Lf);
             Simplification (_R);
-            if (_L->type == NUM && _R->type == NUM) {
+            if (_Lf->type == NUM && _R->type == NUM) {
                 switch (root->type) {
                     case SUM:
-                        NewNode = _NUM (_L->num + _R->num);
+                        NewNode = _NUM (_Lf->num + _R->num);
                         CopyTo (root, NewNode);
                         break;
                     case SUB:
-                        NewNode = _NUM (_L->num - _R->num);
+                        NewNode = _NUM (_Lf->num - _R->num);
                         CopyTo (root, NewNode);
                         break;
                     case MUL:
-                        NewNode = _NUM (_L->num * _R->num);
+                        NewNode = _NUM (_Lf->num * _R->num);
                         CopyTo (root, NewNode);
                         break;
                     case DIV:
                         if (_R->num) {
-                            NewNode = _NUM (_L->num / _R->num);
+                            NewNode = _NUM (_Lf->num / _R->num);
                             CopyTo (root, NewNode);
                         }
                         break;
                     case POW:
-                        //assert (_L->num == 0);
-                        NewNode = _NUM (pow(_L->num, _R->num));
+                        //assert (_Lf->num == 0);
+                        NewNode = _NUM (pow(_Lf->num, _R->num));
                         CopyTo(root, NewNode);
                 }
             }
 
             switch (root->type) {
                 case MUL:
-                    if ((_L->type == NUM && _L->num == 0) || (_R->type == NUM && _R->num == 0)) {
+                    if ((_Lf->type == NUM && _Lf->num == 0) || (_R->type == NUM && _R->num == 0)) {
                         NewNode = _NUM (0);
                         CopyTo (root, NewNode);
-                    } else if  (_L->type == NUM && _L->num == 1) {
+                    } else if  (_Lf->type == NUM && _Lf->num == 1) {
                         CopyTo (root, _R);
                     } else if (_R->type == NUM && _R->num == 1) {
-                        CopyTo (root, _L);
-                    } else if (_L->type == _R->type && (_L->type == VAR || _L->type > FUNCCOL)) {
-                        NewNode = _POW (_L, _NUM(2));
+                        CopyTo (root, _Lf);
+                    } else if (_Lf->type == _R->type && (_Lf->type == VAR || _Lf->type > FUNCCOL)) {
+                        NewNode = _POW (_Lf, _NUM(2));
                         CopyTo (root, NewNode);
                     }
                     break;
                 case DIV:
-                    if (_L->type == NUM && _L->num == 0) {
+                    if (_Lf->type == NUM && _Lf->num == 0) {
                         NewNode = _NUM (0);
                         CopyTo (root, NewNode);
                     } else if (_R->type == NUM && _R->num == 1) {
-                        CopyTo (root, _L);
+                        CopyTo (root, _Lf);
                     }
                     break;
                 case SUM:
-                    if (_L->type == NUM && _L->num == 0) {
+                    if (_Lf->type == NUM && _Lf->num == 0) {
                         CopyTo (root, _R);
                     } else if (_R->type == NUM && _R->num == 0) {
-                        CopyTo (root, _L);
+                        CopyTo (root, _Lf);
                     }
                     break;
                 case SUB:
-                    if (_L->type == NUM && _L->num == 0) {
+                    if (_Lf->type == NUM && _Lf->num == 0) {
                         NewNode = _MUL (_NUM (-1), _R);
                         CopyTo (root, NewNode);
                     } else if (_R->type == NUM && _R->num == 0) {
-                        CopyTo (root, _L);
+                        CopyTo (root, _Lf);
                     }
                     break;
                 case POW:
                     if (_R->type == NUM && _R->num == 0) {
                         NewNode = _NUM (1);
                         CopyTo (root, NewNode);
-                    } else if (_L->type == NUM && _L->num == 1) {
+                    } else if (_Lf->type == NUM && _Lf->num == 1) {
                         NewNode = _NUM (1);
                         CopyTo (root, NewNode);
                     } else if (_R->type == NUM && _R->num == 1) {
-                        CopyTo (root, _L);
-                    } else if (_L->type == POW) {
-                        NewNode = _POW (_L->left, _NUM(_L->right->num * _R->num));
+                        CopyTo (root, _Lf);
+                    } else if (_Lf->type == POW) {
+                        NewNode = _POW (_Lf->left, _NUM (_Lf->right->num * _R->num));
                         CopyTo (root, NewNode);
                     }
                     break;
@@ -750,8 +972,8 @@ void Simplification (Node* root) {
                         break;
                 }
             }
-        } else if (_L) {
-            Simplification (_L);
+        } else if (_Lf) {
+            Simplification (_Lf);
         }
 
         //if (NewNode) free (NewNode);
@@ -761,7 +983,7 @@ void Simplification (Node* root) {
 
 void CopyTo (Node* root, Node* NewNode) {
 
-    _L = NewNode->left;
+    _Lf = NewNode->left;
     _R = NewNode->right;
     root->num = NewNode->num;
     root->type = NewNode->type;
@@ -770,7 +992,7 @@ void CopyTo (Node* root, Node* NewNode) {
 
 void VarToNum (Node* root, double num) {
     if (root) {
-        VarToNum (_L, num);
+        VarToNum (_Lf, num);
         VarToNum (_R, num);
         if (root->type == VAR) {
             root->type = NUM;
@@ -933,13 +1155,13 @@ Node* CopyNode (Node* root) {
             case VAR:
                 return  _VAR("x");
             case MUL:
-                return  _MUL (CopyNode (_L), CopyNode (_R));
+                return  _MUL (CopyNode (_Lf), CopyNode (_R));
             case DIV:
-                return _DIV (CopyNode (_L), CopyNode (_R));
+                return _DIV (CopyNode (_Lf), CopyNode (_R));
             case SUM:
-                return _SUM (CopyNode (_L), CopyNode (_R));
+                return _SUM (CopyNode (_Lf), CopyNode (_R));
             case SUB:
-                return _SUB (CopyNode (_L), CopyNode (_R));
+                return _SUB (CopyNode (_Lf), CopyNode (_R));
             case SIN:
                 return _SIN (CopyNode (_R));
             case COS:
@@ -953,7 +1175,7 @@ Node* CopyNode (Node* root) {
             case ARCTG:
                 return _ARCTG (CopyNode (_R));
             case POW:
-                return _POW (CopyNode (_L), CopyNode (_R));
+                return _POW (CopyNode (_Lf), CopyNode (_R));
             case SH:
                 return _SH (CopyNode (_R));
             case CH:
@@ -978,7 +1200,7 @@ void DelNode (Node* node) {
 void DeleteTree (Node* root) {
 
     if (root) {
-        DeleteTree (_L);
+        DeleteTree (_Lf);
         DeleteTree (_R);
         DelNode (root);
     }
@@ -1112,7 +1334,6 @@ void NodePrint (Node* node, FILE* f_out) {
         fprintf (f_out, "node%p [label=\"%.2lf\", shape=box];\n", node, node->num);
 
 }
-
 
 void PrintNods (Node* node, FILE* f_out) {
     assert (node);
