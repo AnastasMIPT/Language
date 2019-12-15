@@ -186,12 +186,12 @@ int main () {
     Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
 
 
-    for (int i = 0; i < IdsFunc->free; i++) {
-        printf ("$$ %d\n", IdsFunc->data[i]);
-
-    }
-    printf ("%d * %d\n", ElementIsInArr (IdsFunc, "main"), NullFunc);
-    printf ("!%d\n", ElementIsInArr (IdsFunc, "fact"));
+//    for (int i = 0; i < IdsFunc->free; i++) {
+//        printf ("$$ %d\n", IdsFunc->data[i]);
+//
+//    }
+//    printf ("%d * %d\n", ElementIsInArr (IdsFunc, "main"), NullFunc);
+//    printf ("!%d\n", ElementIsInArr (IdsFunc, "fact"));
 
     Node* root = Prog (Nodes);
     Simplification (root);
@@ -266,9 +266,17 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 fprintf (f_out, "MUL\n");
                 break;
             case DIV:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "DIV\n");
+                break;
+            case OUTPUT:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "OUT\n");
+                break;
+            case INPUT:
+                fprintf (f_out, "IN\n");
+                fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
                 break;
             case VAR:
                 fprintf (f_out, "PUSHRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
@@ -989,7 +997,6 @@ Node* CreateNode (int type, const char* data, Node* left, Node* right, double nu
 
     return node;
 }
-
 
 Node* CreateNode (double num) {
     Node* node  = (Node*) calloc (1, sizeof (Node));
