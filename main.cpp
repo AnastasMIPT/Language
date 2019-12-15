@@ -283,6 +283,9 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "DIV\n");
                 break;
+            case RETURN:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                break;
             case OUTPUT:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "OUT\n");
