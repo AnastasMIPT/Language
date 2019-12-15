@@ -88,7 +88,6 @@ Node* Return ();
 Node* Cond ();
 Node* Block ();
 
-Node* GetG ();
 Node* GetE ();
 Node* GetT ();
 Node* GetStep ();
@@ -263,6 +262,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->left->num);
                 //fprintf (f_out, "%d\n", FuncNumber);
                 break;
+            
             case SUM:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
@@ -293,6 +293,10 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
             case INPUT:
                 fprintf (f_out, "IN\n");
                 fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) _R->num);
+                break;
+            case SQRT:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "SQRT\n");
                 break;
             case VAR:
                 fprintf (f_out, "PUSHRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
@@ -666,6 +670,13 @@ Node* GetF () {
         val->right =  GetP ();
         return val;
     }
+
+    if (NT == SQRT) {
+        val = Nods[ind];
+        ind++;
+        val->right =  GetP ();
+        return val;
+    }
 //functions
 
     return val;
@@ -868,6 +879,8 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                     return _TH (nullptr);
                 case CTH:
                     return _CTH (nullptr);
+                case SQRT:
+                    return CreateNode (SQRT, word, nullptr, nullptr);
             }
             //printf ("^ %lg\n", (double) num);
             return CreateNode (FUNC, word, nullptr, nullptr, (double) (num - COL_WORDS - 1));

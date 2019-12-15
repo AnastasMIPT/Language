@@ -38,6 +38,7 @@ enum {
     CH,
     TH,
     CTH,
+    SQRT,
     FUNCCOL,
 
     NUM,
@@ -85,6 +86,7 @@ const char* Words[]  = {
         "sh",
         "ch",
         "th",
-        "cth"
+        "cth",
+        "sqrt"
 
 };
