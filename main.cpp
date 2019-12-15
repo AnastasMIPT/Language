@@ -248,17 +248,36 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 break;
             case ASSIGN:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                //ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->left->num);
-
-                //fprintf (f_out, "%s *%d  %d\n", root->left->data, FuncNumber, (int) root->left->num);
+                break;
+            case SUM:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "SUM\n");
+                break;
+            case SUB:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "SUB\n");
+                break;
+            case MUL:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "MUL\n");
+                break;
+            case DIV:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "DIV\n");
                 break;
             case VAR:
                 fprintf (f_out, "PUSHRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
-
                 break;
             case NUM:
                 fprintf (f_out, "PUSH %lg\n", root->num);
+                break;
+            default:
+                printf ("\n! ERROR ! Неизвестный узел %s, тип: %d", root->data, root->type);
                 break;
         }
     }
