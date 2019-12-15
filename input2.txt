@@ -1,0 +1,15 @@
+start
+def main ()
+{
+    input (num)
+    fact = factorial (num);
+    output (fact)
+}
+def factorial (n)
+{
+    if (n equal 1) {
+        return 1;
+    }
+    return n * factorial (n - 1);
+}
+end

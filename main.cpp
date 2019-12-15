@@ -74,9 +74,12 @@ Node* VarlistE ();
 Node* Call ();
 Node* Func ();
 Node* Operator ();
+Node* Input ();
+Node* Output ();
 Node* Assign ();
 Node* If ();
 Node* While ();
+Node* Return ();
 Node* Cond ();
 Node* Block ();
 
@@ -148,6 +151,7 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords);
 int AddNewEL (IdsArray* Ids, const char* var);
 void SaveTreeToFile (Node* root, FILE* f_sav);
 Node* GetTreeFromFile (Node* root, FILE* f_in);
+void PrigramToASM (Node* root, FILE* f_out);
 
 Node* operator+ (Node a, Node b) {
     return CreateNode (SUM, "+", (&(a)), (&(b)));
@@ -193,6 +197,16 @@ int main () {
     return 0;
 }
 
+void PrigramToASM (Node* root, FILE* f_out) {
+
+ ;
+}
+
+
+
+
+
+
 Node* Prog (Node** Nodes) {
 
     Nods = Nodes;
@@ -236,7 +250,6 @@ Node* Func () {
 
     return val;
 }
-
 
 Node* VarlistDef () {
     Node* val = CreateNode (COMMA, ",", nullptr, Nods[ind]);
@@ -297,10 +310,45 @@ Node* Operator () {
         case WHILE:
             val->right = While ();
             break;
+        case RETURN:
+            val->right = Return ();
+            break;
+        case INPUT:
+            val->right = Input ();
+            break;
+        case OUTPUT:
+            val->right = Output ();
+            break;
     }
     if (NT != BLOCK_END) {
         val->left = Operator ();
     }
+    return val;
+}
+
+Node* Input () {
+    assert (NT == INPUT);
+    Node* val = Nods[ind];
+    ind++;
+    assert (NT == SKOBKA1);
+    ind++;
+    assert (NT == VAR);
+    val->right = Nods[ind];
+    ind++;
+    assert (NT = SKOBKA2);
+    ind++;
+    return val;
+}
+
+Node* Output () {
+    assert (NT == OUTPUT);
+    Node* val = Nods[ind];
+    ind++;
+    assert (NT == SKOBKA1);
+    ind++;
+    val->right = GetE ();
+    assert (NT = SKOBKA2);
+    ind++;
     return val;
 }
 
@@ -341,6 +389,16 @@ Node* While () {
     assert (NT == SKOBKA2);
     ind++;
     val->right = Block ();
+    return val;
+}
+
+Node* Return () {
+    assert (NT == RETURN);
+    Node* val = Nods[ind];
+    ind++;
+    val->right = GetE ();
+    assert (NT == COMMA_POINT);
+    ind++;
     return val;
 }
 
@@ -648,6 +706,12 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return _KEYWORD (ABOVE);
             case COMMA_POINT:
                 return _KEYWORD (COMMA_POINT);
+            case RETURN:
+                return _KEYWORD (RETURN);
+            case INPUT:
+                return _KEYWORD (INPUT);
+            case OUTPUT:
+                return _KEYWORD (OUTPUT);
         }
     } else {
         num = ElementIsInArr (FuncArray, word) + COL_WORDS + 1;
@@ -690,16 +754,6 @@ void DropSpace () {
     }
 }
 
-//Node* VarNode (IdsArray* VarArray, char* word) {
-//    int num = ElementIsInArr (VarArray, word);
-//    if (num == -1)
-//    {
-//        num = AddNewEL(VarArray, word);
-//    }
-//
-//    return CreateNode (VAR, word, nullptr, nullptr, (double) num);
-//}
-
 Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) {
     int num = KeyWordNum (word, KeyWords);
     if (num != -1) {
@@ -728,6 +782,12 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
                 return _KEYWORD (EQUAL);
             case ABOVE:
                 return _KEYWORD (ABOVE);
+            case RETURN:
+                return _KEYWORD (RETURN);
+            case INPUT:
+                return _KEYWORD (INPUT);
+            case OUTPUT:
+                return _KEYWORD (OUTPUT);
         }
     } else {
         num = ElementIsInArr (VarArray, word);
