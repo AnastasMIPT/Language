@@ -157,9 +157,9 @@ int main () {
 
     FILE* f_in = fopen ("input2.txt", "r");
     FILE* f_out = fopen ("F:\\Graphs\\output.dot", "w");
-    FILE* f_sav = fopen ("tree.txt", "w");
 
     setbuf (stdout, NULL);
+
     ReadProgramFromFile (f_in);
     IdsArray* Ids = IdArrayCostruct (Ids);
     IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
@@ -174,18 +174,21 @@ int main () {
     Node* root = Prog (Nodes);
     Simplification (root);
     TreePrint (root, f_out);
-    SaveTreeToFile (root, stdout);
+
+    fclose (f_out);
+
+    FILE* f_sav = fopen ("tree.txt", "w");
+    setbuf (f_sav, NULL);
+
+    SaveTreeToFile (root, f_sav);
 
     IdArrayDistruct (Ids);
     IdArrayDistruct (IdsFunc);
     DeleteTree (root);
     free (KeyWordsArr);
     free (Nodes);
-    free (Ids->data);
-    free (Ids);
-    free (Nodes);
+
     fclose (f_in);
-    fclose (f_out);
     fclose (f_sav);
     return 0;
 }
@@ -303,7 +306,6 @@ Node* Operator () {
 
 Node* Assign() {
     assert (NT == VAR);
-    printf ("ASSIGN %s\n", Nods[ind]->data);
     ind++;
     Nods[ind]->left = Nods[ind - 1];
     Node* val =  Nods[ind];
@@ -535,10 +537,6 @@ Node* GetTreeFromFile (Node* root, FILE* f_in) {
     fscanf (f_in, "%[^()]%n", data, &n);
     if (n == 0)
         return nullptr;
-//    int type = Object;
-//    if (*data == '?') type = Question;
-//    if (type == Question) data = data + 1;
-   // root = CreateNode (data, type);
     root->left  = GetTreeFromFile (root->left, f_in);
     root->right = GetTreeFromFile (root->left, f_in);
     fscanf (f_in,")");
