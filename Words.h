@@ -15,9 +15,13 @@ enum {
     BLOCK_ST,
     BLOCK_END,
     COMMA_POINT,
+    COMMA,
     SKOBKA1,
     SKOBKA2,
     ASSIGN,
+    RETURN,
+    INPUT,
+    OUTPUT,
     DEF,
     EQUAL,
     ABOVE,
@@ -43,9 +47,12 @@ enum {
     POW,
     DIV,
     VAR,
+    FUNC,
+    CALL,
     OP,
     NEW_LINE,
-    BLOCK
+    BLOCK,
+    DECLARE
 
 
 };
@@ -57,10 +64,14 @@ const char* Words[]  = {
         "while",
         "{",
         "}",
-        "\n",
+        ";",
+        ",",
         "(",
         ")",
         "=",
+        "return",
+        "input",
+        "output",
         "def",
         "equal",
         ">",

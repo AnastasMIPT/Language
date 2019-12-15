@@ -30,7 +30,7 @@
 #define _Lf root->left
 #define _R root->right
 #define NT Nods[ind]->type
-#define NewEl(TYPE, symbl)                                                  \
+#define NewEl(TYPE, symbl) \
 case symbl:                                                       \
     Nodes[i] = CreateNode (TYPE, #symbl, nullptr, nullptr);       \
     printf ("%s %d\n", Nodes[i]->data, Nodes[i]->type);                       \
@@ -38,7 +38,10 @@ case symbl:                                                       \
     s++;                                                           \
     break;                                                         \
 
-
+#define ToASM(TYPE, root) \
+case TYPE:                                       \
+    ProgramToASM (root, Vars, Func, FuncNumber, f_out); \
+    break;\
 
 struct Node
 {
@@ -58,6 +61,8 @@ const int ProgramSize = 500;
 const int DataSize = 50;
 const int VarNum = 40;
 const int FuncNum = 30;
+const int NullFunc = FUNCCOL - COL_WORDS - 1;
+const int ColVarsInOneFunc = 20;
 int ind = 0;
 
 struct IdsArray
@@ -145,13 +150,22 @@ int* KeyWordsArray ();
 IdsArray* IdArrayCostruct (IdsArray* Ids);
 IdsArray* IdArrayDistruct (IdsArray* Ids);
 void IdFuncArrayInit (IdsArray* Ids);
+
+int ElementIsInArr (IdsArray* Ids, const char* var);
+int ElementIsInArr (IdsArray* Ids, int hash);
+
 int KeyWordNum (const char* word, int* KeyWordsArr);
+int KeyWordNum (int hash, int* KeyWordsArr);
+
 Node* NewFuncOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords);
 Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords);
+
 int AddNewEL (IdsArray* Ids, const char* var);
+int AddNewEL (IdsArray* Ids, int hash);
+
 void SaveTreeToFile (Node* root, FILE* f_sav);
 Node* GetTreeFromFile (Node* root, FILE* f_in);
-void PrigramToASM (Node* root, FILE* f_out);
+void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, FILE* f_out);
 
 Node* operator+ (Node a, Node b) {
     return CreateNode (SUM, "+", (&(a)), (&(b)));
@@ -168,23 +182,32 @@ int main () {
     IdsArray* Ids = IdArrayCostruct (Ids);
     IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
     IdFuncArrayInit (IdsFunc);
-    //for (int i = 0; i < Ids->free; i++) printf ("%d\n", IdsFunc->data[i]);
     int* KeyWordsArr = KeyWordsArray ();
     Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
-    for (int i = 0; i < ColNodes; i++) {
-        if (Nodes[i] && Nodes[i]->type == VAR) printf ("**** %s  %lg\n", Nodes[i]->data, Nodes[i]->num);
+
+
+    for (int i = 0; i < IdsFunc->free; i++) {
+        printf ("$$ %d\n", IdsFunc->data[i]);
+
     }
+    printf ("%d * %d\n", ElementIsInArr (IdsFunc, "main"), NullFunc);
+    printf ("!%d\n", ElementIsInArr (IdsFunc, "fact"));
 
     Node* root = Prog (Nodes);
     Simplification (root);
     TreePrint (root, f_out);
-
+    printf ("%s", root->right->left->right->right->data);
     fclose (f_out);
 
     FILE* f_sav = fopen ("tree.txt", "w");
     setbuf (f_sav, NULL);
-
     SaveTreeToFile (root, f_sav);
+    fclose (f_sav);
+
+    FILE* f_asm = fopen ("asm_code.asm", "w");
+    setbuf (f_asm, NULL);
+    ProgramToASM (root, Ids, IdsFunc, NullFunc, f_asm);
+    fclose (f_asm);
 
     IdArrayDistruct (Ids);
     IdArrayDistruct (IdsFunc);
@@ -193,13 +216,52 @@ int main () {
     free (Nodes);
 
     fclose (f_in);
-    fclose (f_sav);
+
     return 0;
 }
 
-void PrigramToASM (Node* root, FILE* f_out) {
+void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, FILE* f_out) {
+    if (root) {
+        switch (root->type) {
+            case START:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "ENDING");
+                break;
+            case DECLARE:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                break;
+            case DEF:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                break;
+            case FUNC:
+                fprintf (f_out, ":%s\n", root->data);
+                ProgramToASM (_R, Vars, Func, (int) root->num - NullFunc, f_out);
+                fprintf (f_out, "RET\n");
+                break;
+            case BLOCK:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                break;
+            case OP:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                break;
+            case ASSIGN:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                //ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->left->num);
 
- ;
+                //fprintf (f_out, "%s *%d  %d\n", root->left->data, FuncNumber, (int) root->left->num);
+                break;
+            case VAR:
+                fprintf (f_out, "PUSHRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
+
+                break;
+            case NUM:
+                fprintf (f_out, "PUSH %lg\n", root->num);
+                break;
+        }
+    }
 }
 
 
@@ -409,14 +471,6 @@ Node* Cond () {
     Node* val2 = GetE ();
     val->right = val2;
 
-    return val;
-}
-
-
-Node* GetG () {
-    Node* val = GetE ();
-    assert (NT == COMMA_POINT);
-    ind++;
     return val;
 }
 
@@ -648,11 +702,29 @@ int ElementIsInArr (IdsArray* Ids, const char* var) {
             return i;
         }
     }
+
+    return -1;
+}
+
+int ElementIsInArr (IdsArray* Ids, int hash) {
+    for (int i = 0; i < Ids->free; i++) {
+        if (hash == Ids->data[i]) {
+            return i;
+        }
+    }
+
     return -1;
 }
 
 int AddNewEL (IdsArray* Ids, const char* var) {
     Ids->data[Ids->free] = Hash (var);
+    Ids->free++;
+
+    return Ids->free - 1;
+}
+
+int AddNewEL (IdsArray* Ids, int hash) {
+    Ids->data[Ids->free] = hash;
     Ids->free++;
 
     return Ids->free - 1;
@@ -676,8 +748,18 @@ int KeyWordNum (const char* word, int* KeyWordsArr) {
     return -1;
 }
 
+int KeyWordNum (int hash, int* KeyWordsArr) {
+    for (int i = 0; i < COL_WORDS; i++) {
+        if (hash == KeyWordsArr[i]) return i;
+    }
+
+    return -1;
+}
+
+
 Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords) {
-    int num = KeyWordNum (word, KeyWords);
+    int hash = Hash (word);
+    int num = KeyWordNum (hash, KeyWords);
     if (num != -1) {
         switch (num) {
             case START:
@@ -714,7 +796,7 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return _KEYWORD (OUTPUT);
         }
     } else {
-        num = ElementIsInArr (FuncArray, word) + COL_WORDS + 1;
+        num = ElementIsInArr (FuncArray, hash) + COL_WORDS + 1;
         if (num  != COL_WORDS) {
             switch (num) {
                 case SIN:
@@ -741,7 +823,7 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
         }
         else
         {
-            num = AddNewEL(FuncArray, word);
+            num = AddNewEL (FuncArray, hash);
         }
     }
 
@@ -755,7 +837,8 @@ void DropSpace () {
 }
 
 Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) {
-    int num = KeyWordNum (word, KeyWords);
+    int hash = Hash (word);
+    int num = KeyWordNum (hash, KeyWords);
     if (num != -1) {
         switch (num) {
             case START:
@@ -790,10 +873,10 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
                 return _KEYWORD (OUTPUT);
         }
     } else {
-        num = ElementIsInArr (VarArray, word);
+        num = ElementIsInArr (VarArray, hash);
         if (num == -1)
         {
-            num = AddNewEL (VarArray, word);
+            num = AddNewEL (VarArray, hash);
         }
     }
     return CreateNode (VAR, word, nullptr, nullptr, (double) num);
@@ -850,7 +933,7 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
                 NewEl (MUL, '*')
                 NewEl (DIV, '/')
                 NewEl (POW, '^')
-                NewEl (EQUAL, '=')
+                NewEl (ASSIGN, '=')
                 NewEl (ABOVE, '>')
                 NewEl (COMMA_POINT, ';')
                 NewEl (COMMA, ',')
