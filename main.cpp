@@ -274,6 +274,11 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "JNE end_if%d\n", IfNumber);
                 break;
+            case ABOVE:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "JA end_if%d\n", IfNumber);
+                break;
             case SUM:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
