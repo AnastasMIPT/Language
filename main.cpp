@@ -266,7 +266,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
             case SUM:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
-                fprintf (f_out, "SUM\n");
+                fprintf (f_out, "ADD\n");
                 break;
             case SUB:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
@@ -292,7 +292,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 break;
             case INPUT:
                 fprintf (f_out, "IN\n");
-                fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
+                fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) _R->num);
                 break;
             case VAR:
                 fprintf (f_out, "PUSHRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
