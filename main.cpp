@@ -64,6 +64,7 @@ const int FuncNum = 30;
 const int NullFunc = FUNCCOL - COL_WORDS - 1;
 const int ColVarsInOneFunc = 30;
 int ind = 0;
+int IfNumber = 0;
 
 struct IdsArray
 {
@@ -262,7 +263,17 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->left->num);
                 //fprintf (f_out, "%d\n", FuncNumber);
                 break;
-            
+            case IF:
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, ":end_if%d\n", IfNumber);
+                IfNumber++;
+                break;
+            case EQUAL:
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "JNE end_if%d\n", IfNumber);
+                break;
             case SUM:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
