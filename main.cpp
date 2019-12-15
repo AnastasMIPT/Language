@@ -269,8 +269,8 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 fprintf (f_out, "ADD\n");
                 break;
             case SUB:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "SUB\n");
                 break;
             case MUL:
