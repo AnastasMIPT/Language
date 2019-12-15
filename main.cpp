@@ -62,7 +62,7 @@ const int DataSize = 50;
 const int VarNum = 40;
 const int FuncNum = 30;
 const int NullFunc = FUNCCOL - COL_WORDS - 1;
-const int ColVarsInOneFunc = 20;
+const int ColVarsInOneFunc = 30;
 int ind = 0;
 
 struct IdsArray
@@ -166,6 +166,7 @@ int AddNewEL (IdsArray* Ids, int hash);
 void SaveTreeToFile (Node* root, FILE* f_sav);
 Node* GetTreeFromFile (Node* root, FILE* f_in);
 void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, FILE* f_out);
+void POPargs (Node* root, int FuncNumber, FILE* f_out);
 
 Node* operator+ (Node a, Node b) {
     return CreateNode (SUM, "+", (&(a)), (&(b)));
@@ -191,12 +192,12 @@ int main () {
 //
 //    }
 //    printf ("%d * %d\n", ElementIsInArr (IdsFunc, "main"), NullFunc);
-//    printf ("!%d\n", ElementIsInArr (IdsFunc, "fact"));
+    printf ("!%d\n", ElementIsInArr (IdsFunc, "fact"));
 
     Node* root = Prog (Nodes);
     Simplification (root);
     TreePrint (root, f_out);
-    printf ("%s", root->right->left->right->right->data);
+    printf ("%lf", root->right->left->right->right->num);
     fclose (f_out);
 
     FILE* f_sav = fopen ("tree.txt", "w");
@@ -232,12 +233,23 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
                 break;
             case DEF:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, ":%s\n", root->right->data);
+                POPargs (_Lf, (int) root->right->num - NullFunc, f_out);
+                ProgramToASM (_R, Vars, Func, (int) root->right->num - NullFunc, f_out);
+                //fprintf (f_out, "%d\n",  (int) root->right->num - NullFunc);
+                fprintf (f_out, "RET\n");
                 break;
             case FUNC:
-                fprintf (f_out, ":%s\n", root->data);
-                ProgramToASM (_R, Vars, Func, (int) root->num - NullFunc, f_out);
-                fprintf (f_out, "RET\n");
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                break;
+            case CALL:
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "CALL %s\n", _R->data);
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                break;
+            case COMMA:
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
                 break;
             case BLOCK:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
@@ -249,6 +261,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
             case ASSIGN:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->left->num);
+                //fprintf (f_out, "%d\n", FuncNumber);
                 break;
             case SUM:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
@@ -291,7 +304,13 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
     }
 }
 
-
+void POPargs (Node* root, int FuncNumber, FILE* f_out) {
+    if (root) {
+        assert (root->type = COMMA);
+        fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) _R->num);
+        POPargs (_Lf, FuncNumber, f_out);
+    }
+}
 
 
 
@@ -847,13 +866,17 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 case CTH:
                     return _CTH (nullptr);
             }
+            //printf ("^ %lg\n", (double) num);
+            return CreateNode (FUNC, word, nullptr, nullptr, (double) (num - COL_WORDS - 1));
         }
         else
         {
             num = AddNewEL (FuncArray, hash);
+            //printf ("^^^^ %lg\n", (double) num);
+            return CreateNode (FUNC, word, nullptr, nullptr, (double) num);
         }
     }
-
+    //printf ("^^^ %lg\n", (double) num);
     return CreateNode (FUNC, word, nullptr, nullptr, (double) num);
 }
 
@@ -927,7 +950,7 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
             }
             else
                 Nodes[i] = NewVarOrKeyWordNode (word, Ids, KeyWords);
-            printf ("%s %s %d\n", word, Nodes[i]->data, Nodes[i]->type);
+            printf ("%s %s %d   num = %lg\n", word, Nodes[i]->data, Nodes[i]->type, Nodes[i]->num);
             i++;
             //printf ("********* %d  %d  %d********\n", KeyWords[10], KeyWords[11], Hash ("def"));
             //printf ("%s\n", word);
