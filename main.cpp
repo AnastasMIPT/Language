@@ -1043,7 +1043,7 @@ void Simplification (Node* root) {
                         CopyTo (root, _R);
                     } else if (_R->type == NUM && _R->num == 1) {
                         CopyTo (root, _Lf);
-                    } else if (_Lf->type == _R->type && (_Lf->type == VAR || _Lf->type > FUNCCOL)) {
+                    } else if (_Lf->type == _R->type && ((_Lf->type == VAR && _Lf->num == _R->num) || ( COL_WORDS < _Lf->type && _Lf->type < FUNCCOL))) {
                         NewNode = _POW (_Lf, _NUM(2));
                         CopyTo (root, NewNode);
                     }
