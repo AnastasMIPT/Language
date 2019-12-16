@@ -225,6 +225,9 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
     if (root) {
         switch (root->type) {
             case START:
+                fprintf (f_out, "CALL main\n"
+                                "RET\n"
+                                "\n");
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "ENDING");
                 break;
