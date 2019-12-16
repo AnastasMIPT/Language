@@ -192,7 +192,7 @@ int main () {
 //
 //    }
 //    printf ("%d * %d\n", ElementIsInArr (IdsFunc, "main"), NullFunc);
-    printf ("!%d\n", ElementIsInArr (IdsFunc, "fact"));
+    //printf ("!%d\n", ElementIsInArr (IdsFunc, "fact"));
 
     Node* root = Prog (Nodes);
     Simplification (root);
@@ -348,8 +348,8 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
 void POPargs (Node* root, int FuncNumber, FILE* f_out) {
     if (root) {
         assert (root->type = COMMA);
-        fprintf (f_out, "POPRAM [ax+%d]\n", (int) _R->num);
         POPargs (_Lf, FuncNumber, f_out);
+        fprintf (f_out, "POPRAM [ax+%d]\n", (int) _R->num);
     }
 }
 
