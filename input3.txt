@@ -1,0 +1,27 @@
+start
+def main ()
+{
+    input (a)
+    input (b)
+    input (c)
+    res = 0;
+    if (a equal 0) {
+        res = linear (b,c);
+        output (res)
+        return;
+    }
+
+
+    return;
+}
+def linear (b,c) {
+    if (b equal 0) {
+        if (c unequal 0) {
+            return 0;
+        }
+        return -1;
+    }
+    output (1)
+    return (-1) * c / b;
+}
+end
