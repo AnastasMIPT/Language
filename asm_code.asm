@@ -1,0 +1,45 @@
+:main
+IN
+POPRAM [ax+0]
+PUSHRAM [ax+0]
+PUSHR ax
+PUSH 20
+ADD
+POP ax
+CALL factorial
+POPRAM [ax+1]
+PUSHRAM [ax+1]
+OUT
+PUSH 20
+PUSHR ax
+SUB
+POP ax
+RET
+:factorial
+POPRAM [ax+2]
+PUSHRAM [ax+2]
+PUSH 1
+JE end_if0
+PUSH 1
+PUSHRAM [ax+2]
+SUB
+PUSHR ax
+PUSH 20
+ADD
+POP ax
+CALL factorial
+PUSHRAM [ax+2]
+MUL
+PUSH 20
+PUSHR ax
+SUB
+POP ax
+RET
+:end_if0
+PUSH 1
+PUSH 20
+PUSHR ax
+SUB
+POP ax
+RET
+ENDING
