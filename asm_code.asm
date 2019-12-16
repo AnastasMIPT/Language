@@ -30,15 +30,15 @@ POP ax
 RET
 :main
 IN
-POPRAM [ax+31]
-PUSHRAM [ax+31]
+POPRAM [ax+1]
+PUSHRAM [ax+1]
 PUSHR ax
 PUSH 30
 ADD
 POP ax
 CALL factorial
-POPRAM [ax+32]
-PUSHRAM [ax+32]
+POPRAM [ax+2]
+PUSHRAM [ax+2]
 OUT
 PUSH 30
 PUSHR ax
