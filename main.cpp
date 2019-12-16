@@ -237,13 +237,17 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 POPargs (_Lf, (int) root->right->num - NullFunc, f_out);
                 ProgramToASM (_R, Vars, Func, (int) root->right->num - NullFunc, f_out);
                 //fprintf (f_out, "%d\n",  (int) root->right->num - NullFunc);
-                fprintf (f_out, "RET\n");
+                //fprintf (f_out, "RET\n");
                 break;
             case FUNC:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 break;
             case CALL:
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "PUSHR ax\n"
+                                "PUSH %d\n"
+                                "ADD\n"
+                                "POP ax\n", ColVarsInOneFunc);
                 fprintf (f_out, "CALL %s\n", _R->data);
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 break;
@@ -260,7 +264,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 break;
             case ASSIGN:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->left->num);
+                fprintf (f_out, "POPRAM [ax+%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->left->num);
                 //fprintf (f_out, "%d\n", FuncNumber);
                 break;
             case IF:
@@ -274,6 +278,11 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "JNE end_if%d\n", IfNumber);
                 break;
+            case NOTEQUAL:
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "JE end_if%d\n", IfNumber);
+                break;
             case ABOVE:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
@@ -285,8 +294,9 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 fprintf (f_out, "ADD\n");
                 break;
             case SUB:
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+
                 fprintf (f_out, "SUB\n");
                 break;
             case MUL:
@@ -301,6 +311,11 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 break;
             case RETURN:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, "PUSH %d\n"
+                                "PUSHR ax\n"
+                                "SUB\n"
+                                "POP ax\n", ColVarsInOneFunc);
+                fprintf (f_out, "RET\n");
                 break;
             case OUTPUT:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
@@ -308,14 +323,14 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 break;
             case INPUT:
                 fprintf (f_out, "IN\n");
-                fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) _R->num);
+                fprintf (f_out, "POPRAM [ax+%d]\n", FuncNumber * ColVarsInOneFunc + (int) _R->num);
                 break;
             case SQRT:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "SQRT\n");
                 break;
             case VAR:
-                fprintf (f_out, "PUSHRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
+                fprintf (f_out, "PUSHRAM [ax+%d]\n", FuncNumber * ColVarsInOneFunc + (int) root->num);
                 break;
             case NUM:
                 fprintf (f_out, "PUSH %lg\n", root->num);
@@ -330,7 +345,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
 void POPargs (Node* root, int FuncNumber, FILE* f_out) {
     if (root) {
         assert (root->type = COMMA);
-        fprintf (f_out, "POPRAM [%d]\n", FuncNumber * ColVarsInOneFunc + (int) _R->num);
+        fprintf (f_out, "POPRAM [ax+%d]\n", FuncNumber * ColVarsInOneFunc + (int) _R->num);
         POPargs (_Lf, FuncNumber, f_out);
     }
 }
@@ -860,6 +875,8 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return _KEYWORD (DEF);
             case EQUAL:
                 return _KEYWORD (EQUAL);
+            case NOTEQUAL:
+                return _KEYWORD (NOTEQUAL);
             case ABOVE:
                 return _KEYWORD (ABOVE);
             case COMMA_POINT:
@@ -945,6 +962,8 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
                 return _KEYWORD (DEF);
             case EQUAL:
                 return _KEYWORD (EQUAL);
+            case NOTEQUAL:
+                return _KEYWORD (NOTEQUAL);
             case ABOVE:
                 return _KEYWORD (ABOVE);
             case RETURN:

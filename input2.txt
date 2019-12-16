@@ -1,16 +1,16 @@
 start
 def main ()
 {
-    input (a)
-    result = sqrt (a);
-    output (result)
+    input (num)
+    fact = factorial (num);
+    output (fact)
+    return;
 }
-def sum (x, y)
+def factorial (n)
 {
-return x + y;
-}
-def sub (x, y)
-{
-return x - y;
+    if (n equal 1) {
+        return 1;
+    }
+    return n * factorial (n - 1);
 }
 end
