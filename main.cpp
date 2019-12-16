@@ -578,7 +578,11 @@ Node* GetE () {
             val = _SUM (val, val2);
         }
         else
+        {
+            if (val == nullptr) val = _NUM (0);
             val = _SUB(val, val2);
+        }
+
     }
     return val;
 }
@@ -731,7 +735,7 @@ Node* GetN () {
 void SaveTreeToFile (Node* root, FILE* f_sav) {
     if (root) {
         fprintf (f_sav, "(");
-        free (malloc (100));
+        //free (malloc (100));
         if (root->type != NUM) fprintf (f_sav, "%s", root->data);
         else
             fprintf (f_sav, "%lg", root->num);
