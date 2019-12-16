@@ -25,7 +25,7 @@ enum {
     DEF,
     EQUAL,
     UNEQUAL,
-    ABOVE,
+    MORE,
 
     COL_WORDS,
 

@@ -286,7 +286,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "JE end_if%d\n", IfNumber);
                 break;
-            case ABOVE:
+            case MORE:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "JA end_if%d\n", IfNumber);
@@ -881,8 +881,8 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return _KEYWORD (EQUAL);
             case UNEQUAL:
                 return _KEYWORD (UNEQUAL);
-            case ABOVE:
-                return _KEYWORD (ABOVE);
+            case MORE:
+                return _KEYWORD (MORE);
             case COMMA_POINT:
                 return _KEYWORD (COMMA_POINT);
             case RETURN:
@@ -968,8 +968,8 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
                 return _KEYWORD (EQUAL);
             case UNEQUAL:
                 return _KEYWORD (UNEQUAL);
-            case ABOVE:
-                return _KEYWORD (ABOVE);
+            case MORE:
+                return _KEYWORD (MORE);
             case RETURN:
                 return _KEYWORD (RETURN);
             case INPUT:
@@ -1039,7 +1039,7 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
                 NewEl (DIV, '/')
                 NewEl (POW, '^')
                 NewEl (ASSIGN, '=')
-                NewEl (ABOVE, '>')
+                NewEl (MORE, '>')
                 NewEl (COMMA_POINT, ';')
                 NewEl (COMMA, ',')
             }
