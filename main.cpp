@@ -57,7 +57,7 @@ const char* s = "";
 Node** Nods = nullptr;
 const int WordSize = 40;
 const int ColNodes = 200;
-const int ProgramSize = 500;
+const int ProgramSize = 1600;
 const int DataSize = 50;
 const int VarNum = 40;
 const int FuncNum = 30;
@@ -223,6 +223,7 @@ int main () {
 
 void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, FILE* f_out) {
     if (root) {
+        int buf = 0;
         switch (root->type) {
             case START:
                 fprintf (f_out, "CALL main\n"
@@ -271,10 +272,12 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 //fprintf (f_out, "%d\n", FuncNumber);
                 break;
             case IF:
+
+                buf = IfNumber;
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                fprintf (f_out, ":end_if%d\n", IfNumber);
                 IfNumber++;
+                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                fprintf (f_out, ":end_if%d\n", buf);
                 break;
             case EQUAL:
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
@@ -610,6 +613,7 @@ Node* GetT () {
 Node* GetStep () {
     Node* val = nullptr;
     val = GetP ();
+    printf ("!!! %s  type = %d\n", Nods[ind]->data, NT);
     while (NT == POW) {
         ind++;
         Node* val2 = GetP ();
