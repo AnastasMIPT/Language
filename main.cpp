@@ -174,7 +174,7 @@ Node* operator+ (Node a, Node b) {
 
 int main () {
 
-    FILE* f_in = fopen ("input2.txt", "r");
+    FILE* f_in = fopen ("input3.txt", "r");
     FILE* f_out = fopen ("F:\\Graphs\\output.dot", "w");
 
     setbuf (stdout, NULL);
@@ -197,7 +197,7 @@ int main () {
     Node* root = Prog (Nodes);
     Simplification (root);
     TreePrint (root, f_out);
-    printf ("%lf", root->right->left->right->right->num);
+    //printf ("%lf", root->right->left->right->right->num);
     fclose (f_out);
 
     FILE* f_sav = fopen ("tree.txt", "w");
@@ -468,6 +468,11 @@ Node* Operator () {
         case OUTPUT:
             val->right = Output ();
             break;
+        case FUNC:
+            val->right = Call ();
+            break;
+        default:
+            printf ("! ERROR ! Unknown Operator %s  type: %d\n", Nods[ind]->data, Nods[ind]->type);
     }
     if (NT != BLOCK_END) {
         val->left = Operator ();
