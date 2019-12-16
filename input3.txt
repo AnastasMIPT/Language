@@ -10,9 +10,47 @@ def main ()
         output (res)
         return;
     }
-
-
+    if (b equal 0) {
+        if (c more 0) {
+            if (a more 0) {
+                output (0)
+                return;
+            }
+            output (2)
+            root = sqrt ((-1) * c / a);
+            output (root)
+            output ((-1) * root)
+            return;
+        }
+        if (a more 0) {
+             output (2)
+             root = sqrt ((-1) * c / a);
+             output (root)
+             output ((-1) * root)
+             return;
+        }
+        output (0)
+        return;
+    }
+    diskr = diskriminant (a, b, c);
+    if (diskr more 0) {
+        root1 = (-b + sqrt (diskr)) / (2 * a);
+        root2 = (-b - sqrt (diskr)) / (2 * a);
+        output (2)
+        output (root1)
+        output (root2)
+        return;
+    }
+    if (diskr equal 0) {
+        output (1)
+        output (-b / (2 * a))
+        return;
+    }
+    output (0)
     return;
+}
+def diskriminant (a, b, c) {
+    return (b * b - 4 * a * c);
 }
 def linear (b,c) {
     if (b equal 0) {
@@ -22,6 +60,6 @@ def linear (b,c) {
         return -1;
     }
     output (1)
-    return (-1) * c / b;
+    return  -(c / b);
 }
 end
