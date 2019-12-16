@@ -24,6 +24,7 @@ enum {
     OUTPUT,
     DEF,
     EQUAL,
+    UNEQUAL,
     ABOVE,
 
     COL_WORDS,
@@ -75,6 +76,7 @@ const char* Words[]  = {
         "output",
         "def",
         "equal",
+        "unequal",
         ">",
         "",
         "sin",

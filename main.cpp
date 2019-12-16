@@ -278,7 +278,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "JNE end_if%d\n", IfNumber);
                 break;
-            case NOTEQUAL:
+            case UNEQUAL:
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "JE end_if%d\n", IfNumber);
@@ -550,7 +550,8 @@ Node* Return () {
 
 Node* Cond () {
     Node* val1 = GetE ();
-    Node* val = CreateNode (NT, Words[NT], val1, nullptr);
+    Node* val = Nods[ind];//CreateNode (NT, Words[NT], val1, nullptr);
+    val->left = val1;
     ind++;
     Node* val2 = GetE ();
     val->right = val2;
@@ -875,8 +876,8 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return _KEYWORD (DEF);
             case EQUAL:
                 return _KEYWORD (EQUAL);
-            case NOTEQUAL:
-                return _KEYWORD (NOTEQUAL);
+            case UNEQUAL:
+                return _KEYWORD (UNEQUAL);
             case ABOVE:
                 return _KEYWORD (ABOVE);
             case COMMA_POINT:
@@ -962,8 +963,8 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
                 return _KEYWORD (DEF);
             case EQUAL:
                 return _KEYWORD (EQUAL);
-            case NOTEQUAL:
-                return _KEYWORD (NOTEQUAL);
+            case UNEQUAL:
+                return _KEYWORD (UNEQUAL);
             case ABOVE:
                 return _KEYWORD (ABOVE);
             case RETURN:
