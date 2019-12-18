@@ -56,8 +56,8 @@ struct Node
 const char* s = "";
 Node** Nods = nullptr;
 const int WordSize = 40;
-const int ColNodes = 200;
-const int ProgramSize = 1600;
+const int ColNodes = 350;
+const int ProgramSize = 1900;
 const int DataSize = 50;
 const int VarNum = 40;
 const int FuncNum = 30;
@@ -186,18 +186,10 @@ int main () {
     int* KeyWordsArr = KeyWordsArray ();
     Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
 
-
-//    for (int i = 0; i < IdsFunc->free; i++) {
-//        printf ("$$ %d\n", IdsFunc->data[i]);
-//
-//    }
-//    printf ("%d * %d\n", ElementIsInArr (IdsFunc, "main"), NullFunc);
-    //printf ("!%d\n", ElementIsInArr (IdsFunc, "fact"));
-
     Node* root = Prog (Nodes);
     Simplification (root);
     TreePrint (root, f_out);
-    //printf ("%lf", root->right->left->right->right->num);
+
     fclose (f_out);
 
     FILE* f_sav = fopen ("tree.txt", "w");
@@ -217,7 +209,6 @@ int main () {
     free (Nodes);
 
     fclose (f_in);
-
     return 0;
 }
 
@@ -357,7 +348,23 @@ void POPargs (Node* root, int FuncNumber, FILE* f_out) {
 }
 
 
+Node* GetTreeFromFile (Node* root, FILE* f_in) {
 
+    fscanf (f_in, "(");
+    char* data = (char*) calloc (DataSize, sizeof (char));
+    int n = 0;
+    fscanf (f_in, "%[^()] %n", data, &n);
+    if (n == 0)
+        return nullptr;
+    //int type = Object;
+    //if (*data == '?') type = Question;
+    //if (type == Question) data = data + 1;
+    //root = CreateNode (data, type);
+    root->left  = GetTreeFromFile (root->left, f_in);
+    root->right = GetTreeFromFile (root->left, f_in);
+    fscanf (f_in,")");
+    return root;
+}
 
 Node* Prog (Node** Nodes) {
 
@@ -746,22 +753,24 @@ void SaveTreeToFile (Node* root, FILE* f_sav) {
         SaveTreeToFile (root->left, f_sav);
         SaveTreeToFile (root->right, f_sav);
         fprintf(f_sav, ")");
+    } else {
+        fprintf (f_sav, "()");
     }
 }
 
-Node* GetTreeFromFile (Node* root, FILE* f_in) {
-
-    fscanf (f_in, "(");
-    char* data = (char*) calloc (DataSize, sizeof (char));
-    int n = 0;
-    fscanf (f_in, "%[^()]%n", data, &n);
-    if (n == 0)
-        return nullptr;
-    root->left  = GetTreeFromFile (root->left, f_in);
-    root->right = GetTreeFromFile (root->left, f_in);
-    fscanf (f_in,")");
-    return root;
-}
+//Node* GetTreeFromFile (Node* root, FILE* f_in) {
+//
+//    fscanf (f_in, "(");
+//    char* data = (char*) calloc (DataSize, sizeof (char));
+//    int n = 0;
+//    fscanf (f_in, "%[^()]%n", data, &n);
+//    if (n == 0)
+//        return nullptr;
+//    root->left  = GetTreeFromFile (root->left, f_in);
+//    root->right = GetTreeFromFile (root->left, f_in);
+//    fscanf (f_in,")");
+//    return root;
+//}
 
 IdsArray* IdArrayDistruct (IdsArray* Ids) {
     free (Ids->data);
@@ -1141,10 +1150,11 @@ void Simplification (Node* root) {
                         CopyTo (root, _R);
                     } else if (_R->type == NUM && _R->num == 1) {
                         CopyTo (root, _Lf);
-                    } else if (_Lf->type == _R->type && ((_Lf->type == VAR && _Lf->num == _R->num) || ( COL_WORDS < _Lf->type && _Lf->type < FUNCCOL))) {
-                        NewNode = _POW (_Lf, _NUM(2));
-                        CopyTo (root, NewNode);
                     }
+//                    else if (_Lf->type == _R->type && ((_Lf->type == VAR && _Lf->num == _R->num) || ( COL_WORDS < _Lf->type && _Lf->type < FUNCCOL))) {
+//                        NewNode = _POW (_Lf, _NUM(2));
+//                        CopyTo (root, NewNode);
+//                    }
                     break;
                 case DIV:
                     if (_Lf->type == NUM && _Lf->num == 0) {
