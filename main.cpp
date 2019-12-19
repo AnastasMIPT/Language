@@ -223,7 +223,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 fprintf (f_out, "ENDING");
                 break;
-            case DECLARE:
+            case D:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
                 break;
@@ -250,7 +250,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
                 break;
-            case BLOCK:
+            case B:
                 ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
                 break;
             case OP:
@@ -383,7 +383,7 @@ Node* Prog (Node** Nodes) {
 }
 
 Node* Declare () {
-    Node* val = CreateNode (DECLARE, "D", nullptr, nullptr);
+    Node* val = CreateNode (D, "D", nullptr, nullptr);
     val->right = Func ();
     if (NT != END) {
         val->left = Declare();
@@ -446,7 +446,7 @@ Node* Call () {
 }
 
 Node* Block () {
-    Node* val = CreateNode (BLOCK, "B", nullptr, nullptr);
+    Node* val = CreateNode (B, "B", nullptr, nullptr);
     assert (NT == BLOCK_ST);
     ind++;
     if (NT != BLOCK_END) {
@@ -590,7 +590,7 @@ Node* GetE () {
         else
         {
             if (val == nullptr) val = _NUM (0);
-            val = _SUB(val, val2);
+            val = _SUB (val, val2);
         }
 
     }
@@ -757,20 +757,6 @@ void SaveTreeToFile (Node* root, FILE* f_sav) {
         fprintf (f_sav, "()");
     }
 }
-
-//Node* GetTreeFromFile (Node* root, FILE* f_in) {
-//
-//    fscanf (f_in, "(");
-//    char* data = (char*) calloc (DataSize, sizeof (char));
-//    int n = 0;
-//    fscanf (f_in, "%[^()]%n", data, &n);
-//    if (n == 0)
-//        return nullptr;
-//    root->left  = GetTreeFromFile (root->left, f_in);
-//    root->right = GetTreeFromFile (root->left, f_in);
-//    fscanf (f_in,")");
-//    return root;
-//}
 
 IdsArray* IdArrayDistruct (IdsArray* Ids) {
     free (Ids->data);
