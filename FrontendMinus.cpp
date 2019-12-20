@@ -40,8 +40,8 @@ void DelNode (Node* node);
 void DeleteTree (Node* root);
 Node* GetTreeFromFile (Node* root, FILE* f_in);
 int Hash (const char* str);
-void POPargs (Node* root, FILE* f_out);
-void TreeToProgram (Node* root, FILE* f_out);
+void POPargs (Node* root, FILE* f_out, int ColTabs);
+void TreeToProgram (Node* root, FILE* f_out, int ColTabs);
 
 
 int main () {
@@ -58,149 +58,140 @@ int main () {
 
     FILE* f_sav = fopen ("Program.txt", "w");
 
-    TreeToProgram (root, f_sav);
+    TreeToProgram (root, f_sav, 0);
     DeleteTree (root);
 
     return 0;
 }
 
-void TreeToProgram (Node* root, FILE* f_out) {
+void Tabs (int Col, FILE* f_out) {
+    for (int i = 0; i < Col; i++)
+        fprintf (f_out, "\t");
+}
+
+void TreeToProgram (Node* root, FILE* f_out, int ColTabs) {
     if (root) {
         int buf = 0;
         switch (root->type) {
             case START:
                 fprintf (f_out, "%s\n", Words[START]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram (_R, f_out, ColTabs);
                 fprintf (f_out, "end");
                 break;
             case D:
-                TreeToProgram (_R, f_out);
-                TreeToProgram (_Lf, f_out);
+                TreeToProgram (_R, f_out, ColTabs);
+                TreeToProgram (_Lf, f_out, 0);
                 break;
             case DEF:
                 fprintf (f_out, "%s ", Words[DEF]);
                 fprintf (f_out, "%s ", _R->data);
                 fprintf (f_out, Words[SKOBKA1]);
-                POPargs (_Lf, f_out);
+                POPargs (_Lf, f_out, 0);
                 fprintf (f_out, "%s\n",Words[SKOBKA2]);
-                TreeToProgram (_R, f_out);
-
-                //fprintf (f_out, "%d\n",  (int) root->right->num - NullFunc);
-                //fprintf (f_out, "RET\n");
+                TreeToProgram (_R, f_out, ColTabs);
                 break;
             case FUNC:
-                //fprintf (f_out, "%s ", root->data);
-                TreeToProgram (_R, f_out);
+                TreeToProgram (_R, f_out, ColTabs);
                 break;
             case CALL:
                 fprintf (f_out, "%s ", _R->data);
                 fprintf (f_out, Words[SKOBKA1]);
-                POPargs (_Lf, f_out);
+                POPargs (_Lf, f_out, 0);
                 fprintf (f_out, "%s",Words[SKOBKA2]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram (_R, f_out, ColTabs);
                 break;
             case COMMA:
-                TreeToProgram (_R, f_out);
-                TreeToProgram (_Lf, f_out);
+                TreeToProgram (_R, f_out, ColTabs);
+                TreeToProgram (_Lf, f_out, ColTabs);
                 break;
             case B:
+                Tabs (ColTabs, f_out);
                 fprintf (f_out, "%s\n", Words[BLOCK_ST]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram (_R, f_out, ColTabs + 1);
+                Tabs (ColTabs, f_out);
                 fprintf (f_out, "%s\n", Words[BLOCK_END]);
                 break;
             case OP:
-                TreeToProgram (_R, f_out);
-                TreeToProgram (_Lf, f_out);
+                Tabs (ColTabs, f_out);
+                TreeToProgram (_R, f_out, ColTabs);
+                TreeToProgram (_Lf, f_out, ColTabs);
                 break;
             case ASSIGN:
-                TreeToProgram (_Lf, f_out);
+                TreeToProgram (_Lf, f_out, ColTabs);
                 fprintf (f_out, " %s ", Words[ASSIGN]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram (_R, f_out, ColTabs);
                 fprintf (f_out, "%s\n", Words[COMMA_POINT]);
                 break;
             case IF:
 
                 fprintf (f_out, "%s ", Words[IF]);
 
-                TreeToProgram (_Lf, f_out);
-                //IfNumber++;
-                TreeToProgram(_R, f_out);
-//                fprintf (f_out, ":end_if%d\n", buf);
+                TreeToProgram(_Lf, f_out, ColTabs);
+                TreeToProgram(_R, f_out, ColTabs);
                 break;
             case EQUAL:
                 fprintf (f_out, "%s",Words[SKOBKA1]);
-                TreeToProgram (_Lf, f_out);
+                TreeToProgram(_Lf, f_out, ColTabs);
                 fprintf (f_out, " %s ", Words[EQUAL]);
-                TreeToProgram (_R, f_out);
-                fprintf (f_out, "%s\n",Words[SKOBKA2]);
+                TreeToProgram(_R, f_out, ColTabs);
+                fprintf (f_out, "%s\n", Words[SKOBKA2]);
                 break;
             case UNEQUAL:
                 fprintf (f_out, "%s",Words[SKOBKA1]);
-                TreeToProgram (_Lf, f_out);
+                TreeToProgram(_Lf, f_out, ColTabs);
                 fprintf (f_out, " %s ", Words[UNEQUAL]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram(_R, f_out, ColTabs);
                 fprintf (f_out, "%s\n",Words[SKOBKA2]);
                 break;
             case MORE:
                 fprintf (f_out, "%s",Words[SKOBKA1]);
-                TreeToProgram (_Lf, f_out);
+                TreeToProgram(_Lf, f_out, ColTabs);
                 fprintf (f_out, " %s ", Words[MORE]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram(_R, f_out, ColTabs);
                 fprintf (f_out, "%s\n",Words[SKOBKA2]);
                 break;
             case SUM:
-                TreeToProgram(_R, f_out);
+                TreeToProgram(_R, f_out, ColTabs);
                 fprintf (f_out, " %s ", Words[SUM]);
-                TreeToProgram(_Lf, f_out);
-  //              fprintf (f_out, "ADD\n");
+                TreeToProgram(_Lf, f_out, ColTabs);
                 break;
             case SUB:
-                TreeToProgram(_R, f_out);
+                TreeToProgram(_Lf, f_out, ColTabs);
                 fprintf (f_out, " %s ", Words[SUB]);
-                TreeToProgram(_Lf, f_out);
-
-//                fprintf (f_out, "SUB\n");
+                TreeToProgram(_R, f_out, ColTabs);
                 break;
             case MUL:
-                TreeToProgram(_R, f_out);
+                TreeToProgram(_Lf, f_out, ColTabs);
                 fprintf (f_out, " %s ", Words[MUL]);
-                TreeToProgram(_Lf, f_out);
-  //              fprintf (f_out, "MUL\n");
+                TreeToProgram(_R, f_out, ColTabs);
                 break;
             case DIV:
-                TreeToProgram(_Lf, f_out);
+                TreeToProgram(_Lf, f_out, ColTabs);
                 fprintf (f_out, " %s ", Words[DIV]);
-                TreeToProgram(_R, f_out);
-    //            fprintf (f_out, "DIV\n");
+                TreeToProgram(_R, f_out, ColTabs);
                 break;
             case RETURN:
                 fprintf (f_out, "%s", Words[RETURN]);
                 if (_R) fprintf (f_out, " ");
-                TreeToProgram (_R, f_out);
+                TreeToProgram(_R, f_out, ColTabs);
                 fprintf (f_out, "%s\n", Words[COMMA_POINT]);
-
-//                fprintf (f_out, "PUSH %d\n"
-//                                "PUSHR ax\n"
-//                                "SUB\n"
-//                                "POP ax\n", ColVarsInOneFunc);
-      //          fprintf (f_out, "RET\n");
                 break;
             case OUTPUT:
                 fprintf (f_out, "%s ", Words[OUTPUT]);
                 fprintf (f_out, "%s",Words[SKOBKA1]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram(_R, f_out, ColTabs);
                 fprintf (f_out, "%s\n",Words[SKOBKA2]);
                 break;
             case INPUT:
                 fprintf (f_out, "%s ", Words[INPUT]);
                 fprintf (f_out, "%s",Words[SKOBKA1]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram(_R, f_out, ColTabs);
                 fprintf (f_out, "%s\n",Words[SKOBKA2]);
                 break;
             case SQRT:
                 fprintf (f_out, "%s ", Words[SQRT]);
                 fprintf (f_out, "%s",Words[SKOBKA1]);
-                TreeToProgram (_R, f_out);
+                TreeToProgram(_R, f_out, ColTabs);
                 fprintf (f_out, "%s",Words[SKOBKA2]);
                 break;
             case VAR:
@@ -216,13 +207,13 @@ void TreeToProgram (Node* root, FILE* f_out) {
     }
 }
 
-void POPargs (Node* root, FILE* f_out) {
+void POPargs (Node* root, FILE* f_out, int ColTabs) {
 
     if (root) {
         assert (root->type = COMMA);
-        fprintf (f_out, "%s", _R->data);
+        TreeToProgram(root->right, f_out, ColTabs);
         if (_Lf) fprintf (f_out, ", ");
-        POPargs(_Lf, f_out);
+        POPargs(_Lf, f_out, ColTabs);
     }
 }
 
@@ -295,9 +286,6 @@ Node* GetTreeFromFile (Node* root, FILE* f_in) {
         sscanf (data, "%s", dat);
         root = CreateNode (FUNC, dat, nullptr, nullptr, num);
     }
-    //else
-      //  root = CreateNode (0, "ERROR", nullptr, nullptr);
-    //printf ("%s  %d\n", data, Hash (data));
 
     root->left  = GetTreeFromFile (root->left,  f_in);
     root->right = GetTreeFromFile (root->right, f_in);
