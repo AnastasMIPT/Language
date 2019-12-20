@@ -40,6 +40,7 @@ enum {
     TH,
     CTH,
     SQRT,
+    DIFF,
     FUNCCOL,
 
     NUM,
@@ -89,8 +90,15 @@ const char* Words[]  = {
         "ch",
         "th",
         "cth",
-        "sqrt"
-
+        "sqrt",
+        "diff",
+        "",
+        "",
+        "+",
+        "-",
+        "*",
+        "^",
+        "/",
 };
 
 const int HashTreeWords[] = {
