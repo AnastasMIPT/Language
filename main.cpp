@@ -38,10 +38,15 @@ case symbl:                                                       \
     s++;                                                           \
     break;                                                         \
 
-#define ToASM(TYPE, root) \
-case TYPE:                                       \
-    ProgramToASM (root, Vars, Func, FuncNumber, f_out); \
-    break;\
+
+#define _NewEl(type)                                       \
+else if ( strcmp (#type, data) == 0)                                      \
+    root =  CreateNode (type, #type, nullptr, nullptr);    \
+
+#define _NewTerm(dat, type)   \
+else if (strcmp (dat, data) == 0)                   \
+    root = CreateNode (type, data, nullptr, nullptr);      \
+
 
 struct Node
 {
@@ -165,7 +170,7 @@ int AddNewEL (IdsArray* Ids, int hash);
 
 void SaveTreeToFile (Node* root, FILE* f_sav);
 Node* GetTreeFromFile (Node* root, FILE* f_in);
-void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, FILE* f_out);
+void ProgramToASM (Node* root, int FuncNumber, FILE* f_out);
 void POPargs (Node* root, int FuncNumber, FILE* f_out);
 
 Node* operator+ (Node a, Node b) {
@@ -179,6 +184,8 @@ int main () {
 
     setbuf (stdout, NULL);
 
+   // FILE* f_in = fopen ("tree.txt", "r");
+    //Node* root = GetTreeFromFile (root, f_in);
     ReadProgramFromFile (f_in);
     IdsArray* Ids = IdArrayCostruct (Ids);
     IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
@@ -191,7 +198,7 @@ int main () {
     TreePrint (root, f_out);
 
     fclose (f_out);
-
+//
     FILE* f_sav = fopen ("tree.txt", "w");
     setbuf (f_sav, NULL);
     SaveTreeToFile (root, f_sav);
@@ -199,7 +206,7 @@ int main () {
 
     FILE* f_asm = fopen ("asm_code.asm", "w");
     setbuf (f_asm, NULL);
-    ProgramToASM (root, Ids, IdsFunc, NullFunc, f_asm);
+    ProgramToASM(root, NullFunc, f_asm);
     fclose (f_asm);
 
     IdArrayDistruct (Ids);
@@ -212,7 +219,86 @@ int main () {
     return 0;
 }
 
-void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, FILE* f_out) {
+Node* GetTreeFromFile (Node* root, FILE* f_in) {
+
+    fscanf (f_in, "(");
+    char* data = (char*) calloc (DataSize, sizeof (char));
+    int n = 0;
+    fscanf (f_in, "%[^()]%n", data, &n);
+    if (n == 0) {
+        fscanf (f_in,")");
+        return nullptr;
+    }
+    if (strcmp ("START", data)  == 0)
+        root =  _KEYWORD (START);
+    _NewEl(OP)
+    _NewEl(D)
+    _NewEl(B)
+    _NewEl(END)
+    _NewEl(IF)
+    _NewEl(WHILE)
+    _NewEl(BLOCK_ST)
+    _NewEl(BLOCK_END)
+    _NewEl(SKOBKA1)
+    _NewEl(SKOBKA2)
+    _NewEl(ASSIGN)
+    _NewEl(DEF)
+    _NewEl(EQUAL)
+    _NewEl(UNEQUAL)
+    _NewEl(MORE)
+    _NewEl(COMMA_POINT)
+    _NewEl(RETURN)
+    _NewEl(INPUT)
+    _NewEl(OUTPUT)
+    _NewEl(CALL)
+    _NewTerm ("+", SUM)
+    _NewTerm ("-", SUB)
+    _NewTerm ("*", MUL)
+    _NewTerm ("/", DIV)
+    _NewTerm ("'='", ASSIGN)
+    _NewTerm (",", COMMA)
+    if (strcmp (data, "sqrt") == 0) {
+        root = CreateNode (SQRT, "sqrt", nullptr, nullptr);
+    }
+    else if (*data == '@') {
+        data++;
+        int col = 0;
+        double num = 0.0;
+        sscanf (data, "%lf%n", &num, &col);
+        data += col;
+        char* dat = (char*) calloc (DataSize, sizeof(char));
+        sscanf (data, "%s", dat);
+        root = CreateNode (VAR, dat, nullptr, nullptr, num);
+    }
+    else if (('0' <= *data && *data <= '9') || *data == '-') {
+        double  val = 0;
+        int col = 0;
+        sscanf (data, "%lf%n", &val, &col);
+        data += col;
+        root = CreateNode (val);
+    }
+    else {
+
+        int col = 0;
+        double num = 0.0;
+        sscanf (data, "%lf%n", &num, &col);
+        data += col;
+        char* dat = (char*) calloc (DataSize, sizeof(char));
+        sscanf (data, "%s", dat);
+        root = CreateNode (FUNC, dat, nullptr, nullptr, num);
+    }
+    //else
+    //  root = CreateNode (0, "ERROR", nullptr, nullptr);
+    printf ("%s  %d\n", data, Hash (data));
+
+    root->left  = GetTreeFromFile (root->left,  f_in);
+    root->right = GetTreeFromFile (root->right, f_in);
+    fscanf (f_in,")");
+    return root;
+}
+
+
+void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
     if (root) {
         int buf = 0;
         switch (root->type) {
@@ -220,94 +306,94 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 fprintf (f_out, "CALL main\n"
                                 "RET\n"
                                 "\n");
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "ENDING");
                 break;
             case D:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
                 break;
             case DEF:
                 fprintf (f_out, ":%s\n", root->right->data);
                 POPargs (_Lf, (int) root->right->num - NullFunc, f_out);
-                ProgramToASM (_R, Vars, Func, (int) root->right->num - NullFunc, f_out);
+                ProgramToASM(_R, (int) root->right->num - NullFunc, f_out);
                 //fprintf (f_out, "%d\n",  (int) root->right->num - NullFunc);
                 //fprintf (f_out, "RET\n");
                 break;
             case FUNC:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 break;
             case CALL:
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
                 fprintf (f_out, "PUSHR ax\n"
                                 "PUSH %d\n"
                                 "ADD\n"
                                 "POP ax\n", ColVarsInOneFunc);
                 fprintf (f_out, "CALL %s\n", _R->data);
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 break;
             case COMMA:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
                 break;
             case B:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 break;
             case OP:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
                 break;
             case ASSIGN:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "POPRAM [ax+%d]\n", (int) root->left->num);
                 //fprintf (f_out, "%d\n", FuncNumber);
                 break;
             case IF:
 
                 buf = IfNumber;
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
                 IfNumber++;
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, ":end_if%d\n", buf);
                 break;
             case EQUAL:
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "JNE end_if%d\n", IfNumber);
                 break;
             case UNEQUAL:
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "JE end_if%d\n", IfNumber);
                 break;
             case MORE:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
                 fprintf (f_out, "JA end_if%d\n", IfNumber);
                 break;
             case SUM:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
                 fprintf (f_out, "ADD\n");
                 break;
             case SUB:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
 
                 fprintf (f_out, "SUB\n");
                 break;
             case MUL:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
                 fprintf (f_out, "MUL\n");
                 break;
             case DIV:
-                ProgramToASM (_Lf, Vars, Func, FuncNumber, f_out);
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_Lf, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "DIV\n");
                 break;
             case RETURN:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "PUSH %d\n"
                                 "PUSHR ax\n"
                                 "SUB\n"
@@ -315,7 +401,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 fprintf (f_out, "RET\n");
                 break;
             case OUTPUT:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "OUT\n");
                 break;
             case INPUT:
@@ -323,7 +409,7 @@ void ProgramToASM (Node* root, IdsArray* Vars, IdsArray* Func, int FuncNumber, F
                 fprintf (f_out, "POPRAM [ax+%d]\n", (int) _R->num);
                 break;
             case SQRT:
-                ProgramToASM (_R, Vars, Func, FuncNumber, f_out);
+                ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "SQRT\n");
                 break;
             case VAR:
@@ -347,24 +433,6 @@ void POPargs (Node* root, int FuncNumber, FILE* f_out) {
     }
 }
 
-
-Node* GetTreeFromFile (Node* root, FILE* f_in) {
-
-    fscanf (f_in, "(");
-    char* data = (char*) calloc (DataSize, sizeof (char));
-    int n = 0;
-    fscanf (f_in, "%[^()] %n", data, &n);
-    if (n == 0)
-        return nullptr;
-    //int type = Object;
-    //if (*data == '?') type = Question;
-    //if (type == Question) data = data + 1;
-    //root = CreateNode (data, type);
-    root->left  = GetTreeFromFile (root->left, f_in);
-    root->right = GetTreeFromFile (root->left, f_in);
-    fscanf (f_in,")");
-    return root;
-}
 
 Node* Prog (Node** Nodes) {
 
@@ -747,9 +815,12 @@ void SaveTreeToFile (Node* root, FILE* f_sav) {
     if (root) {
         fprintf (f_sav, "(");
         //free (malloc (100));
-        if (root->type != NUM) fprintf (f_sav, "%s", root->data);
+        if (root->type == NUM) fprintf (f_sav, "%lg", root->num);
+        else if (root->type == VAR) {
+            fprintf (f_sav, "@%lg%s", root->num, root->data);
+        }
         else
-            fprintf (f_sav, "%lg", root->num);
+            fprintf (f_sav, "%s", root->data);
         SaveTreeToFile (root->left, f_sav);
         SaveTreeToFile (root->right, f_sav);
         fprintf(f_sav, ")");
