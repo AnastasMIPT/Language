@@ -85,6 +85,7 @@ Node* VarlistE ();
 Node* Call ();
 Node* Func ();
 Node* Operator ();
+Node* Break ();
 Node* Input ();
 Node* Output ();
 Node* Assign ();
@@ -199,15 +200,15 @@ int main () {
 
     fclose (f_out);
 
-    FILE* f_sav = fopen ("tree.txt", "w");
-    setbuf (f_sav, NULL);
-    SaveTreeToFile (root, f_sav);
-    fclose (f_sav);
+//    FILE* f_sav = fopen ("tree.txt", "w");
+//    setbuf (f_sav, NULL);
+//    SaveTreeToFile (root, f_sav);
+//    fclose (f_sav);
 
-    //FILE* f_asm = fopen ("asm_code.asm", "w");
-    //setbuf (f_asm, NULL);
-    //ProgramToASM (root, NullFunc, f_asm);
-    //fclose (f_asm);
+//    FILE* f_asm = fopen ("asm_code.asm", "w");
+//    setbuf (f_asm, NULL);
+//    ProgramToASM (root, NullFunc, f_asm);
+//    fclose (f_asm);
 
     IdArrayDistruct (Ids);
     IdArrayDistruct (IdsFunc);
@@ -317,8 +318,6 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 fprintf (f_out, ":%s\n", root->right->data);
                 POPargs (_Lf, (int) root->right->num - NullFunc, f_out);
                 ProgramToASM(_R, (int) root->right->num - NullFunc, f_out);
-                //fprintf (f_out, "%d\n",  (int) root->right->num - NullFunc);
-                //fprintf (f_out, "RET\n");
                 break;
             case FUNC:
                 ProgramToASM(_R, FuncNumber, f_out);
@@ -411,6 +410,9 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
             case SQRT:
                 ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "SQRT\n");
+            case BREAK:
+                ProgramToASM(_R, FuncNumber, f_out);
+                fprintf (f_out, "BREAK\n");
             case DIFF:
                 ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "DIFF\n");
@@ -549,6 +551,9 @@ Node* Operator () {
         case OUTPUT:
             val->right = Output ();
             break;
+        case BREAK:
+            val->right = Break ();
+            break;
         case FUNC:
             val->right = Call ();
             break;
@@ -570,6 +575,18 @@ Node* Input () {
     assert (NT == VAR);
     val->right = Nods[ind];
     ind++;
+    assert (NT = SKOBKA2);
+    ind++;
+    return val;
+}
+
+Node* Break () {
+    assert (NT == BREAK);
+    Node* val = Nods[ind];
+    ind++;
+    assert (NT == SKOBKA1);
+    ind++;
+    val->right = GetE ();
     assert (NT = SKOBKA2);
     ind++;
     return val;
@@ -811,6 +828,7 @@ Node* GetF () {
         return val;
     }
 
+
 //functions
 
     return val;
@@ -981,6 +999,8 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return _KEYWORD (INPUT);
             case OUTPUT:
                 return _KEYWORD (OUTPUT);
+            case BREAK:
+                return _KEYWORD (BREAK);
         }
     } else {
         num = ElementIsInArr (FuncArray, hash) + COL_WORDS + 1;
@@ -1068,6 +1088,8 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
                 return _KEYWORD (INPUT);
             case OUTPUT:
                 return _KEYWORD (OUTPUT);
+            case BREAK:
+                return _KEYWORD (BREAK);
         }
     } else {
         num = ElementIsInArr (VarArray, hash);
@@ -1318,7 +1340,6 @@ void Simplification (Node* root) {
         } else if (_Lf) {
             Simplification (_Lf);
         }
-        //if (NewNode) free (NewNode);
     }
 }
 
