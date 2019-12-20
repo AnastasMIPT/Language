@@ -51,6 +51,7 @@ int main () {
 
 
     TreePrint (root, f_out);
+    DeleteTree (root);
     fclose (f_out);
 
     return 0;
@@ -233,7 +234,7 @@ Node* GetTreeFromFile (Node* root, FILE* f_in) {
     _NewTerm ("/", DIV)
     _NewTerm ("'='", ASSIGN)
     _NewTerm (",", COMMA)
-    if (strcmp (data, "sqrt") == 0) {
+    else if (strcmp (data, "sqrt") == 0) {
         root = CreateNode (SQRT, "sqrt", nullptr, nullptr);
     }
     else if (*data == '@') {

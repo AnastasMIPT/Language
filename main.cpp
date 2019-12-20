@@ -179,41 +179,41 @@ Node* operator+ (Node a, Node b) {
 
 int main () {
 
-    FILE* f_in = fopen ("input3.txt", "r");
+    //FILE* f_in = fopen ("input3.txt", "r");
     FILE* f_out = fopen ("F:\\Graphs\\output.dot", "w");
 
     setbuf (stdout, NULL);
 
-   // FILE* f_in = fopen ("tree.txt", "r");
-    //Node* root = GetTreeFromFile (root, f_in);
-    ReadProgramFromFile (f_in);
-    IdsArray* Ids = IdArrayCostruct (Ids);
-    IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
-    IdFuncArrayInit (IdsFunc);
-    int* KeyWordsArr = KeyWordsArray ();
-    Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
-
-    Node* root = Prog (Nodes);
-    Simplification (root);
-    TreePrint (root, f_out);
+    FILE* f_in = fopen ("tree.txt", "r");
+    Node* root = GetTreeFromFile (root, f_in);
+//    ReadProgramFromFile (f_in);
+//    IdsArray* Ids = IdArrayCostruct (Ids);
+//    IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
+//    IdFuncArrayInit (IdsFunc);
+//    int* KeyWordsArr = KeyWordsArray ();
+//    Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
+//
+//    Node* root = Prog (Nodes);
+//    Simplification (root);
+//    TreePrint (root, f_out);
 
     fclose (f_out);
 //
-    FILE* f_sav = fopen ("tree.txt", "w");
-    setbuf (f_sav, NULL);
-    SaveTreeToFile (root, f_sav);
-    fclose (f_sav);
+//    FILE* f_sav = fopen ("tree.txt", "w");
+//    setbuf (f_sav, NULL);
+//    SaveTreeToFile (root, f_sav);
+//    fclose (f_sav);
 
     FILE* f_asm = fopen ("asm_code.asm", "w");
     setbuf (f_asm, NULL);
-    ProgramToASM(root, NullFunc, f_asm);
+    ProgramToASM (root, NullFunc, f_asm);
     fclose (f_asm);
-
-    IdArrayDistruct (Ids);
-    IdArrayDistruct (IdsFunc);
-    DeleteTree (root);
-    free (KeyWordsArr);
-    free (Nodes);
+//
+//    IdArrayDistruct (Ids);
+//    IdArrayDistruct (IdsFunc);
+//    DeleteTree (root);
+//    free (KeyWordsArr);
+//    free (Nodes);
 
     fclose (f_in);
     return 0;
@@ -257,7 +257,7 @@ Node* GetTreeFromFile (Node* root, FILE* f_in) {
     _NewTerm ("/", DIV)
     _NewTerm ("'='", ASSIGN)
     _NewTerm (",", COMMA)
-    if (strcmp (data, "sqrt") == 0) {
+    else if (strcmp (data, "sqrt") == 0) {
         root = CreateNode (SQRT, "sqrt", nullptr, nullptr);
     }
     else if (*data == '@') {
