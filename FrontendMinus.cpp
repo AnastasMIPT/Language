@@ -52,7 +52,6 @@ int main () {
     root = GetTreeFromFile (root, f_in);
 
 
-
     TreePrint (root, f_out);
     fclose (f_out);
 

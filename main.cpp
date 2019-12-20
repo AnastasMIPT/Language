@@ -179,41 +179,41 @@ Node* operator+ (Node a, Node b) {
 
 int main () {
 
-    //FILE* f_in = fopen ("input3.txt", "r");
+    FILE* f_in = fopen ("F:\\Programming\\Language\\cmake-build-debug\\example.txt", "r");
     FILE* f_out = fopen ("F:\\Graphs\\output.dot", "w");
 
     setbuf (stdout, NULL);
 
-    FILE* f_in = fopen ("tree.txt", "r");
-    Node* root = GetTreeFromFile (root, f_in);
-//    ReadProgramFromFile (f_in);
-//    IdsArray* Ids = IdArrayCostruct (Ids);
-//    IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
-//    IdFuncArrayInit (IdsFunc);
-//    int* KeyWordsArr = KeyWordsArray ();
-//    Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
-//
-//    Node* root = Prog (Nodes);
-//    Simplification (root);
-//    TreePrint (root, f_out);
+//    FILE* f_in = fopen ("tree.txt", "r");
+//    Node* root = GetTreeFromFile (root, f_in);
+    ReadProgramFromFile (f_in);
+    IdsArray* Ids = IdArrayCostruct (Ids);
+    IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
+    IdFuncArrayInit (IdsFunc);
+    int* KeyWordsArr = KeyWordsArray ();
+    Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
+
+    Node* root = Prog (Nodes);
+    Simplification (root);
+    TreePrint (root, f_out);
 
     fclose (f_out);
-//
-//    FILE* f_sav = fopen ("tree.txt", "w");
-//    setbuf (f_sav, NULL);
-//    SaveTreeToFile (root, f_sav);
-//    fclose (f_sav);
 
-    FILE* f_asm = fopen ("asm_code.asm", "w");
-    setbuf (f_asm, NULL);
-    ProgramToASM (root, NullFunc, f_asm);
-    fclose (f_asm);
-//
-//    IdArrayDistruct (Ids);
-//    IdArrayDistruct (IdsFunc);
-//    DeleteTree (root);
-//    free (KeyWordsArr);
-//    free (Nodes);
+    FILE* f_sav = fopen ("tree.txt", "w");
+    setbuf (f_sav, NULL);
+    SaveTreeToFile (root, f_sav);
+    fclose (f_sav);
+
+    //FILE* f_asm = fopen ("asm_code.asm", "w");
+    //setbuf (f_asm, NULL);
+    //ProgramToASM (root, NullFunc, f_asm);
+    //fclose (f_asm);
+
+    IdArrayDistruct (Ids);
+    IdArrayDistruct (IdsFunc);
+    DeleteTree (root);
+    free (KeyWordsArr);
+    free (Nodes);
 
     fclose (f_in);
     return 0;
@@ -231,26 +231,26 @@ Node* GetTreeFromFile (Node* root, FILE* f_in) {
     }
     if (strcmp ("START", data)  == 0)
         root =  _KEYWORD (START);
-    _NewEl(OP)
-    _NewEl(D)
-    _NewEl(B)
-    _NewEl(END)
-    _NewEl(IF)
-    _NewEl(WHILE)
-    _NewEl(BLOCK_ST)
-    _NewEl(BLOCK_END)
-    _NewEl(SKOBKA1)
-    _NewEl(SKOBKA2)
-    _NewEl(ASSIGN)
-    _NewEl(DEF)
-    _NewEl(EQUAL)
-    _NewEl(UNEQUAL)
-    _NewEl(MORE)
-    _NewEl(COMMA_POINT)
-    _NewEl(RETURN)
-    _NewEl(INPUT)
-    _NewEl(OUTPUT)
-    _NewEl(CALL)
+    _NewEl (OP)
+    _NewEl (D)
+    _NewEl (B)
+    _NewEl (END)
+    _NewEl (IF)
+    _NewEl (WHILE)
+    _NewEl (BLOCK_ST)
+    _NewEl (BLOCK_END)
+    _NewEl (SKOBKA1)
+    _NewEl (SKOBKA2)
+    _NewEl (ASSIGN)
+    _NewEl (DEF)
+    _NewEl (EQUAL)
+    _NewEl (UNEQUAL)
+    _NewEl (MORE)
+    _NewEl (COMMA_POINT)
+    _NewEl (RETURN)
+    _NewEl (INPUT)
+    _NewEl (OUTPUT)
+    _NewEl (CALL)
     _NewTerm ("+", SUM)
     _NewTerm ("-", SUB)
     _NewTerm ("*", MUL)
@@ -293,7 +293,7 @@ Node* GetTreeFromFile (Node* root, FILE* f_in) {
 
     root->left  = GetTreeFromFile (root->left,  f_in);
     root->right = GetTreeFromFile (root->right, f_in);
-    fscanf (f_in,")");
+    fscanf (f_in, ")");
     return root;
 }
 
@@ -411,6 +411,9 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
             case SQRT:
                 ProgramToASM(_R, FuncNumber, f_out);
                 fprintf (f_out, "SQRT\n");
+            case DIFF:
+                ProgramToASM(_R, FuncNumber, f_out);
+                fprintf (f_out, "DIFF\n");
                 break;
             case VAR:
                 fprintf (f_out, "PUSHRAM [ax+%d]\n", (int) root->num);
@@ -800,6 +803,14 @@ Node* GetF () {
         val->right =  GetP ();
         return val;
     }
+
+    if (NT == DIFF) {
+        val = Nods[ind];
+        ind++;
+        val->right =  GetP ();
+        return val;
+    }
+
 //functions
 
     return val;
@@ -997,6 +1008,8 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                     return _CTH (nullptr);
                 case SQRT:
                     return CreateNode (SQRT, word, nullptr, nullptr);
+                case DIFF:
+                    return CreateNode (DIFF, word, nullptr, nullptr);
             }
             //printf ("^ %lg\n", (double) num);
             return CreateNode (FUNC, word, nullptr, nullptr, (double) (num - COL_WORDS - 1));
@@ -1297,13 +1310,16 @@ void Simplification (Node* root) {
                         break;
                 }
             }
+            else if (root->type == DIFF) {
+                NewNode = DifNode (_R);
+                Simplification (NewNode);
+                CopyTo (root, NewNode);
+            }
         } else if (_Lf) {
             Simplification (_Lf);
         }
-
         //if (NewNode) free (NewNode);
     }
-
 }
 
 void CopyTo (Node* root, Node* NewNode) {
