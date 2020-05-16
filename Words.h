@@ -22,13 +22,12 @@ enum {
     RETURN,
     INPUT,
     OUTPUT,
+    BREAK,
     DEF,
     EQUAL,
     UNEQUAL,
     MORE,
-
     COL_WORDS,
-
     SIN,
     COS,
     TG,
@@ -75,6 +74,7 @@ const char* Words[]  = {
         "return",
         "input",
         "output",
+        "break",
         "def",
         "equal",
         "unequal",
