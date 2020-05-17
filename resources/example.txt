@@ -1,0 +1,9 @@
+start
+def main ()
+{
+    input (x)
+    output (x)
+    break (x)
+    return 0;
+}
+end

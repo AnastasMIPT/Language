@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <string.h>
 #include <math.h>
-#include <AnastasLib/Words.h>
+#include "Words.h"
 #include <ctype.h>
 
 #define _SUM(left, right) CreateNode (SUM, "+", left, right)
@@ -180,13 +180,18 @@ Node* operator+ (Node a, Node b) {
 
 int main () {
 
-    FILE* f_in = fopen ("F:\\Programming\\Language\\cmake-build-debug\\example.txt", "r");
-    FILE* f_out = fopen ("F:\\Graphs\\output.dot", "w");
+    FILE* f_in = fopen ("./resources/input2.txt", "r");
+    FILE* f_out = fopen ("./resources/output.dot", "w");
+    
+    assert (f_in);
+    assert (f_out);
 
     setbuf (stdout, NULL);
 
-//    FILE* f_in = fopen ("tree.txt", "r");
-//    Node* root = GetTreeFromFile (root, f_in);
+
+ //    FILE* f_in = fopen ("tree.txt", "r");
+ //    Node* root = GetTreeFromFile (root, f_in);
+
     ReadProgramFromFile (f_in);
     IdsArray* Ids = IdArrayCostruct (Ids);
     IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
@@ -200,15 +205,15 @@ int main () {
 
     fclose (f_out);
 
-//    FILE* f_sav = fopen ("tree.txt", "w");
-//    setbuf (f_sav, NULL);
-//    SaveTreeToFile (root, f_sav);
-//    fclose (f_sav);
+   FILE* f_sav = fopen ("./resources/tree.txt", "w");
+   setbuf (f_sav, NULL);
+   SaveTreeToFile (root, f_sav);
+   fclose (f_sav);
 
-//    FILE* f_asm = fopen ("asm_code.asm", "w");
-//    setbuf (f_asm, NULL);
-//    ProgramToASM (root, NullFunc, f_asm);
-//    fclose (f_asm);
+   FILE* f_asm = fopen ("./resources/asm_code.asm", "w");
+   setbuf (f_asm, NULL);
+   ProgramToASM (root, NullFunc, f_asm);
+   fclose (f_asm);
 
     IdArrayDistruct (Ids);
     IdArrayDistruct (IdsFunc);

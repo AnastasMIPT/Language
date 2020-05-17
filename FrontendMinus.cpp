@@ -1,10 +1,10 @@
 #include <stdio.h>
-#include <AnastasLib\Words.h>
+#include "Words.h"
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
 
-#define _KEYWORD(type) CreateNode (type, #type, nullptr, nullptr)
+#define _KEYWORD (type) CreateNode (type, #type, nullptr, nullptr)
 #define _NewEl(type)                                       \
 else if ( strcmp (#type, data) == 0)                                      \
     root =  CreateNode (type, #type, nullptr, nullptr);    \
