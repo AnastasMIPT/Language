@@ -13,11 +13,6 @@ main:
 		mov rax, qword 1
 		add rax, qword [rbp-4]
 		mov qword [rbp-8], rax
-		push 0
-		PUSH 30
-		PUSHR ax
-		SUB
-		pop ax
 		mov rsp, rbp
 		pop rbp
 		ret

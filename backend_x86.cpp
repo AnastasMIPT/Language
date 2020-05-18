@@ -197,10 +197,10 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                 break;
             case RETURN:
                 ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, "\t\tPUSH %d\n"
-                                "\t\tPUSHR ax\n"
-                                "\t\tSUB\n"
-                                "\t\tpop ax\n", ColVarsInOneFunc);
+                // fprintf (f_out, "\t\tPUSH %d\n"
+                //                 "\t\tPUSHR ax\n"
+                //                 "\t\tSUB\n"
+                //                 "\t\tpop ax\n", ColVarsInOneFunc);
                 fprintf (f_out, "\t\tmov rsp, rbp\n"
                                 "\t\tpop rbp\n"
                                 "\t\tret\n\n");
@@ -236,7 +236,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                 if (ret_value != UNDEF) {
                     fprintf (f_out, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (root->num));    
                 } else {
-                    fprintf (f_out, "\t\tpush %lg\n", root->num);
+                    //fprintf (f_out, "\t\tpush %lg\n", root->num);
                 }
                 break;
             default:
