@@ -53,7 +53,7 @@ Node* CreateNode (int type, const char* data, Node* left, Node* right, double nu
 Node* CreateNode (int type, const char* data, Node* left, Node* right);
 Node* CreateNode (double num);
 
-void ProgramToASM (Node* root, int FuncNumber, FILE* f_out);
+void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value = UNDEF);
 void POPargs (Node* root, int FuncNumber, FILE* f_out);
 int Hash (const char* str);
 
@@ -77,7 +77,7 @@ int main () {
 
 
 
-void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
+void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
     if (root) {
         int buf = 0;
         switch (root->type) {
@@ -85,18 +85,20 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 fprintf (f_out, "section .text\n"
                                 "global _start\n"
                                 "_start:\n"
-                                "       call main\n\n");
-                ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, "\t\tmov eax, 1           ; номер системного вызова  sys_exit\n"
-                                "\t\tmov ebx, 0           ; код завершения программы\n"
+                                "\t\tcall main\n\n"
+                                "\t\tmov rax, 1           ; номер системного вызова  sys_exit\n"
+                                "\t\tmov rbx, 0           ; код завершения программы\n"
                       	        "\t\tint 80h\n");
+                ProgramToASM (_R,  FuncNumber, f_out);
                 break;
             case D:
                 ProgramToASM (_R,  FuncNumber, f_out);
                 ProgramToASM (_Lf, FuncNumber, f_out);
                 break;
             case DEF:
-                fprintf (f_out, ":%s\n", root->right->data);
+                fprintf (f_out, "%s:\n"
+                                "\t\tpush rbp\n"
+                                "\t\tmov rbp, rsp\n", root->right->data);
                 POPargs      (_Lf, static_cast<int> (root->right->num) - NullFunc, f_out);
                 ProgramToASM (_R,  static_cast<int> (root->right->num) - NullFunc, f_out);
                 break;
@@ -124,8 +126,13 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 ProgramToASM (_Lf, FuncNumber, f_out);
                 break;
             case ASSIGN:
-                ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", static_cast<int> (root->left->num));
+                if (_R->type == NUM) {
+                    fprintf (f_out, "\t\tmov qword [rbp-%d], qword %d\n", 4 * (static_cast<int> (_Lf->num) + 1), static_cast<int> (_R->num));
+                } else {
+                    ProgramToASM (_R,  FuncNumber, f_out, RAX);
+                    fprintf (f_out, "\t\tmov qword [rbp-%d], rax\n", 4 * (static_cast<int> (_Lf->num) + 1));
+                }
+                
                 //fprintf (f_out, "%d\n", FuncNumber);
                 break;
             case IF:
@@ -134,7 +141,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 ProgramToASM (_Lf, FuncNumber, f_out);
                 IfNumber++;
                 ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, ":end_if%d\n", buf);
+                fprintf (f_out, "end_if%d:\n", buf);
                 break;
             case EQUAL:
                 ProgramToASM (_Lf, FuncNumber, f_out);
@@ -152,9 +159,25 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 fprintf (f_out, "\t\tja end_if%d\n", IfNumber);
                 break;
             case SUM:
-                ProgramToASM (_R,  FuncNumber, f_out);
-                ProgramToASM (_Lf, FuncNumber, f_out);
-                fprintf (f_out, "\t\tADD\n");
+                
+                if (_Lf->type == VAR || _Lf->type == NUM) {
+                    ProgramToASM (_R,  FuncNumber, f_out, ret_value);
+                    if (_Lf->type == VAR)
+                        fprintf (f_out, "\t\tadd %s, qword [rbp-%d]\n", reg_for_math[ret_value], 4 * (static_cast<int> (_Lf->num) + 1));
+                    if (_Lf->type == NUM)
+                        fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_Lf->num));
+
+                } else if (_R->type == VAR || _R->type == NUM) {
+                    ProgramToASM (_Lf,  FuncNumber, f_out, ret_value);
+                    if (_R->type == VAR)
+                        fprintf (f_out, "\t\tadd %s, qword [rbp-%d]\n", reg_for_math[ret_value], 4 * (static_cast<int> (_R->num) + 1));
+                    if (_R->type == NUM)
+                        fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_R->num));
+                } else {
+                    ProgramToASM (_Lf, FuncNumber, f_out, ret_value);
+                    ProgramToASM (_R,  FuncNumber, f_out, ret_value + 1);
+                    fprintf (f_out, "\t\tadd %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+                }
                 break;
             case SUB:
                 ProgramToASM (_R,  FuncNumber, f_out);
@@ -178,7 +201,9 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                                 "\t\tPUSHR ax\n"
                                 "\t\tSUB\n"
                                 "\t\tpop ax\n", ColVarsInOneFunc);
-                fprintf (f_out, "\t\tret\n\n");
+                fprintf (f_out, "\t\tmov rsp, rbp\n"
+                                "\t\tpop rbp\n"
+                                "\t\tret\n\n");
                 break;
             case OUTPUT:
                 ProgramToASM (_R,  FuncNumber, f_out);
@@ -186,7 +211,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 break;
             case INPUT:
                 fprintf (f_out, "\t\tIN\n");
-                fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", static_cast<int> (_R->num));
+                fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", 4 * static_cast<int> (_R->num));
                 break;
             case SQRT:
                 ProgramToASM (_R,  FuncNumber, f_out);
@@ -201,10 +226,18 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 fprintf (f_out, "\t\tDIFF\n");
                 break;
             case VAR:
-                fprintf (f_out, "\t\tPUSHRAM [ax+%d]\n", static_cast<int> (root->num));
+                if (ret_value != UNDEF) {
+                    fprintf (f_out, "\t\tmov %s, [rbp-%d]\n", reg_for_math[ret_value], 4 * (static_cast<int> (root->num) + 1));    
+                } else {
+                    fprintf (f_out, "\t\tPUSHRAM [ax+%d]\n", static_cast<int> (root->num));
+                }
                 break;
             case NUM:
-                fprintf (f_out, "\t\tpush %lg\n", root->num);
+                if (ret_value != UNDEF) {
+                    fprintf (f_out, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (root->num));    
+                } else {
+                    fprintf (f_out, "\t\tpush %lg\n", root->num);
+                }
                 break;
             default:
                 printf ("\n! ERROR ! Неизвестный узел %s, тип: %d", root->data, root->type);
@@ -217,7 +250,7 @@ void POPargs (Node* root, int FuncNumber, FILE* f_out) {
     if (root) {
         assert (root->type = COMMA);
         POPargs (_Lf, FuncNumber, f_out);
-        fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", static_cast<int> (_R->num));
+        fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", 4 * static_cast<int> (_R->num));
     }
 }
 
