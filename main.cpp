@@ -29,6 +29,10 @@
 #define dR DifNode  (node->right)
 #define _Lf root->left
 #define _R  root->right
+#define _R_num_0  ((0 < _R->num  &&_R->num  < Precision) || (0 > _R->num  &&_R->num  > -Precision))
+#define _Lf_num_0 ((0 < _Lf->num &&_Lf->num < Precision) || (0 > _Lf->num &&_Lf->num > -Precision))
+#define _R_num_1  (1.0 - Precision < _R->num  &&_R->num  < 1.0 + Precision)
+#define _Lf_num_1 (1.0 - Precision < _Lf->num &&_Lf->num < 1.0 + Precision)
 #define NT Nods[ind]->type
 #define NewEl(TYPE, symbl) \
 case symbl:                                                       \
@@ -66,6 +70,7 @@ constexpr int ProgramSize = 1900;
 constexpr int DataSize = 50;
 constexpr int VarNum = 40;
 constexpr int FuncNum = 30;
+constexpr double Precision = 0.00000001;
 //constexpr int NullFunc = FUNCCOL - COL_WORDS - 1;
 //constexpr int ColVarsInOneFunc = 30;
 int ind = 0;
@@ -154,7 +159,7 @@ void ReadProgramFromFile (FILE* f_in);
 int Hash (const char* str);
 int* KeyWordsArray ();
 IdsArray* IdArrayCostruct (IdsArray* Ids);
-IdsArray* IdArrayDistruct (IdsArray* Ids);
+void IdArrayDistruct (IdsArray* Ids);
 void IdFuncArrayInit (IdsArray* Ids);
 
 int ElementIsInArr (IdsArray* Ids, const char* var);
@@ -172,8 +177,10 @@ int AddNewEL (IdsArray* Ids, int hash);
 void SaveTreeToFile (Node* root, FILE* f_sav);
 Node* GetTreeFromFile (Node* root, FILE* f_in);
 
-Node* operator+ (Node a, Node b) {
-    return CreateNode (SUM, "+", (&(a)), (&(b)));
+Node* MaklorenElement (Node* root, int num, int* SignEl);
+
+inline bool float_is_same (double a, double b) {
+    return (b - Precision < a  && a  < b + Precision);
 }
 
 int main () {
@@ -188,8 +195,10 @@ int main () {
 
 
     ReadProgramFromFile (f_in);
-    IdsArray* Ids = IdArrayCostruct (Ids);
-    IdsArray* IdsFunc = IdArrayCostruct (IdsFunc);
+    IdsArray* Ids = nullptr;
+    Ids = IdArrayCostruct (Ids);
+    IdsArray* IdsFunc = nullptr;
+    IdsFunc = IdArrayCostruct (IdsFunc);
     IdFuncArrayInit (IdsFunc);
     int* KeyWordsArr = KeyWordsArray ();
     Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
@@ -639,14 +648,14 @@ void SaveTreeToFile (Node* root, FILE* f_sav) {
     }
 }
 
-IdsArray* IdArrayDistruct (IdsArray* Ids) {
+void IdArrayDistruct (IdsArray* Ids) {
     free (Ids->data);
     free (Ids);
 }
 
 void ReadProgramFromFile (FILE* f_in) {
     int offset = 0;
-    int CountRead = 1;
+    unsigned long long CountRead = 1;
     char* buf = (char*) calloc (ProgramSize, sizeof (char));
     while (CountRead > 0) {
         CountRead = fread (buf + offset, sizeof(char), ProgramSize, f_in);
@@ -717,7 +726,7 @@ int AddNewEL (IdsArray* Ids, int hash) {
 int Hash (const char* str) {
     int hash = 0;
 
-    for (char* p = (char*) str; *p != '\0'; p++)
+    for (char* p = const_cast<char*> (str); *p != '\0'; p++)
         hash = 3 * hash + (*p >> 3 | 1233) + *p;
 
     return hash;
@@ -782,6 +791,9 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return _KEYWORD (OUTPUT);
             case BREAK:
                 return _KEYWORD (BREAK);
+            default:
+                printf ("ERROR: Undefined keyword");
+                return nullptr;
         }
     } else {
         num = ElementIsInArr (FuncArray, hash) + COL_WORDS + 1;
@@ -811,6 +823,9 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                     return CreateNode (SQRT, word, nullptr, nullptr);
                 case DIFF:
                     return CreateNode (DIFF, word, nullptr, nullptr);
+                default:
+                    printf ("ERROR: Undefined function ot operator\n");
+                    break;
             }
             //printf ("^ %lg\n", (double) num);
             return CreateNode (FUNC, word, nullptr, nullptr, (double) (num - COL_WORDS - 1));
@@ -871,6 +886,9 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
                 return _KEYWORD (OUTPUT);
             case BREAK:
                 return _KEYWORD (BREAK);
+            default:
+                printf ("ERROR: Can't do node, undifined operator\n");
+                return nullptr;
         }
     } else {
         num = ElementIsInArr (VarArray, hash);
@@ -937,6 +955,8 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
                 NewEl (MORE, '>')
                 NewEl (COMMA_POINT, ';')
                 NewEl (COMMA, ',')
+                default:
+                    printf ("Undefined symbol %c\n", *s);
             }
 
         }
@@ -1002,7 +1022,7 @@ void Simplification (Node* root) {
                         CopyTo (root, NewNode);
                         break;
                     case DIV:
-                        if (_R->num) {
+                        if ((0 < _R->num &&_R->num < Precision) || (0 > _R->num &&_R->num > -Precision)) {
                             NewNode = _NUM (_Lf->num / _R->num);
                             CopyTo (root, NewNode);
                         }
@@ -1011,17 +1031,20 @@ void Simplification (Node* root) {
                         //assert (_Lf->num == 0);
                         NewNode = _NUM (pow(_Lf->num, _R->num));
                         CopyTo(root, NewNode);
+                        break;
+                    default:
+                        break;
                 }
             }
 
             switch (root->type) {
                 case MUL:
-                    if ((_Lf->type == NUM && _Lf->num == 0) || (_R->type == NUM && _R->num == 0)) {
+                    if ((_Lf->type == NUM && _Lf_num_0) || (_R->type == NUM && _R_num_0)) {
                         NewNode = _NUM (0);
                         CopyTo (root, NewNode);
-                    } else if  (_Lf->type == NUM && _Lf->num == 1) {
+                    } else if  (_Lf->type == NUM && _Lf_num_1) {
                         CopyTo (root, _R);
-                    } else if (_R->type == NUM && _R->num == 1) {
+                    } else if (_R->type == NUM && _R_num_1) {
                         CopyTo (root, _Lf);
                     }
 //                    else if (_Lf->type == _R->type && ((_Lf->type == VAR && _Lf->num == _R->num) || ( COL_WORDS < _Lf->type && _Lf->type < FUNCCOL))) {
@@ -1030,41 +1053,43 @@ void Simplification (Node* root) {
 //                    }
                     break;
                 case DIV:
-                    if (_Lf->type == NUM && _Lf->num == 0) {
+                    if (_Lf->type == NUM && _Lf_num_0) {
                         NewNode = _NUM (0);
                         CopyTo (root, NewNode);
-                    } else if (_R->type == NUM && _R->num == 1) {
+                    } else if (_R->type == NUM &&_R_num_1) {
                         CopyTo (root, _Lf);
                     }
                     break;
                 case SUM:
-                    if (_Lf->type == NUM && _Lf->num == 0) {
+                    if (_Lf->type == NUM && _Lf_num_0) {
                         CopyTo (root, _R);
-                    } else if (_R->type == NUM && _R->num == 0) {
+                    } else if (_R->type == NUM && _R_num_0) {
                         CopyTo (root, _Lf);
                     }
                     break;
                 case SUB:
-                    if (_Lf->type == NUM && _Lf->num == 0) {
+                    if (_Lf->type == NUM && _Lf_num_0) {
                         NewNode = _MUL (_NUM (-1), _R);
                         CopyTo (root, NewNode);
-                    } else if (_R->type == NUM && _R->num == 0) {
+                    } else if (_R->type == NUM && _R_num_0) {
                         CopyTo (root, _Lf);
                     }
                     break;
                 case POW:
-                    if (_R->type == NUM && _R->num == 0) {
+                    if (_R->type == NUM && _R_num_0) {
                         NewNode = _NUM (1);
                         CopyTo (root, NewNode);
-                    } else if (_Lf->type == NUM && _Lf->num == 1) {
+                    } else if (_Lf->type == NUM && _Lf_num_1) {
                         NewNode = _NUM (1);
                         CopyTo (root, NewNode);
-                    } else if (_R->type == NUM && _R->num == 1) {
+                    } else if (_R->type == NUM && _R_num_1) {
                         CopyTo (root, _Lf);
                     } else if (_Lf->type == POW) {
                         NewNode = _POW (_Lf->left, _NUM (_Lf->right->num * _R->num));
                         CopyTo (root, NewNode);
                     }
+                    break;
+                default:
                     break;
             }
         } else if (_R) {
@@ -1111,6 +1136,8 @@ void Simplification (Node* root) {
                         NewNode = _NUM (log(_R->num));
                         CopyTo(root, NewNode);
                         break;
+                    default:
+                        break;
                 }
             }
             else if (root->type == DIFF) {
@@ -1144,7 +1171,7 @@ void VarToNum (Node* root, double num) {
     }
 }
 
-Node* MaklorenElement (Node* root, int num, FILE* f_out, int* SignEl) {
+Node* MaklorenElement (Node* root, int num, int* SignEl) {
 
     Node* root_copy = CopyNode (root);
     Node* d_root = NDifNode (root_copy, num);
@@ -1153,7 +1180,7 @@ Node* MaklorenElement (Node* root, int num, FILE* f_out, int* SignEl) {
         VarToNum (d_root, 0);
         Simplification (d_root);
 
-        if (d_root->type == NUM && d_root->num == 0) {
+        if (d_root->type == NUM && float_is_same (d_root->num, 0)) {
             DeleteTree (root_copy);
             DeleteTree (d_root);
             *SignEl = 0;
@@ -1175,7 +1202,7 @@ Node* MaklorenElement (Node* root, int num, FILE* f_out, int* SignEl) {
         VarToNum (root_copy, 0);
         Simplification (root_copy);
 
-        if (root_copy->num == 0) {
+        if (float_is_same (root_copy->num, 0)) {
             //DeleteTree (root_copy);
             *SignEl = 0;
         } else if (root_copy->num < 0) {
@@ -1195,12 +1222,12 @@ Node* MaklorenElement (Node* root, int num, FILE* f_out, int* SignEl) {
 }
 
 void PrintMaclorenElement (int num, Node* d_root, FILE* f_out) {
-    if ((d_root->type != NUM || d_root->num != 0) && num != 0) {
+    if ((d_root->type != NUM || !float_is_same (d_root->num, 0)) && num != 0) {
         fprintf(f_out, "\\frac {");
         SaveTree (d_root, 0, f_out);
         fprintf (f_out, " \\cdot x^{%d}} {%d!} ", num, num);
     }
-    else if (num == 0 && d_root->num != 0) {
+    else if (num == 0 && !float_is_same (d_root->num, 0)) {
         fprintf (f_out, "%lg", d_root->num);
     }
 }
@@ -1213,7 +1240,7 @@ void MaklorenSeries (Node* root, int num, FILE* f_out) {
     bool IsFirst = true;
     Node* d_root;
     for (int i = 0; i < num + 1; i++) {
-        d_root = MaklorenElement (root, i, f_out, &SignElement);
+        d_root = MaklorenElement (root, i, &SignElement);
         if (i == 0 && SignElement == 0) IsFirst = false;
         switch (SignElement) {
             case 0:
@@ -1225,6 +1252,8 @@ void MaklorenSeries (Node* root, int num, FILE* f_out) {
             case -1:
                 if (i != 0 && !(!IsFirst && i == 1 )) fprintf (f_out, "-");
                 PrintMaclorenElement (i, d_root, f_out);
+                break;
+            default:
                 break;
         }
 
@@ -1283,7 +1312,9 @@ Node* DifNode (const Node* node) {
             return _DIV (dR, _POW (_CH (cR), _NUM (2)));
         case CTH:
             return _DIV (_MUL (dR, _NUM (-1)), _POW (_SH (cR), _NUM (2)));
-
+        default:
+            printf ("Undifined type of Node in DifNode()\n");
+            break;
 
     }
     return nullptr;
