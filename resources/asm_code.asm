@@ -1,45 +1,256 @@
 CALL main
 RET
 
-:factorial
+:main
+IN
 POPRAM [ax+0]
+IN
+POPRAM [ax+1]
+IN
+POPRAM [ax+2]
+PUSH 0
+POPRAM [ax+3]
 PUSHRAM [ax+0]
-PUSH 1
+PUSH 0
 JNE end_if0
-PUSH 1
+PUSHRAM [ax+1]
+PUSHRAM [ax+2]
+PUSHR ax
+PUSH 30
+ADD
+POP ax
+CALL linear
+POPRAM [ax+3]
+PUSHRAM [ax+3]
+OUT
 PUSH 30
 PUSHR ax
 SUB
 POP ax
 RET
 :end_if0
-PUSH 1
+PUSHRAM [ax+1]
+PUSH 0
+JNE end_if1
+PUSH 0
+PUSHRAM [ax+2]
+JA end_if2
+PUSH 0
 PUSHRAM [ax+0]
-SUB
-PUSHR ax
-PUSH 30
-ADD
-POP ax
-CALL factorial
-PUSHRAM [ax+0]
-MUL
+JA end_if3
+PUSH 0
+OUT
 PUSH 30
 PUSHR ax
 SUB
 POP ax
 RET
-:main
-IN
-POPRAM [ax+1]
+:end_if3
+PUSH 2
+OUT
+PUSHRAM [ax+2]
+PUSH -1
+MUL
+PUSHRAM [ax+0]
+DIV
+SQRT
+PUSHRAM [ax+2]
+PUSH -1
+MUL
+PUSHRAM [ax+0]
+DIV
+BREAK
+PUSHRAM [ax+2]
+PUSH -1
+MUL
+PUSHRAM [ax+0]
+DIV
+DIFF
+POPRAM [ax+4]
+PUSHRAM [ax+4]
+OUT
+PUSHRAM [ax+4]
+PUSH -1
+MUL
+OUT
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:end_if2
+PUSH 0
+PUSHRAM [ax+0]
+JA end_if4
+PUSH 2
+OUT
+PUSHRAM [ax+2]
+PUSH -1
+MUL
+PUSHRAM [ax+0]
+DIV
+SQRT
+PUSHRAM [ax+2]
+PUSH -1
+MUL
+PUSHRAM [ax+0]
+DIV
+BREAK
+PUSHRAM [ax+2]
+PUSH -1
+MUL
+PUSHRAM [ax+0]
+DIV
+DIFF
+POPRAM [ax+4]
+PUSHRAM [ax+4]
+OUT
+PUSHRAM [ax+4]
+PUSH -1
+MUL
+OUT
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:end_if4
+PUSH 0
+OUT
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:end_if1
+PUSHRAM [ax+0]
 PUSHRAM [ax+1]
+PUSHRAM [ax+2]
 PUSHR ax
 PUSH 30
 ADD
 POP ax
-CALL factorial
-POPRAM [ax+2]
-PUSHRAM [ax+2]
+CALL diskriminant
+POPRAM [ax+5]
+PUSH 0
+PUSHRAM [ax+5]
+JA end_if5
+PUSHRAM [ax+5]
+SQRT
+PUSHRAM [ax+5]
+BREAK
+PUSHRAM [ax+5]
+DIFF
+PUSHRAM [ax+1]
+PUSH -1
+MUL
+ADD
+PUSHRAM [ax+0]
+PUSH 2
+MUL
+DIV
+POPRAM [ax+6]
+PUSHRAM [ax+5]
+SQRT
+PUSHRAM [ax+5]
+BREAK
+PUSHRAM [ax+5]
+DIFF
+PUSHRAM [ax+1]
+PUSH -1
+MUL
+SUB
+PUSHRAM [ax+0]
+PUSH 2
+MUL
+DIV
+POPRAM [ax+7]
+PUSH 2
 OUT
+PUSHRAM [ax+6]
+OUT
+PUSHRAM [ax+7]
+OUT
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:end_if5
+PUSHRAM [ax+5]
+PUSH 0
+JNE end_if6
+PUSH 1
+OUT
+PUSHRAM [ax+1]
+PUSHRAM [ax+0]
+PUSH 2
+MUL
+DIV
+PUSH -1
+MUL
+OUT
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:end_if6
+PUSH 0
+OUT
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:diskriminant
+POPRAM [ax+2]
+POPRAM [ax+1]
+POPRAM [ax+0]
+PUSHRAM [ax+2]
+PUSHRAM [ax+0]
+PUSH 4
+MUL
+MUL
+PUSHRAM [ax+1]
+PUSHRAM [ax+1]
+MUL
+SUB
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:linear
+POPRAM [ax+2]
+POPRAM [ax+1]
+PUSHRAM [ax+1]
+PUSH 0
+JNE end_if7
+PUSHRAM [ax+2]
+PUSH 0
+JE end_if8
+PUSH 0
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:end_if8
+PUSH -1
+PUSH 30
+PUSHR ax
+SUB
+POP ax
+RET
+:end_if7
+PUSH 1
+OUT
+PUSHRAM [ax+2]
+PUSHRAM [ax+1]
+DIV
+PUSH -1
+MUL
 PUSH 30
 PUSHR ax
 SUB

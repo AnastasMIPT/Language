@@ -3,7 +3,7 @@ libs         = Words.h
 CFlags       = --std=c++17 -O3
 Dot_file_in  = ./resources/output.dot
 Dot_file_png = ./resources/p_tree.png
-git_branch   = master
+git_branch   = b_translation
 
 
 all: clean runfile
