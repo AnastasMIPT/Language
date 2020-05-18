@@ -61,7 +61,9 @@ int main () {
 
     FILE* f_in = fopen ("./resources/tree.txt", "r");
     assert (f_in);
-    Node* root = GetTreeFromFile (root, f_in);
+
+    Node* root = {};
+    root = GetTreeFromFile (root, f_in);
     fclose (f_in);
 
     FILE* f_asm = fopen ("./resources/asm_code.asm", "w");
@@ -95,8 +97,8 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 break;
             case DEF:
                 fprintf (f_out, ":%s\n", root->right->data);
-                POPargs (_Lf, (int) root->right->num - NullFunc, f_out);
-                ProgramToASM (_R, (int) root->right->num - NullFunc, f_out);
+                POPargs      (_Lf, static_cast<int> (root->right->num) - NullFunc, f_out);
+                ProgramToASM (_R,  static_cast<int> (root->right->num) - NullFunc, f_out);
                 break;
             case FUNC:
                 ProgramToASM (_R,  FuncNumber, f_out);
@@ -123,7 +125,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 break;
             case ASSIGN:
                 ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", (int) root->left->num);
+                fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", static_cast<int> (root->left->num));
                 //fprintf (f_out, "%d\n", FuncNumber);
                 break;
             case IF:
@@ -184,20 +186,22 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out) {
                 break;
             case INPUT:
                 fprintf (f_out, "\t\tIN\n");
-                fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", (int) _R->num);
+                fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", static_cast<int> (_R->num));
                 break;
             case SQRT:
                 ProgramToASM (_R,  FuncNumber, f_out);
                 fprintf (f_out, "\t\tSQRT\n");
+                break;
             case BREAK:
                 ProgramToASM (_R,  FuncNumber, f_out);
                 fprintf (f_out, "\t\tBREAK\n");
+                break;
             case DIFF:
                 ProgramToASM (_R,  FuncNumber, f_out);
                 fprintf (f_out, "\t\tDIFF\n");
                 break;
             case VAR:
-                fprintf (f_out, "\t\tPUSHRAM [ax+%d]\n", (int) root->num);
+                fprintf (f_out, "\t\tPUSHRAM [ax+%d]\n", static_cast<int> (root->num));
                 break;
             case NUM:
                 fprintf (f_out, "\t\tpush %lg\n", root->num);
@@ -213,7 +217,7 @@ void POPargs (Node* root, int FuncNumber, FILE* f_out) {
     if (root) {
         assert (root->type = COMMA);
         POPargs (_Lf, FuncNumber, f_out);
-        fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", (int) _R->num);
+        fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", static_cast<int> (_R->num));
     }
 }
 
@@ -298,7 +302,7 @@ Node* GetTreeFromFile (Node* root, FILE* f_in) {
 int Hash (const char* str) {
     int hash = 0;
 
-    for (char* p = (char*) str; *p != '\0'; p++)
+    for (char* p = const_cast<char*> (str); *p != '\0'; p++)
         hash = 3 * hash + (*p >> 3 | 1233) + *p;
 
     return hash;
