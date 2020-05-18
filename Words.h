@@ -147,3 +147,35 @@ const int HashTreeWords[] = {
         1307,               //BLOCK
         1309               //DECLARE
 };
+enum {
+        RAX,
+        RBX,
+        RCX,
+        RDX,
+        R8,
+        R9,
+        R10,
+        R11,
+        R12,
+        R13,
+        R14,
+        R15,
+        UNDEF,
+        NUM_REGS
+};
+
+const char* reg_for_math[] = {
+        "rax",
+        "rbx",
+        "rcx",
+        "rdx",
+        "r8",
+        "r9",
+        "r10",
+        "r11",
+        "r12",
+        "r13",
+        "r14",
+        "r15",
+        "?"
+};
