@@ -185,7 +185,7 @@ inline bool float_is_same (double a, double b) {
 
 int main () {
 
-    FILE* f_in = fopen ("./resources/input3.txt", "r");
+    FILE* f_in = fopen ("./resources/example.txt", "r");
     FILE* f_out = fopen ("./resources/output.dot", "w");
     
     assert (f_in);

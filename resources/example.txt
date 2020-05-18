@@ -1,9 +1,8 @@
 start
 def main ()
 {
-    input (x)
-    output (x)
-    break (x)
+    x = 3;
+    y = x + 1;
     return 0;
 }
 end
