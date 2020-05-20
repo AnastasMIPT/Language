@@ -161,6 +161,7 @@ int* KeyWordsArray ();
 IdsArray* IdArrayCostruct (IdsArray* Ids);
 void IdArrayDistruct (IdsArray* Ids);
 void IdFuncArrayInit (IdsArray* Ids);
+void ClearId (IdsArray* Ids);
 
 int ElementIsInArr (IdsArray* Ids, const char* var);
 int ElementIsInArr (IdsArray* Ids, int hash);
@@ -680,6 +681,13 @@ IdsArray* IdArrayCostruct (IdsArray* Ids) {
     return Ids;
 }
 
+void ClearId (IdsArray* Ids) {
+    for (int i = 0; i < VarNum; ++i) {
+        Ids->data[i] = 0;
+    }
+    Ids->free = 0;
+}
+
 void IdFuncArrayInit (IdsArray* Ids) {
     for (int i = COL_WORDS + 1; i < FUNCCOL; i++) {
         Ids->data[Ids->free] = Hash (Words[i]);
@@ -748,7 +756,6 @@ int KeyWordNum (int hash, int* KeyWordsArr) {
 
     return -1;
 }
-
 
 Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords) {
     int hash = Hash (word);
@@ -871,6 +878,7 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
             case ASSIGN:
                 return _KEYWORD (ASSIGN);
             case DEF:
+                ClearId (VarArray);
                 return _KEYWORD (DEF);
             case EQUAL:
                 return _KEYWORD (EQUAL);
