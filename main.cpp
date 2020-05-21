@@ -154,7 +154,7 @@ int MaklorenElement (Node* root, int num, FILE* f_out);
 void MaklorenSeries (Node* root, int num, FILE* f_out);
 void PrintMaclorenElement (int num, Node* d_root, FILE* f_out);
 void DropSpace ();
-Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords);
+Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, IdsArray* IdsParam, int* KeyWords);
 void ReadProgramFromFile (FILE* f_in);
 int Hash (const char* str);
 int* KeyWordsArray ();
@@ -169,8 +169,8 @@ int ElementIsInArr (IdsArray* Ids, int hash);
 int KeyWordNum (const char* word, int* KeyWordsArr);
 int KeyWordNum (int hash, int* KeyWordsArr);
 
-Node* NewFuncOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords);
-Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords);
+Node* NewFuncOrKeyWordNode (const char* word, IdsArray* IdArr, int* KeyWords, int& sign);
+Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, IdsArray* IdsParam, int* KeyWords, int& sign);
 
 int AddNewEL (IdsArray* Ids, const char* var);
 int AddNewEL (IdsArray* Ids, int hash);
@@ -200,9 +200,11 @@ int main () {
     Ids = IdArrayCostruct (Ids);
     IdsArray* IdsFunc = nullptr;
     IdsFunc = IdArrayCostruct (IdsFunc);
+    IdsArray* IdsParams = nullptr;
+    IdsParams = IdArrayCostruct (IdsParams);
     IdFuncArrayInit (IdsFunc);
     int* KeyWordsArr = KeyWordsArray ();
-    Node** Nodes = Tocens (Ids, IdsFunc, KeyWordsArr);
+    Node** Nodes = Tocens (Ids, IdsFunc, IdsParams, KeyWordsArr);
 
     Node* root = Prog (Nodes);
     Simplification (root);
@@ -222,6 +224,7 @@ int main () {
 
     IdArrayDistruct (Ids);
     IdArrayDistruct (IdsFunc);
+    IdArrayDistruct (IdsParams);
     DeleteTree (root);
     free (KeyWordsArr);
     free (Nodes);
@@ -268,6 +271,7 @@ Node* Func () {
     if (NT == VAR)
         val->left = VarlistDef();
     assert (NT == SKOBKA2);
+    ind++;
     ind++;
     val->right->right = Block ();
 
@@ -677,7 +681,7 @@ int* KeyWordsArray () {
 IdsArray* IdArrayCostruct (IdsArray* Ids) {
     Ids = (IdsArray*) calloc (1, sizeof (IdsArray));
     Ids->data = (int*) calloc (VarNum, sizeof (int));
-    Ids->free = 0;
+    Ids->free = 1;
     return Ids;
 }
 
@@ -685,7 +689,7 @@ void ClearId (IdsArray* Ids) {
     for (int i = 0; i < VarNum; ++i) {
         Ids->data[i] = 0;
     }
-    Ids->free = 0;
+    Ids->free = 1;
 }
 
 void IdFuncArrayInit (IdsArray* Ids) {
@@ -757,7 +761,7 @@ int KeyWordNum (int hash, int* KeyWordsArr) {
     return -1;
 }
 
-Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords) {
+Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords, int& sign) {
     int hash = Hash (word);
     int num = KeyWordNum (hash, KeyWords);
     if (num != -1) {
@@ -774,14 +778,16 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return _KEYWORD (BLOCK_ST);
             case BLOCK_END:
                 return _KEYWORD (BLOCK_END);
+            case DBLPOINT:
+                printf ("&&&&&&&&&&&&&&&&&&&&&&&&\n");
+                sign *= -1;
+                return _KEYWORD (DBLPOINT);
             case SKOBKA1:
                 return _KEYWORD (SKOBKA1);
             case SKOBKA2:
                 return _KEYWORD (SKOBKA2);
             case ASSIGN:
                 return _KEYWORD (ASSIGN);
-            case DEF:
-                return _KEYWORD (DEF);
             case EQUAL:
                 return _KEYWORD (EQUAL);
             case UNEQUAL:
@@ -854,7 +860,7 @@ void DropSpace () {
     }
 }
 
-Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) {
+Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, IdsArray* IdsParam, int* KeyWords, int& sign) {
     int hash = Hash (word);
     int num = KeyWordNum (hash, KeyWords);
     if (num != -1) {
@@ -878,7 +884,10 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
             case ASSIGN:
                 return _KEYWORD (ASSIGN);
             case DEF:
+                sign *= -1;
+                printf ("DEF sign = %d\n", sign);
                 ClearId (VarArray);
+                ClearId (IdsParam);
                 return _KEYWORD (DEF);
             case EQUAL:
                 return _KEYWORD (EQUAL);
@@ -899,22 +908,33 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, int* KeyWords) 
                 return nullptr;
         }
     } else {
-        num = ElementIsInArr (VarArray, hash);
-        if (num == -1)
-        {
-            num = AddNewEL (VarArray, hash);
+        num = ElementIsInArr (IdsParam, hash);
+        if (num == -1 && sign < 0) {
+            num = ElementIsInArr (VarArray, hash);
+            if (num == -1)
+            {
+                num = AddNewEL (VarArray, hash);
+            }
+        } else if (num != -1 && sign < 0) {
+            num++;
+            num *= -1;
+        } else if (sign > 0) {
+            num = AddNewEL (IdsParam, hash);
+            printf ("ssssssssssssss");
+            num++;
         }
     }
-    return CreateNode (VAR, word, nullptr, nullptr, (double) num);
+    return CreateNode (VAR, word, nullptr, nullptr, (double) num * sign);
 }
 
-Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
+Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, IdsArray* IdsParam, int* KeyWords) {
     int n = 0;
     Node** Nodes = (Node**) calloc (ColNodes, sizeof (Node*));
 
     int i = 0;
 
     double num = 0;
+    int sign = -1;
     char* word = (char*) calloc (WordSize, sizeof (char));
     while (*s != '\0') {
         if (isalpha (*s)) {
@@ -922,10 +942,10 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
             s += n;
             DropSpace();
             if (*s == '(') {
-                Nodes[i] = NewFuncOrKeyWordNode (word, IdsFunc, KeyWords);
+                Nodes[i] = NewFuncOrKeyWordNode (word, IdsFunc, KeyWords, sign);
             }
             else
-                Nodes[i] = NewVarOrKeyWordNode (word, Ids, KeyWords);
+                Nodes[i] = NewVarOrKeyWordNode (word, Ids, IdsParam, KeyWords, sign);
             printf ("%s %s %d   num = %lg\n", word, Nodes[i]->data, Nodes[i]->type, Nodes[i]->num);
             i++;
             //printf ("********* %d  %d  %d********\n", KeyWords[10], KeyWords[11], Hash ("def"));
@@ -963,6 +983,15 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, int* KeyWords) {
                 NewEl (MORE, '>')
                 NewEl (COMMA_POINT, ';')
                 NewEl (COMMA, ',')
+                case ':':                                                       
+                    Nodes[i] = CreateNode (DBLPOINT, ":", nullptr, nullptr);       
+                    printf ("%s %d\n", Nodes[i]->data, Nodes[i]->type);                       
+                    i++;                                                           
+                    s++;
+                    sign *= -1;
+                    printf ("sign = %d\n", sign);
+                    ClearId (Ids);                                                       
+                    break;                                                         
                 default:
                     printf ("Undefined symbol %c\n", *s);
             }
