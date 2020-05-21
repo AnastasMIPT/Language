@@ -106,7 +106,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int* VarUsed, int re
                 fprintf (f_out, "%s:\n"
                                 "\t\tpush rbp\n"
                                 "\t\tmov rbp, rsp\n", root->right->data);
-                POPargs      (_Lf, 1, f_out, VarUsed);
+                //POPargs      (_Lf, 1, f_out, VarUsed);
                 ProgramToASM (_R,  static_cast<int> (root->right->num) - NullFunc, f_out, VarUsed);
                 break;
             case FUNC:
@@ -204,7 +204,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int* VarUsed, int re
                 fprintf (f_out, "\t\tDIV\n");
                 break;
             case RETURN:
-                ProgramToASM (_R,  FuncNumber, f_out, VarUsed);
+                ProgramToASM (_R,  FuncNumber, f_out, VarUsed, RAX);
                 // fprintf (f_out, "\t\tPUSH %d\n"
                 //                 "\t\tPUSHR ax\n"
                 //                 "\t\tSUB\n"
@@ -235,9 +235,9 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int* VarUsed, int re
                 break;
             case VAR:
                 if (ret_value != UNDEF) {
-                    fprintf (f_out, "\t\tmov %s, [rbp%+d]\n", reg_for_math[ret_value], 4 * static_cast<int> (root->num));    
+                    fprintf (f_out, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math[ret_value], 4 * static_cast<int> (root->num));    
                 } else {
-                    fprintf (f_out, "\t\tPUSHRAM [ax+%d]\n", static_cast<int> (root->num));
+                    //fprintf (f_out, "\t\tPUSHRAM [ax+%d]\n", static_cast<int> (root->num));
                 }
                 break;
             case NUM:
@@ -267,7 +267,7 @@ void PUSHargs (Node* root, int FuncNumber, FILE* f_out, int* VarUsed) {
     if (root) {
         assert (root->type = COMMA);
         PUSHargs (_Lf, FuncNumber, f_out, VarUsed);
-        fprintf (f_out, "\t\tpush qword [rbp-%d]\n", 4 * static_cast<int> (_R->num));
+        fprintf (f_out, "\t\tpush qword [rbp%+d]\n", 4 * static_cast<int> (_R->num));
     }
 }
 
