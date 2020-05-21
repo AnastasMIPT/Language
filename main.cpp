@@ -74,7 +74,7 @@ constexpr double Precision = 0.00000001;
 //constexpr int NullFunc = FUNCCOL - COL_WORDS - 1;
 //constexpr int ColVarsInOneFunc = 30;
 int ind = 0;
-//int IfNumber = 0;
+double VarNumber = 0;
 
 struct IdsArray
 {
@@ -273,7 +273,9 @@ Node* Func () {
     assert (NT == SKOBKA2);
     ind++;
     ind++;
+    VarNumber = 0;
     val->right->right = Block ();
+    val->right->left = _NUM (-VarNumber);
 
     return val;
 }
@@ -399,8 +401,9 @@ Node* Output () {
     return val;
 }
 
-Node* Assign() {
+Node* Assign () {
     assert (NT == VAR);
+    if (Nods[ind]->num < VarNumber) VarNumber = Nods[ind]->num;
     ind++;
     Nods[ind]->left = Nods[ind - 1];
     Node* val =  Nods[ind];
@@ -524,6 +527,8 @@ Node* GetP () {
     }
     else if (NT == VAR) {
         val = Nods[ind];
+        printf ("$$$$$ VarNumber %lf , var = %s\n", VarNumber, val->data);
+        if (val->num < VarNumber) VarNumber = val->num;
         ind++;
         return val;
     }
@@ -920,7 +925,6 @@ Node* NewVarOrKeyWordNode (const char* word, IdsArray* VarArray, IdsArray* IdsPa
             num *= -1;
         } else if (sign > 0) {
             num = AddNewEL (IdsParam, hash);
-            printf ("ssssssssssssss");
             num++;
         }
     }
