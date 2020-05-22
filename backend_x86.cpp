@@ -89,8 +89,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
         int buf = 0;
         switch (root->type) {
             case START:
-                fprintf (f_out, "%%include \"printf.asm\"\n"
-                                "section .text\n"
+                fprintf (f_out, "section .text\n"
                                 "global _start\n"
                                 "_start:\n"
                                 "\t\tcall main\n\n"
@@ -153,6 +152,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
             case CALL:
                 fprintf (f_out, "\n");
                 PUSHargs      (_Lf, static_cast<int> (root->right->num) - NullFunc, f_out);
+                //ProgramToASM (_Lf, FuncNumber, f_out);
                 fprintf (f_out, "\t\tcall %s\n", _R->data);
                 fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
                 if (ret_value != RAX) {
@@ -251,8 +251,15 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                                 "\t\tret\n\n");
                 break;
             case OUTPUT:
-                ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, "\t\tOUT\n");
+                ProgramToASM (_R,  FuncNumber, f_out, RBX);
+                fprintf (f_out, "\t\tpush rbx\n"
+		                        "\t\tcall itoa\n"
+		                        "\t\tsub rsp, 8\n\n");
+                fprintf (f_out, "\t\tmov rax, 4\n"
+                                "\t\tmov rbx, 1\n"
+                                "\t\tmov rcx, number_new\n"
+                                "\t\tmov rdx, 11\n"
+                                "\t\tint 80h\n");
                 break;
             case INPUT:
                 fprintf (f_out, "\t\tIN\n");
