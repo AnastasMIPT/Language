@@ -57,6 +57,7 @@ Node* CreateNode (double num);
 void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int* VarUsed, int ret_value = UNDEF);
 void POPargs  (Node* root, int FuncNumber, FILE* f_out, int* VarUsed);
 void PUSHargs (Node* root, int FuncNumber, FILE* f_out, int* VarUsed);
+int ReduseRsp (Node* root);
 int Hash (const char* str);
 
 int main () {
@@ -105,7 +106,8 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int* VarUsed, int re
             case DEF:
                 fprintf (f_out, "%s:\n"
                                 "\t\tpush rbp\n"
-                                "\t\tmov rbp, rsp\n", root->right->data);
+                                "\t\tmov rbp, rsp\n"
+                                "\t\tsub rsp, %d\n", _R->data, 4 * static_cast<int> (_R->left->num));
                 //POPargs      (_Lf, 1, f_out, VarUsed);
                 ProgramToASM (_R,  static_cast<int> (root->right->num) - NullFunc, f_out, VarUsed);
                 break;
@@ -113,13 +115,9 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int* VarUsed, int re
                 ProgramToASM (_R,  FuncNumber, f_out, VarUsed);
                 break;
             case CALL:
-                ProgramToASM (_Lf, FuncNumber, f_out, VarUsed);
-                // fprintf (f_out, "\t\tPUSHR ax\n"
-                //                 "\t\tPUSH %d\n"
-                //                 "\t\tADD\n"
-                //                 "\t\tpop rax\n", ColVarsInOneFunc);
                 PUSHargs      (_Lf, static_cast<int> (root->right->num) - NullFunc, f_out, VarUsed);
                 fprintf (f_out, "\t\tcall %s\n", _R->data);
+                fprintf (f_out, "\t\tadd rsp, %d\n", 4 * ReduseRsp (_Lf));
                 ProgramToASM (_R,  FuncNumber, f_out, VarUsed);
                 break;
             case COMMA:
@@ -269,6 +267,18 @@ void PUSHargs (Node* root, int FuncNumber, FILE* f_out, int* VarUsed) {
         PUSHargs (_Lf, FuncNumber, f_out, VarUsed);
         fprintf (f_out, "\t\tpush qword [rbp%+d]\n", 4 * static_cast<int> (_R->num));
     }
+}
+
+int ReduseRsp (Node* root) {
+    if (!_R) return 0;
+    int col = 1;
+    Node* ptr = root;
+    while (ptr->left)
+    {
+        col++;
+        ptr = ptr->left;
+    }
+    return col;
 }
 
 Node* GetTreeFromFile (Node* root, FILE* f_in) {
