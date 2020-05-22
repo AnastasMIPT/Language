@@ -5,14 +5,16 @@ global _start
 _start:
 		;call main
 
-;		mov rax, 3
- ;  		mov rbx, 2
-  ; 		mov rcx, num  
-   ;		mov rdx, 5          ;5 bytes (numeric, 1 for sign) of that information
-   	;	int 80h
+		mov rax, 3
+   		mov rbx, 2
+   		mov rcx, strin  
+   		mov rdx, 5          ;5 bytes (numeric, 1 for sign) of that information
+   		int 80h
 
-		xor rax, rax
-		push qword num
+		; push qword strin
+		; call printf
+
+		push qword strin
 		call atoi
 		sub rsp, 8
 
@@ -91,9 +93,10 @@ atoi:
 		xor rax, rax
 
 		mov rbx, qword [rbp+16]
-
+		xor rcx, rcx
+		
 .Next:		
-		cmp byte [rbx], 0
+		cmp byte [rbx], 10
 		je .Exit
 		mov cl, byte [rbx]
 		sub rcx, '0'
@@ -145,3 +148,4 @@ section .data                           ;Data segment
 
     str10 db 'Is it true?', 0
 	number db '123', 0
+	strin db 0,0,0,0,0,0,0,0,0,0,0,0,0
