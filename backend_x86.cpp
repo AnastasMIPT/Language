@@ -158,19 +158,24 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int* VarUsed, int re
                 fprintf (f_out, "end_if%d:\n", buf);
                 break;
             case EQUAL:
-                ProgramToASM (_Lf, FuncNumber, f_out, VarUsed);
-                ProgramToASM (_R,  FuncNumber, f_out, VarUsed);
-                fprintf (f_out, "\t\tjne end_if%d\n", IfNumber);
+                ProgramToASM (_Lf, FuncNumber, f_out, VarUsed, RBX);
+                ProgramToASM (_R,  FuncNumber, f_out, VarUsed, RCX);
+
+                fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                                "\t\tjne end_if%d\n", IfNumber);
                 break;
             case UNEQUAL:
-                ProgramToASM (_Lf, FuncNumber, f_out, VarUsed);
-                ProgramToASM (_R,  FuncNumber, f_out, VarUsed);
-                fprintf (f_out, "\t\tje end_if%d\n", IfNumber);
+                ProgramToASM (_Lf, FuncNumber, f_out, VarUsed, RBX);
+                ProgramToASM (_R,  FuncNumber, f_out, VarUsed, RCX);
+                fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                                "\t\tje end_if%d\n", IfNumber);
                 break;
             case MORE:
-                ProgramToASM (_R,  FuncNumber, f_out, VarUsed);
-                ProgramToASM (_Lf, FuncNumber, f_out, VarUsed);
-                fprintf (f_out, "\t\tjg end_if%d\n", IfNumber);
+                ProgramToASM (_R,  FuncNumber, f_out, VarUsed, RBX);
+                ProgramToASM (_Lf, FuncNumber, f_out, VarUsed, RCX);
+
+                fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                                "\t\tjg end_if%d\n", IfNumber);
                 break;
             case SUM:
                 
