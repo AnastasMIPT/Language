@@ -60,6 +60,7 @@ void POPargs  (Node* root, int FuncNumber, FILE* f_out);
 void PUSHargs (Node* root, int FuncNumber, FILE* f_out);
 int ReduseRsp (Node* root);
 int Hash (const char* str);
+void Arithmetic_op (Node* root, int FuncNumber, FILE* f_out, int ret_value, int command);
 
 int main () {
 
@@ -88,7 +89,8 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
         int buf = 0;
         switch (root->type) {
             case START:
-                fprintf (f_out, "section .text\n"
+                fprintf (f_out, "%%include \"printf.asm\"\n"
+                                "section .text\n"
                                 "global _start\n"
                                 "_start:\n"
                                 "\t\tcall main\n\n"
@@ -96,6 +98,42 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                                 "\t\tmov rbx, 0           ; код завершения программы\n"
                       	        "\t\tint 80h\n");
                 ProgramToASM (_R,  FuncNumber, f_out);
+                fprintf (f_out, itoa_s);
+                fprintf (f_out, "atoi:\n"
+		                         "\t\tpush rbp\n"
+		                         "\t\tmov rbp, rsp\n"
+		                         "\t\txor rax, rax\n\n"
+		                         "\t\tmov rbx, qword [rbp+16]\n"
+		                         "\t\txor rcx, rcx\n"
+		                         "\t\tcmp byte [rbx], '-'\n"
+		                         "\t\tjne .Next\n"
+		                         "\t\tmov byte [sign], 1\n"
+		                         "\t\tinc rbx\n"
+                                 ".Next:\n"		
+		                         "\t\tcmp byte [rbx], 10\n"
+		                         "\t\tje .Exit\n"
+		                         "\t\tmov cl, byte [rbx]\n"
+		                         "\t\tsub rcx, '0'\n"
+		                         "\t\timul rax, 10\n"
+		                         "\t\tadd rax, rcx\n"
+		                         "\t\tinc rbx\n"
+		                         "\t\tjmp .Next\n"
+                                 ".Exit:\n"
+		                         "\t\tcmp byte[sign], 1\n"
+		                         "\t\tjne .Exit_l\n"
+		                         "\t\tneg rax\n"
+                                 ".Exit_l:\n"
+		                         "\t\tmov rsp, rbp\n"
+		                         "\t\tpop rbp\n"
+		                         "\t\tret\n"
+                                 "section .data\n"                           
+                                 "\t\tnumber times 10 db 0\n" 
+	                             "\t\tdb 0\n" 
+	                             "\t\tsign db 0\n" 
+                                 "\t\tnumber_new times 10 db 0\n"
+                                 "\t\tdb 0\n"
+                                 "\t\tnumber_rev times 10 db 0\n"
+                                 "\t\tdb 0\n");
                 break;
             case D:
                 ProgramToASM (_R,  FuncNumber, f_out);
@@ -175,45 +213,39 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                                 "\t\tjg end_if%d\n", IfNumber);
                 break;
             case SUM:
-                
-                if (_Lf->type == VAR || _Lf->type == NUM) {
-                    ProgramToASM (_R,  FuncNumber, f_out, ret_value);
-                    if (_Lf->type == VAR)
-                        fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_Lf->num));
-                    if (_Lf->type == NUM)
-                        fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_Lf->num));
-
-                } else if (_R->type == VAR || _R->type == NUM) {
-                    ProgramToASM (_Lf,  FuncNumber, f_out, ret_value);
-                    if (_R->type == VAR)
-                        fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
-                    if (_R->type == NUM)
-                        fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_R->num));
-                } else {
-                    ProgramToASM (_Lf, FuncNumber, f_out, ret_value);
-                    ProgramToASM (_R,  FuncNumber, f_out, ret_value + 1);
-                    fprintf (f_out, "\t\tadd %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
-                }
+                Arithmetic_op (root, FuncNumber, f_out, ret_value, SUM);
                 break;
             case SUB:
-                //arithmetic_op (root, SUB, FuncNumber,)
+                ProgramToASM (_Lf, FuncNumber, f_out, ret_value);
+                if (_R->type == NUM) {
+                    fprintf (f_out, "\t\tsub %s, qword %d\n", reg_for_math[ret_value], Bytes * static_cast<int> (_Lf->num));
+                } else if (_R->type == VAR) {
+                    fprintf (f_out, "\t\tsub %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
+                } else {
+                    ProgramToASM (_R, FuncNumber, f_out, ret_value + 1);
+                    fprintf (f_out, "\t\tsub %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+                }
                 break;
             case MUL:
-                ProgramToASM (_R,  FuncNumber, f_out);
-                ProgramToASM (_Lf, FuncNumber, f_out);
-                fprintf (f_out, "\t\tMUL\n");
+                Arithmetic_op (root, FuncNumber, f_out, ret_value, MUL);
                 break;
             case DIV:
-                ProgramToASM (_Lf, FuncNumber, f_out);
-                ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, "\t\tDIV\n");
+                ProgramToASM (_Lf, FuncNumber, f_out, RAX);
+                fprintf (f_out, "\t\tcqo\n");
+                if (_R->type == NUM) {
+                    fprintf (f_out, "\t\tidiv qword %d\n", Bytes * static_cast<int> (_Lf->num));
+                } else if (_R->type == VAR) {
+                    fprintf (f_out, "\t\tidiv qword [rbp%+d]\n", Bytes * static_cast<int> (_R->num));
+                } else {
+                    ProgramToASM (_R, FuncNumber, f_out, ret_value + 1);
+                    fprintf (f_out, "\t\tidiv %s\n", reg_for_math[ret_value + 1]);
+                }
+                if (ret_value != RAX) {
+                    fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math[ret_value]);
+                }
                 break;
             case RETURN:
                 ProgramToASM (_R,  FuncNumber, f_out, RAX);
-                // fprintf (f_out, "\t\tPUSH %d\n"
-                //                 "\t\tPUSHR ax\n"
-                //                 "\t\tSUB\n"
-                //                 "\t\tpop ax\n", ColVarsInOneFunc);
                 fprintf (f_out, "\n\t\tmov rsp, rbp\n"
                                 "\t\tpop rbp\n"
                                 "\t\tret\n\n");
@@ -259,6 +291,29 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
     }
 }
 
+void Arithmetic_op (Node* root, int FuncNumber, FILE* f_out, int ret_value, int command) {
+    command -= SUM;
+    if (_Lf->type == VAR || _Lf->type == NUM) {
+        ProgramToASM (_R,  FuncNumber, f_out, ret_value);
+        if (_Lf->type == VAR)
+            fprintf (f_out, "\t\t%s %s, qword [rbp%+d]\n", arithmeic[command], reg_for_math[ret_value], Bytes * static_cast<int> (_Lf->num));
+        if (_Lf->type == NUM)
+            fprintf (f_out, "\t\t%s %s, qword %d\n", arithmeic[command], reg_for_math[ret_value], static_cast<int> (_Lf->num));
+
+    } else if (_R->type == VAR || _R->type == NUM) {
+        ProgramToASM (_Lf,  FuncNumber, f_out, ret_value);
+        if (_R->type == VAR)
+            fprintf (f_out, "\t\t%s %s, qword [rbp%+d]\n", arithmeic[command], reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
+        if (_R->type == NUM)
+            fprintf (f_out, "\t\t%s %s, qword %d\n", arithmeic[command], reg_for_math[ret_value], static_cast<int> (_R->num));
+    } else {
+        ProgramToASM (_Lf, FuncNumber, f_out, ret_value);
+        ProgramToASM (_R,  FuncNumber, f_out, ret_value + 1);
+        fprintf (f_out, "\t\t%s %s, %s\n", arithmeic[command], reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+    }
+
+
+}
 
 void PUSHargs (Node* root, int FuncNumber, FILE* f_out) {
     if (root) {
