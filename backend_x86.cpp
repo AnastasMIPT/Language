@@ -56,8 +56,6 @@ Node* CreateNode (int type, const char* data, Node* left, Node* right);
 Node* CreateNode (double num);
 
 void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value = UNDEF);
-void POPargs  (Node* root, int FuncNumber, FILE* f_out);
-void PUSHargs (Node* root, int FuncNumber, FILE* f_out);
 int ReduseRsp (Node* root);
 int Hash (const char* str);
 void Arithmetic_op (Node* root, int FuncNumber, FILE* f_out, int ret_value, int command);
@@ -151,8 +149,8 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                 break;
             case CALL:
                 fprintf (f_out, "\n");
-                PUSHargs      (_Lf, static_cast<int> (root->right->num) - NullFunc, f_out);
-                //ProgramToASM (_Lf, FuncNumber, f_out);
+                ProgramToASM (_Lf, FuncNumber, f_out);
+                
                 fprintf (f_out, "\t\tcall %s\n", _R->data);
                 fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
                 if (ret_value != RAX) {
@@ -161,7 +159,13 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                 //ProgramToASM (_R,  FuncNumber, f_out);
                 break;
             case COMMA:
-                ProgramToASM (_R,  FuncNumber, f_out);
+                if (_R->type == NUM || _R->type == VAR) {
+                    if (_R->type == NUM) fprintf (f_out, "\t\tpush qword %d\n", static_cast<int> (_R->num));
+                    if (_R->type == VAR) fprintf (f_out, "\t\tpush qword [rbp%+d]\n", Bytes * static_cast<int> (_R->num));
+                } else {
+                    ProgramToASM (_R,  FuncNumber, f_out, RBX);
+                    fprintf (f_out, "\t\tpush qword rbx\n");
+                }
                 ProgramToASM (_Lf, FuncNumber, f_out);
                 break;
             case B:
@@ -280,9 +284,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
             case VAR:
                 if (ret_value != UNDEF) {
                     fprintf (f_out, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (root->num));    
-                } else {
-                    //fprintf (f_out, "\t\tPUSHRAM [ax+%d]\n", static_cast<int> (root->num));
-                }
+                } 
                 break;
             case NUM:
                 if (ret_value != UNDEF) {
@@ -320,14 +322,6 @@ void Arithmetic_op (Node* root, int FuncNumber, FILE* f_out, int ret_value, int 
     }
 
 
-}
-
-void PUSHargs (Node* root, int FuncNumber, FILE* f_out) {
-    if (root) {
-        assert (root->type = COMMA);
-        PUSHargs (_Lf, FuncNumber, f_out);
-        fprintf (f_out, "\t\tpush qword [rbp%+d]\n", Bytes * static_cast<int> (_R->num));
-    }
 }
 
 int ReduseRsp (Node* root) {
