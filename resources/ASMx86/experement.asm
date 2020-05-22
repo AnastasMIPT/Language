@@ -1,4 +1,4 @@
-%include "printf.asm"
+;%include "printf.asm"
 
 section .text
 global _start
@@ -22,9 +22,18 @@ _start:
 		
 
 		push rax
-		push qword format
-		call printf
-		add rsp, 16
+		call itoa
+		sub rsp, 8
+
+
+		mov eax, 4
+   		mov ebx, 1
+        mov ecx, number_rev
+        mov edx, 11
+    	int 80h  
+		;push qword format
+		;call printf
+		;add rsp, 16
 
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
@@ -86,6 +95,57 @@ mul:
 		pop rbp
 		ret
 
+itoa:
+		push rbp
+		mov rbp, rsp
+
+		xor rax, rax
+		mov rax, qword [rbp+16]
+		mov rbx, qword number_new
+		mov rdi, number_rev	
+		xor r10, r10
+
+		or rax, rax
+		jns .Loop								;if (sign) {												;
+		neg rax									;	abs (argument)								;   
+		mov byte [rdi], '-'						;	buffer[i] = '-'
+		inc rbx									;   i++
+		inc rdi			
+.Loop:				
+		xor rdx, rdx							;RDX = 0
+		
+		mov r8, 0ah								;R8 = 10
+		div r8									;EAX = EAX / 10, EDX = EAX % 10
+		add rdx, '0'							;EDX += 48
+		
+		mov byte [rbx+r10], dl					    ;int_rezult[R10] = dl
+		inc r10					        ;R10++
+		
+		cmp rax, 0								;if (AX == 0) break
+		je .Exit
+		jmp .Loop
+
+.Exit:
+		call write_to_buf_revers
+		mov byte [rdi+1], 10
+		mov rsp, rbp
+		pop rbp
+		ret
+
+write_to_buf_revers:
+	
+.Loop2:											;writing from  count_rezult to buffer
+		dec r10
+		mov al, [rbx+r10]
+		stosb
+		
+		cmp r10, 0
+		je .Exit
+		jmp .Loop2
+
+.Exit:		
+		ret
+
 
 atoi:
 		push rbp
@@ -125,3 +185,7 @@ section .data                           ;Data segment
 	sign db 0
     format db '%d'
     db 0ah, 0
+	number_new times 10 db 0
+	db 0
+	number_rev times 10 db 0
+	db 0
