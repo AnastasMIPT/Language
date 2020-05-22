@@ -1,9 +1,7 @@
-;%include "printf.asm"
-
 section .text
 global _start
 _start:
-		;call main
+		call main
 
 		mov rax, 3
    		mov rbx, 2
@@ -17,7 +15,6 @@ _start:
 		push qword number
 		call atoi
 		sub rsp, 8
-
 		add rax, 1
 		
 
@@ -26,10 +23,10 @@ _start:
 		sub rsp, 8
 
 
-		mov eax, 4
-   		mov ebx, 1
-        mov ecx, number_rev
-        mov edx, 11
+		mov rax, 4
+   		mov rbx, 1
+        mov rcx, number_new
+        mov rdx, 11
     	int 80h  
 		;push qword format
 		;call printf
@@ -101,40 +98,31 @@ itoa:
 
 		xor rax, rax
 		mov rax, qword [rbp+16]
-		mov rbx, qword number_new
-		mov rdi, number_rev	
+		mov rbx, qword number_rev
+		mov rdi, number_new	
 		xor r10, r10
 
 		or rax, rax
-		jns .Loop								;if (sign) {												;
-		neg rax									;	abs (argument)								;   
-		mov byte [rdi], '-'						;	buffer[i] = '-'
-		inc rbx									;   i++
+		jns .Loop								
+		neg rax									   
+		mov byte [rdi], '-'						
+		inc rbx									
 		inc rdi			
 .Loop:				
-		xor rdx, rdx							;RDX = 0
+		xor rdx, rdx							
 		
-		mov r8, 0ah								;R8 = 10
-		div r8									;EAX = EAX / 10, EDX = EAX % 10
-		add rdx, '0'							;EDX += 48
+		mov r8, 0ah								
+		div r8									
+		add rdx, '0'							
 		
-		mov byte [rbx+r10], dl					    ;int_rezult[R10] = dl
-		inc r10					        ;R10++
+		mov byte [rbx+r10], dl
+		inc r10
 		
-		cmp rax, 0								;if (AX == 0) break
-		je .Exit
+		cmp rax, 0
+		je .Loop2
 		jmp .Loop
 
-.Exit:
-		call write_to_buf_revers
-		mov byte [rdi+1], 10
-		mov rsp, rbp
-		pop rbp
-		ret
-
-write_to_buf_revers:
-	
-.Loop2:											;writing from  count_rezult to buffer
+.Loop2:											;writing reverse
 		dec r10
 		mov al, [rbx+r10]
 		stosb
@@ -143,9 +131,12 @@ write_to_buf_revers:
 		je .Exit
 		jmp .Loop2
 
-.Exit:		
-		ret
+.Exit:
 
+		mov byte [rdi+1], 10
+		mov rsp, rbp
+		pop rbp
+		ret
 
 atoi:
 		push rbp
@@ -183,9 +174,7 @@ section .data                           ;Data segment
     number times 10 db 0
 	db 0
 	sign db 0
-    format db '%d'
-    db 0ah, 0
-	number_new times 10 db 0
+    number_new times 10 db 0
 	db 0
 	number_rev times 10 db 0
 	db 0
