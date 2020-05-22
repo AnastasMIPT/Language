@@ -48,6 +48,7 @@ enum {
     MUL,
     POW,
     DIV,
+    DBLPOINT,
     VAR,
     FUNC,
     CALL,
@@ -99,6 +100,7 @@ const char* Words[]  = {
         "*",
         "^",
         "/",
+        ":",
 };
 
 const int HashTreeWords[] = {
@@ -147,11 +149,22 @@ const int HashTreeWords[] = {
         1307,               //BLOCK
         1309               //DECLARE
 };
+
+const char* arithmeic[] = {
+        "add",
+        "sub",
+        "imul",
+        "",
+        "idiv"
+};
+
 enum {
         RAX,
+        RDX,
         RBX,
         RCX,
-        RDX,
+        RDI,
+        RSI,
         R8,
         R9,
         R10,
@@ -166,9 +179,11 @@ enum {
 
 const char* reg_for_math[] = {
         "rax",
+        "rdx",
         "rbx",
         "rcx",
-        "rdx",
+        "rdi",
+        "rsi",
         "r8",
         "r9",
         "r10",
@@ -179,3 +194,41 @@ const char* reg_for_math[] = {
         "r15",
         "?"
 };
+
+constexpr char itoa_s[] =                                       \
+"itoa:\n                                        \
+\t\tpush rbp\n                                  \
+\t\tmov rbp, rsp\n                              \
+\t\txor rax, rax\n                              \
+\t\tmov rax, qword [rbp+16]\n                   \
+\t\tmov rbx, qword number_rev\n                 \
+\t\tmov rdi, number_new\n                       \
+\t\txor r10, r10\n                              \
+\t\tor rax, rax\n                               \
+\t\tjns .Loop\n					\			
+\t\tneg rax\n					\				   
+\t\tmov byte [rdi], '-'\n			\			
+\t\tinc rbx\n					\				
+\t\tinc rdi\n		                        \
+.Loop:\n	                                \
+\t\txor rdx, rdx\n				\		
+\t\tmov r8, 0ah\n				\			
+\t\tdiv r8\n					\				
+\t\tadd rdx, '0'\n				\			
+\t\tmov byte [rbx+r10], dl\n                    \
+\t\tinc r10\n                                   \
+\t\tcmp rax, 0\n                                \
+\t\tje .Loop2\n                                 \
+\t\tjmp .Loop\n                                 \
+.Loop2:		;writing reversev\n             \
+\t\tdec r10\n                                   \
+\t\tmov al, [rbx+r10]\n                         \
+\t\tstosb\n                                     \
+\t\tcmp r10, 0\n                                \
+\t\tje .Exit\n                                  \
+\t\tjmp .Loop2\n                                \
+.Exit:\n\n                                      \
+\t\tmov byte [rdi+1], 10\n                      \
+\t\tmov rsp, rbp\n                              \
+\t\tpop rbp\n                                   \
+\t\tret\n";                                     
