@@ -7,14 +7,14 @@ _start:
 
 		mov rax, 3
    		mov rbx, 2
-   		mov rcx, strin  
-   		mov rdx, 5          ;5 bytes (numeric, 1 for sign) of that information
+   		mov rcx, number  
+   		mov rdx, 11          ;5 bytes (numeric, 1 for sign) of that information
    		int 80h
 
 		; push qword strin
 		; call printf
 
-		push qword strin
+		push qword number
 		call atoi
 		sub rsp, 8
 
@@ -94,7 +94,12 @@ atoi:
 
 		mov rbx, qword [rbp+16]
 		xor rcx, rcx
-		
+
+		cmp byte [rbx], '-'
+		jne .Next
+		mov byte [sign], 1
+		inc rbx
+
 .Next:		
 		cmp byte [rbx], 10
 		je .Exit
@@ -106,46 +111,17 @@ atoi:
 		jmp .Next
 
 .Exit:
-		mov rsp, rbp
-		pop rbp
-		ret
-
-
-itoa:
-		push rbp
-		mov rbp, rsp
-
-		xor rax, rax
-		mov rax, qword [rbp+16]
-		mov rbx, qword num
-		xor r10, r10
-
-.Loop:				
-		xor rdx, rdx							;RDX = 0
-		
-		mov r8, 0ah								;R8 = 10
-		div r8									;EAX = EAX / 10, EDX = EAX % 10
-		add rdx, '0'							;EDX += 48
-		
-		mov byte [rbx+r10], dl					    ;int_rezult[R10] = dl
-		inc r10						        ;R10++
-		
-		cmp rax, 0								;if (AX == 0) break
-		je .Exit
-		jmp .Loop
-
-.Exit:
+		cmp byte[sign], 1
+		jne .Exit_l
+		neg rax
+.Exit_l:		
 		mov rsp, rbp
 		pop rbp
 		ret
 
 section .data                           ;Data segment
-    num db 0, 0, 0, 0
+    number times 10 db 0
 	db 0
-    lennum equ $-num
-    format db 'gghgj %d'
+	sign db 0
+    format db '%d'
     db 0ah, 0
-
-    str10 db 'Is it true?', 0
-	number db '123', 0
-	strin db 0,0,0,0,0,0,0,0,0,0,0,0,0
