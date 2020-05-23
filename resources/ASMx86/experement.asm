@@ -3,63 +3,59 @@ global _start
 _start:
 		call main
 
-		mov rax, 3
-   		mov rbx, 2
-   		mov rcx, number  
-   		mov rdx, 11          ;5 bytes (numeric, 1 for sign) of that information
-   		int 80h
-
-		; push qword strin
-		; call printf
-
-		push qword number
-		call atoi
-		sub rsp, 8
-		add rax, 1
-		
-
-		push rax
-		call itoa
-		sub rsp, 8
-
-
-		mov rax, 4
-   		mov rbx, 1
-        mov rcx, number_new
-        mov rdx, 11
-    	int 80h  
-		;push qword format
-		;call printf
-		;add rsp, 16
-
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
 main:
 		push rbp
 		mov rbp, rsp
-		sub rsp, 32
+		sub rsp, 24
 
-		mov qword [rbp-8], 3
-		mov qword [rbp-16], 4
+
+		mov rax, 3
+		mov rbx, 2
+		mov rcx, number
+		mov rdx, 10
+		int 80h
+		push qword number
+		call atoi
+		sub rsp, 8
+		mov qword [rbp-8], rax
+
+
+		mov rax, 3
+		mov rbx, 2
+		mov rcx, number
+		mov rdx, 10
+		int 80h
+		push qword number
+		call atoi
+		sub rsp, 8
+		mov qword [rbp-16], rax
+
 		mov rax, qword [rbp-8]
 		cqo
 		idiv qword [rbp-16]
 		mov rbx, rax
 		mov qword [rbp-24], rbx
+
+		push qword [rbp-24]
 		mov rbx, qword [rbp-16]
 		add rbx, qword [rbp-8]
-		mov rcx, qword 5
-		add rcx, qword [rbp-16]
-		cmp rbx, rcx
-		jg end_if0
-
-		push qword [rbp-16]
-		push qword [rbp-8]
-		call mul
+		push qword rbx
+		call sum
 		add rsp, 16
-		mov qword [rbp-32], rax
-end_if0:
+		mov rbx, rax
+
+		push rbx
+		call itoa
+		sub rsp, 8
+
+		mov rax, 4
+		mov rbx, 1
+		mov rcx, number_new
+		mov rdx, 11
+		int 80h
 		mov rax, qword 0
 
 		mov rsp, rbp
@@ -95,49 +91,40 @@ mul:
 itoa:
 		push rbp
 		mov rbp, rsp
-
 		xor rax, rax
 		mov rax, qword [rbp+16]
 		mov rbx, qword number_rev
-		mov rdi, number_new	
+		mov rdi, number_new
 		xor r10, r10
-
 		or rax, rax
-		jns .Loop								
-		neg rax									   
-		mov byte [rdi], '-'						
-		inc rbx									
-		inc rdi			
-.Loop:				
-		xor rdx, rdx							
-		
-		mov r8, 0ah								
-		div r8									
-		add rdx, '0'							
-		
+		jns .Loop
+		neg rax
+		mov byte [rdi], '-'
+		inc rbx
+		inc rdi
+.Loop:
+		xor rdx, rdx
+		mov r8, 0ah
+		div r8
+		add rdx, '0'
 		mov byte [rbx+r10], dl
 		inc r10
-		
 		cmp rax, 0
 		je .Loop2
 		jmp .Loop
-
-.Loop2:											;writing reverse
+.Loop2:		;writing reversev
 		dec r10
 		mov al, [rbx+r10]
 		stosb
-		
 		cmp r10, 0
 		je .Exit
 		jmp .Loop2
-
 .Exit:
 
 		mov byte [rdi+1], 10
 		mov rsp, rbp
 		pop rbp
 		ret
-
 atoi:
 		push rbp
 		mov rbp, rsp
@@ -145,13 +132,11 @@ atoi:
 
 		mov rbx, qword [rbp+16]
 		xor rcx, rcx
-
 		cmp byte [rbx], '-'
 		jne .Next
 		mov byte [sign], 1
 		inc rbx
-
-.Next:		
+.Next:
 		cmp byte [rbx], 10
 		je .Exit
 		mov cl, byte [rbx]
@@ -160,21 +145,19 @@ atoi:
 		add rax, rcx
 		inc rbx
 		jmp .Next
-
 .Exit:
 		cmp byte[sign], 1
 		jne .Exit_l
 		neg rax
-.Exit_l:		
+.Exit_l:
 		mov rsp, rbp
 		pop rbp
 		ret
-
-section .data                           ;Data segment
-    number times 10 db 0
-	db 0
-	sign db 0
-    number_new times 10 db 0
-	db 0
-	number_rev times 10 db 0
-	db 0
+section .data
+		number times 10 db 0
+		db 0
+		sign db 0
+		number_new times 10 db 0
+		db 0
+		number_rev times 10 db 0
+		db 0

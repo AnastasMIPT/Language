@@ -266,8 +266,15 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                                 "\t\tint 80h\n");
                 break;
             case INPUT:
-                fprintf (f_out, "\t\tIN\n");
-                fprintf (f_out, "\t\tPOPRAM [ax+%d]\n", Bytes * static_cast<int> (_R->num));
+                fprintf (f_out, "\n\t\tmov rax, 3\n"
+                                "\t\tmov rbx, 2\n"
+                                "\t\tmov rcx, number\n" 
+                                "\t\tmov rdx, 10\n"
+                                "\t\tint 80h\n");
+                fprintf (f_out, "\t\tpush qword number\n"
+                                "\t\tcall atoi\n"
+                                "\t\tsub rsp, 8\n"
+                                "\t\tmov qword [rbp%+d], rax\n\n", Bytes * static_cast<int> (_R->num));
                 break;
             case SQRT:
                 ProgramToASM (_R,  FuncNumber, f_out);
