@@ -20,6 +20,8 @@ main:
 		push qword number
 		call atoi
 		sub rsp, 8
+		
+		imul rax, 100
 		mov qword [rbp-8], rax
 
 
@@ -31,22 +33,24 @@ main:
 		push qword number
 		call atoi
 		sub rsp, 8
+		imul rax, 100
 		mov qword [rbp-16], rax
+
+
+		mov rax, qword [rbp-16]
+		mov rbx , 100
+		cqo
+		idiv rbx
+		mov qword [rbp-16], rax
+
 
 		mov rax, qword [rbp-8]
 		cqo
 		idiv qword [rbp-16]
 		mov rbx, rax
 		mov qword [rbp-24], rbx
-
-		push qword [rbp-24]
-		mov rbx, qword [rbp-16]
-		add rbx, qword [rbp-8]
-		push qword rbx
-		call sum
-		add rsp, 16
-		mov rbx, rax
-
+		mov rbx, qword [rbp-24]
+		;shr rbx, 10
 		push rbx
 		call itoa
 		sub rsp, 8
@@ -109,6 +113,11 @@ itoa:
 		add rdx, '0'
 		mov byte [rbx+r10], dl
 		inc r10
+		cmp qword r10, SYMB_POINT
+		jne .NoPoint
+		mov byte [rbx+r10], '.'
+		inc r10
+.NoPoint:		
 		cmp rax, 0
 		je .Loop2
 		jmp .Loop
@@ -161,3 +170,4 @@ section .data
 		db 0
 		number_rev times 10 db 0
 		db 0
+		SYMB_POINT equ 2
