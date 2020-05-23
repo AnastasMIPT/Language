@@ -52,6 +52,7 @@ constexpr char atoi_s[] =
 "\t\tpush rbp\n"
 "\t\tmov rbp, rsp\n"
 "\t\txor rax, rax\n\n"
+"\t\tmov byte [sign], 0\n"
 "\t\tmov rbx, qword [rbp+16]\n"
 "\t\txor rcx, rcx\n"
 "\t\tcmp byte [rbx], '-'\n"

@@ -1,18 +1,17 @@
 start
+def factorial (n):
+{
+    if (n equal 1) {
+        return 1;
+    }
+    res = n * factorial (n - 1);
+    return res;
+}
 def main ():
 {
-    input (x)
-    input (v)
-    y = x / v;
-    output (y)
-    return 0;
-}
-def sum (a, b): {
-    x = 5;
-    return a+b;
-}
-def mul (a, b): {
-    x = 5;
-    return a*b;
+    input (num)
+    fact = factorial (num);
+    output (fact)
+    return;
 }
 end

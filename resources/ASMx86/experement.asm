@@ -6,10 +6,49 @@ _start:
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
+factorial:
+		push rbp
+		mov rbp, rsp
+		sub rsp, 8
+
+		mov rbx, qword [rbp+16]
+		mov rcx, qword 100
+		cmp rbx, rcx
+		jne end_if0
+		mov rax, qword 100
+
+		mov rsp, rbp
+		pop rbp
+		ret
+
+end_if0:
+
+		mov rbx, qword [rbp+16]
+		sub rbx, qword 100
+		push qword rbx
+		call factorial
+		add rsp, 8
+		mov rbx, rax
+
+
+		mov rax, rbx
+		mov r15 , 100
+		cqo
+		idiv r15
+		mov qword rbx, rax
+
+		imul rbx, qword [rbp+16]
+		mov qword [rbp-8], rbx
+		mov rax, qword [rbp-8]
+
+		mov rsp, rbp
+		pop rbp
+		ret
+
 main:
 		push rbp
 		mov rbp, rsp
-		sub rsp, 24
+		sub rsp, 16
 
 
 		mov rax, 3
@@ -24,30 +63,11 @@ main:
 		mov qword [rbp-8], rax
 
 
-		mov rax, 3
-		mov rbx, 2
-		mov rcx, number
-		mov rdx, 10
-		int 80h
-		push qword number
-		call atoi
-		sub rsp, 8
-		imul rax, 100
+		push qword [rbp-8]
+		call factorial
+		add rsp, 8
 		mov qword [rbp-16], rax
-
-
-		mov rax, qword [rbp-16]
-		mov r15 , 100
-		cqo
-		idiv r15
-		mov qword [rbp-16], rax
-
-		mov rax, qword [rbp-8]
-		cqo
-		idiv qword [rbp-16]
-		mov rbx, rax
-		mov qword [rbp-24], rbx
-		mov rbx, qword [rbp-24]
+		mov rbx, qword [rbp-16]
 		push rbx
 		call itoa
 		sub rsp, 8
@@ -57,40 +77,6 @@ main:
 		mov rcx, number_new
 		mov rdx, 11
 		int 80h
-		mov rax, qword 0
-
-		mov rsp, rbp
-		pop rbp
-		ret
-
-sum:
-		push rbp
-		mov rbp, rsp
-		sub rsp, 8
-
-		mov qword [rbp-8], 5
-		mov rax, qword [rbp+24]
-		add rax, qword [rbp+16]
-
-		mov rsp, rbp
-		pop rbp
-		ret
-
-mul:
-		push rbp
-		mov rbp, rsp
-		sub rsp, 8
-
-		mov qword [rbp-8], 5
-
-		mov rax, qword [rbp+24]
-		mov r15 , 100
-		cqo
-		idiv r15
-		mov qword [rbp+24], rax
-
-		mov rax, qword [rbp+24]
-		imul rax, qword [rbp+16]
 
 		mov rsp, rbp
 		pop rbp
@@ -143,6 +129,7 @@ atoi:
 		mov rbp, rsp
 		xor rax, rax
 
+		mov byte [sign], 0
 		mov rbx, qword [rbp+16]
 		xor rcx, rcx
 		cmp byte [rbx], '-'
