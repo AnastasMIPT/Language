@@ -4,7 +4,7 @@
 #include <cassert>
 #include <cmath>
 #include "Words.h"
-
+#include "Func_s.h"
 
 #define _NewEl(type)                                       \
 else if ( strcmp (#type, data) == 0)                                      \
@@ -26,7 +26,7 @@ constexpr int NullFunc = FUNCCOL - COL_WORDS - 1;
 constexpr int ColVarsInOneFunc = 30;
 constexpr int VarNum = 40;
 constexpr int Bytes = 8;
-constexpr int Precision = 10000;
+constexpr int Precision = 100;
 int IfNumber = 0;
 
 
@@ -90,51 +90,11 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
         int buf = 0;
         switch (root->type) {
             case START:
-                fprintf (f_out, "section .text\n"
-                                "global _start\n"
-                                "_start:\n"
-                                "\t\tcall main\n\n"
-                                "\t\tmov rax, 1           ; номер системного вызова  sys_exit\n"
-                                "\t\tmov rbx, 0           ; код завершения программы\n"
-                      	        "\t\tint 80h\n");
+                fprintf (f_out, start_s);
                 ProgramToASM (_R,  FuncNumber, f_out);
                 fprintf (f_out, itoa_s);
-                fprintf (f_out, "atoi:\n"
-		                         "\t\tpush rbp\n"
-		                         "\t\tmov rbp, rsp\n"
-		                         "\t\txor rax, rax\n\n"
-		                         "\t\tmov rbx, qword [rbp+16]\n"
-		                         "\t\txor rcx, rcx\n"
-		                         "\t\tcmp byte [rbx], '-'\n"
-		                         "\t\tjne .Next\n"
-		                         "\t\tmov byte [sign], 1\n"
-		                         "\t\tinc rbx\n"
-                                 ".Next:\n"		
-		                         "\t\tcmp byte [rbx], 10\n"
-		                         "\t\tje .Exit\n"
-		                         "\t\tmov cl, byte [rbx]\n"
-		                         "\t\tsub rcx, '0'\n"
-		                         "\t\timul rax, 10\n"
-		                         "\t\tadd rax, rcx\n"
-		                         "\t\tinc rbx\n"
-		                         "\t\tjmp .Next\n"
-                                 ".Exit:\n"
-		                         "\t\tcmp byte[sign], 1\n"
-		                         "\t\tjne .Exit_l\n"
-		                         "\t\tneg rax\n"
-                                 ".Exit_l:\n"
-		                         "\t\tmov rsp, rbp\n"
-		                         "\t\tpop rbp\n"
-		                         "\t\tret\n"
-                                 "section .data\n"                           
-                                 "\t\tnumber times 10 db 0\n" 
-	                             "\t\tdb 0\n" 
-	                             "\t\tsign db 0\n" 
-                                 "\t\tnumber_new times 10 db 0\n"
-                                 "\t\tdb 0\n"
-                                 "\t\tnumber_rev times 10 db 0\n"
-                                 "\t\tdb 0\n"
-                                 "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
+                fprintf (f_out, atoi_s);
+                fprintf(f_out, "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
                 break;
             case D:
                 ProgramToASM (_R,  FuncNumber, f_out);
@@ -256,31 +216,15 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                 break;
             case RETURN:
                 ProgramToASM (_R,  FuncNumber, f_out, RAX);
-                fprintf (f_out, "\n\t\tmov rsp, rbp\n"
-                                "\t\tpop rbp\n"
-                                "\t\tret\n\n");
+                fprintf (f_out, ret_s);
                 break;
             case OUTPUT:
                 ProgramToASM (_R,  FuncNumber, f_out, RBX);
-                fprintf (f_out, "\t\tpush rbx\n"
-		                        "\t\tcall itoa\n"
-		                        "\t\tsub rsp, 8\n\n");
-                fprintf (f_out, "\t\tmov rax, 4\n"
-                                "\t\tmov rbx, 1\n"
-                                "\t\tmov rcx, number_new\n"
-                                "\t\tmov rdx, 11\n"
-                                "\t\tint 80h\n");
+                fprintf (f_out, output_s);
                 break;
             case INPUT:
-                fprintf (f_out, "\n\t\tmov rax, 3\n"
-                                "\t\tmov rbx, 2\n"
-                                "\t\tmov rcx, number\n" 
-                                "\t\tmov rdx, 10\n"
-                                "\t\tint 80h\n");
-                fprintf (f_out, "\t\tpush qword number\n"
-                                "\t\tcall atoi\n"
-                                "\t\tsub rsp, 8\n"
-                                "\t\timul rax, %d\n"
+                fprintf (f_out, input_s);
+                fprintf (f_out, "\t\timul rax, %d\n"
                                 "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
                 break;
             case SQRT:

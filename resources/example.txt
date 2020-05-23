@@ -1,8 +1,18 @@
 start
-def main ()
+def main ():
 {
-    x = 3;
-    y = x + 1;
+    input (x)
+    input (v)
+    y = x / v;
+    output (y)
     return 0;
+}
+def sum (a, b): {
+    x = 5;
+    return a+b;
+}
+def mul (a, b): {
+    x = 5;
+    return a*b;
 }
 end
