@@ -814,7 +814,7 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return nullptr;
         }
     } else {
-        num = ElementIsInArr (FuncArray, hash) + COL_WORDS + 1;
+        num = ElementIsInArr (FuncArray, hash) + COL_WORDS;
         if (num  != COL_WORDS) {
             switch (num) {
                 case SIN:
@@ -950,7 +950,7 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, IdsArray* IdsParam, int* KeyWor
             }
             else
                 Nodes[i] = NewVarOrKeyWordNode (word, Ids, IdsParam, KeyWords, sign);
-            printf ("%s %s %d   num = %lg\n", word, Nodes[i]->data, Nodes[i]->type, Nodes[i]->num);
+            printf ("%s %s %d   num = %lg sqrt_num = %d\n", word, Nodes[i]->data, Nodes[i]->type, Nodes[i]->num, SQRT);
             i++;
             //printf ("********* %d  %d  %d********\n", KeyWords[10], KeyWords[11], Hash ("def"));
             //printf ("%s\n", word);

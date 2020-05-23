@@ -232,8 +232,11 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                                 "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
                 break;
             case SQRT:
-                ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, "\t\tSQRT\n");
+                ProgramToASM (_R,  FuncNumber, f_out, ret_value);
+                fprintf (f_out, "\n\t\tmov qword [sqrt_from], %s\n", reg_for_math[ret_value]);
+                fprintf (f_out, sqrt_s);
+                fprintf (f_out, "\t\tmov %s, qword [sqrt_res]\n\n", reg_for_math[ret_value]);
+                fprintf (f_out, "\t\timul %s, %d\n", reg_for_math[ret_value], static_cast<int> (sqrt (Precision)));
                 break;
             case BREAK:
                 ProgramToASM (_R,  FuncNumber, f_out);

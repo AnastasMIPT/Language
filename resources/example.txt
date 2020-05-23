@@ -1,17 +1,9 @@
 start
-def factorial (n):
-{
-    if (n equal 1) {
-        return 1;
-    }
-    res = n * factorial (n - 1);
-    return res;
-}
 def main ():
 {
     input (num)
-    fact = factorial (num);
-    output (fact)
+    res = sqrt (num);
+    output (res)
     return;
 }
 end

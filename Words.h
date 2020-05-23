@@ -111,13 +111,14 @@ const int HashTreeWords[] = {
         -1,                 //BLOCK_START
         -1,                 //BLOCK_END
         -1,                  //COMMA_POINT
-        1281,               //ASSIGN
+        1281,               //COMMA
         -1,                //SKOBKA1
         -1,                //SKOBKA2
         16660,                  //ASSIGN
         481160,             //RETURN
         159265,            //INPUT
         481375,            //OUTPUT
+        -1,                    //BREAK
         17022,             //DEF
         159045,            //EQUAL
         1447674,           //UNEQUAL

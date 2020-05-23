@@ -6,45 +6,6 @@ _start:
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
-factorial:
-		push rbp
-		mov rbp, rsp
-		sub rsp, 8
-
-		mov rbx, qword [rbp+16]
-		mov rcx, qword 100
-		cmp rbx, rcx
-		jne end_if0
-		mov rax, qword 100
-
-		mov rsp, rbp
-		pop rbp
-		ret
-
-end_if0:
-
-		mov rbx, qword [rbp+16]
-		sub rbx, qword 100
-		push qword rbx
-		call factorial
-		add rsp, 8
-		mov rbx, rax
-
-
-		mov rax, rbx
-		mov r15 , 100
-		cqo
-		idiv r15
-		mov qword rbx, rax
-
-		imul rbx, qword [rbp+16]
-		mov qword [rbp-8], rbx
-		mov rax, qword [rbp-8]
-
-		mov rsp, rbp
-		pop rbp
-		ret
-
 main:
 		push rbp
 		mov rbp, rsp
@@ -62,11 +23,17 @@ main:
 		imul rax, 100
 		mov qword [rbp-8], rax
 
+		mov rbx, qword [rbp-8]
 
-		push qword [rbp-8]
-		call factorial
-		add rsp, 8
-		mov qword [rbp-16], rax
+		mov qword [sqrt_from], rbx
+		finit
+		fild qword [sqrt_from]
+		fsqrt
+		fistp qword [sqrt_res]
+		mov rbx, qword [sqrt_res]
+
+		imul rbx, 10
+		mov qword [rbp-16], rbx
 		mov rbx, qword [rbp-16]
 		push rbx
 		call itoa
@@ -160,4 +127,6 @@ section .data
 		number_new times 10 db 0
 		db 0
 		number_rev times 10 db 0
+		sqrt_from dq 0
+		sqrt_res  dq 0
 		SYMB_POINT equ 2

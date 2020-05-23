@@ -82,7 +82,9 @@ constexpr char atoi_s[] =
 "\t\tsign db 0\n" 
 "\t\tnumber_new times 10 db 0\n"
 "\t\tdb 0\n"
-"\t\tnumber_rev times 10 db 0\n";
+"\t\tnumber_rev times 10 db 0\n"
+"\t\tsqrt_from dq 0\n"
+"\t\tsqrt_res  dq 0\n";
 
 constexpr char output_s[] =
 "\t\tpush rbx\n"
@@ -117,3 +119,9 @@ constexpr char ret_s[] =
 "\n\t\tmov rsp, rbp\n"
 "\t\tpop rbp\n"
 "\t\tret\n\n";
+
+constexpr char sqrt_s[] =
+"\t\tfinit\n"
+"\t\tfild qword [sqrt_from]\n"
+"\t\tfsqrt\n"
+"\t\tfistp qword [sqrt_res]\n";
