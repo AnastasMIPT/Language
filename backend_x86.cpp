@@ -2,6 +2,7 @@
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
+#include <cmath>
 #include "Words.h"
 
 
@@ -25,6 +26,7 @@ constexpr int NullFunc = FUNCCOL - COL_WORDS - 1;
 constexpr int ColVarsInOneFunc = 30;
 constexpr int VarNum = 40;
 constexpr int Bytes = 8;
+constexpr int Precision = 10000;
 int IfNumber = 0;
 
 
@@ -59,6 +61,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value = UNDE
 int ReduseRsp (Node* root);
 int Hash (const char* str);
 void Arithmetic_op (Node* root, int FuncNumber, FILE* f_out, int ret_value, int command);
+void RedusePrecision (FILE* f_out, int var_offset);
 
 int main () {
 
@@ -130,7 +133,8 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                                  "\t\tnumber_new times 10 db 0\n"
                                  "\t\tdb 0\n"
                                  "\t\tnumber_rev times 10 db 0\n"
-                                 "\t\tdb 0\n");
+                                 "\t\tdb 0\n"
+                                 "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
                 break;
             case D:
                 ProgramToASM (_R,  FuncNumber, f_out);
@@ -231,9 +235,11 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                 }
                 break;
             case MUL:
+                RedusePrecision (f_out, Bytes * static_cast<int> (_R->num));
                 Arithmetic_op (root, FuncNumber, f_out, ret_value, MUL);
                 break;
             case DIV:
+                RedusePrecision (f_out, Bytes * static_cast<int> (_R->num));
                 ProgramToASM (_Lf, FuncNumber, f_out, RAX);
                 fprintf (f_out, "\t\tcqo\n");
                 if (_R->type == NUM) {
@@ -274,7 +280,8 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                 fprintf (f_out, "\t\tpush qword number\n"
                                 "\t\tcall atoi\n"
                                 "\t\tsub rsp, 8\n"
-                                "\t\tmov qword [rbp%+d], rax\n\n", Bytes * static_cast<int> (_R->num));
+                                "\t\timul rax, %d\n"
+                                "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
                 break;
             case SQRT:
                 ProgramToASM (_R,  FuncNumber, f_out);
@@ -306,6 +313,14 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
         }
     }
 }
+void RedusePrecision (FILE* f_out, int var_offset) {
+    fprintf (f_out, "\n\t\tmov rax, qword [rbp%+d]\n"
+                    "\t\tmov r15 , %d\n"
+                    "\t\tcqo\n"
+                    "\t\tidiv r15\n"
+                    "\t\tmov qword [rbp%+d], rax\n\n", var_offset, Precision, var_offset);
+}
+
 
 void Arithmetic_op (Node* root, int FuncNumber, FILE* f_out, int ret_value, int command) {
     command -= SUM;
