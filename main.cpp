@@ -73,6 +73,8 @@ constexpr int FuncNum = 30;
 constexpr double Precision = 0.00000001;
 //constexpr int NullFunc = FUNCCOL - COL_WORDS - 1;
 //constexpr int ColVarsInOneFunc = 30;
+
+
 int ind = 0;
 double VarNumber = 0;
 

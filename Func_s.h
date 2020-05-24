@@ -94,7 +94,7 @@ constexpr char output_s[] =
 "\t\tmov rbx, 1\n"
 "\t\tmov rcx, number_new\n"
 "\t\tmov rdx, 11\n"
-"\t\tint 80h\n";
+"\t\tint 80h\n\n";
 
 constexpr char input_s[] =
  "\n\t\tmov rax, 3\n"

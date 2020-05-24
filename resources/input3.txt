@@ -1,5 +1,5 @@
 start
-def main ()
+def main ():
 {
     input (a)
     input (b)
@@ -49,10 +49,10 @@ def main ()
     output (0)
     return;
 }
-def diskriminant (a, b, c) {
+def diskriminant (a, b, c): {
     return (b * b - 4 * a * c);
 }
-def linear (b,c) {
+def linear (b,c): {
     if (b equal 0) {
         if (c unequal 0) {
             return 0;
