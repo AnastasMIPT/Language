@@ -1,3 +1,4 @@
 *.o
+*.com
 backend_x86
 main
