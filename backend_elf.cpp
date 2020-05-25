@@ -85,7 +85,7 @@ int main () {
     // ProgramToASM (root, NullFunc, f_asm);
     // fclose (f_asm);
     
-    ELF file (600);
+    ELF file (432);
     file.load_to_file ("./resources/ASMx86/my_elf");
     
     return 0;

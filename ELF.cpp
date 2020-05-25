@@ -49,9 +49,10 @@ ELF::ELF (unsigned int _bf_size) : bf_size (_bf_size) {
     sh_data = new Section_Header (DATA_sh_type, DATA_sh_flags, DATA_sh_addr,      DATA_sh_offset, DATA_sh_size,
                                   DATA_sh_link, DATA_sh_info,  DATA_sh_addralign, DATA_sh_entsize);
     bf_ptr += set_elem  (bf_ptr, sh_data);
+    
     bf_ptr += set_zeros (bf_ptr, SizeOdDataSegm);
 
-    memcpy (bf_ptr, code, 56);
+    memcpy (bf_ptr, code, 64);
 }
 
 void ELF::load_to_file (const char * path) {

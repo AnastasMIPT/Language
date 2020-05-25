@@ -70,7 +70,7 @@ struct ELF_Header {
     const WORD   e_type       = 2;                   // ELF_EXEC
     const WORD   e_machine    = 0x003e;              // amd64
     const DWORD  e_version    = 1;                   // Original ELF
-    const QWORD  e_entry      = 0x400130;  // virtual point of entry
+    const QWORD  e_entry      = 0x400170;            // virtual point of entry
     const QWORD  e_phoff      = 0x40;                // Program header offset
     const QWORD  e_shoff      = 0x0b0;               // Section header offset
     const DWORD  e_flags      = 0x00;                // Processor flags
