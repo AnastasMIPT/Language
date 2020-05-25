@@ -13,24 +13,25 @@ constexpr DWORD PF_W = 2;
 constexpr DWORD PF_R = 4;
 
 
+constexpr unsigned long long SizeOdDataSegm = 64;
 
 
 
 constexpr DWORD  TEXT_p_flags  = PF_X + PF_R;
-constexpr QWORD  TEXT_p_offset = 64;            //Offset segment from 
-constexpr QWORD  TEXT_p_vaddr  = 0x400040;
-constexpr QWORD  TEXT_p_paddr  = 0x400040;
-constexpr QWORD  TEXT_p_filesz = 0xd6;         //SizeOfSegment in file     ????
-constexpr QWORD  TEXT_p_memsz  = 0xd6;         //SizeOfSegment in memory   ????
+constexpr QWORD  TEXT_p_offset = SizeOdDataSegm;            //Offset segment from 
+constexpr QWORD  TEXT_p_vaddr  = 0x400000 + TEXT_p_offset;
+constexpr QWORD  TEXT_p_paddr  = TEXT_p_vaddr;
+constexpr QWORD  TEXT_p_filesz = 64;         //SizeOfSegment in file     ????
+constexpr QWORD  TEXT_p_memsz  = 64;         //SizeOfSegment in memory   ????
 constexpr QWORD  TEXT_p_align  = 0x200000;
 
 
 constexpr DWORD  DATA_p_flags  = PF_W + PF_R;
 constexpr QWORD  DATA_p_offset = 0;            //Offset segment from start of file
-constexpr QWORD  DATA_p_vaddr  = 0x600000;
-constexpr QWORD  DATA_p_paddr  = 0x600000;
-constexpr QWORD  DATA_p_filesz = 64;
-constexpr QWORD  DATA_p_memsz  = 64;
+constexpr QWORD  DATA_p_vaddr  = 0x600000 + DATA_p_offset;
+constexpr QWORD  DATA_p_paddr  = DATA_p_vaddr;
+constexpr QWORD  DATA_p_filesz = SizeOdDataSegm;
+constexpr QWORD  DATA_p_memsz  = SizeOdDataSegm;
 constexpr QWORD  DATA_p_align  = 0x200000;
 
 
@@ -38,7 +39,7 @@ constexpr DWORD  TEXT_sh_type      = 1;
 constexpr QWORD  TEXT_sh_flags     = 6;   
 constexpr QWORD  TEXT_sh_addr      = 0x400170;
 constexpr QWORD  TEXT_sh_offset    = 0x170;
-constexpr QWORD  TEXT_sh_size      = 0x37; ///////
+constexpr QWORD  TEXT_sh_size      = 64; ///////
 constexpr DWORD  TEXT_sh_link      = 0;
 constexpr DWORD  TEXT_sh_info      = 0;
 constexpr QWORD  TEXT_sh_addralign = 0x10;
@@ -49,7 +50,7 @@ constexpr DWORD  DATA_sh_type      = 1;
 constexpr QWORD  DATA_sh_flags     = 0x03;
 constexpr QWORD  DATA_sh_addr      = 0x600130;
 constexpr QWORD  DATA_sh_offset    = 0x130;
-constexpr QWORD  DATA_sh_size      = 0x40;   // Size of data
+constexpr QWORD  DATA_sh_size      = SizeOdDataSegm;   // Size of data
 constexpr DWORD  DATA_sh_link      = 0;
 constexpr DWORD  DATA_sh_info      = 0;
 constexpr QWORD  DATA_sh_addralign = 0x04;
@@ -143,4 +144,25 @@ public:
     ELF (unsigned int _bf_size);
     ~ELF ();
     void load_to_file (const char* path);
+    unsigned int set_zeros (char* bf_ptr, int number);
 };
+char code[] = {0x90,             	            // nop
+0x90,             	            // nop
+0x90,             	            // nop
+0x55,             	            // push   %rbp
+0x48, 0x89, 0xe5,             	    // mov    %rsp,%rbp
+0x90,             	            // nop
+0x90,            	            // nop
+0x90,            	            // nop
+0x48, 0x8b, 0x5d, 0xf8,          	// mov    -0x8(%rbp),%rbx
+0x48, 0x8b, 0x5d, 0xf0,          	// mov    -0x10(%rbp),%rbx
+0x48, 0x8b, 0x5d, 0xe8,          	// mov    -0x18(%rbp),%rbx
+0x48, 0x8b, 0x5d, 0xe0,          	// mov    -0x20(%rbp),%rbx
+0x90,            	// nop
+0x48, 0x8b, 0x4d, 0xf8,          	// mov    -0x8(%rbp),%rcx
+0x48, 0x8b, 0x4d, 0xf0,          	// mov    -0x10(%rbp),%rcx
+0x48, 0x8b, 0x4d, 0xe8,          	// mov    -0x18(%rbp),%rcx
+0x48, 0x8b, 0x4d, 0xe0,          	// mov    -0x20(%rbp),%rcx
+0xb8, 0x01, 0x00, 0x00, 0x00,       	// mov    $0x1,%eax
+0xbb, 0x00, 0x00, 0x00, 0x00,       	// mov    $0x0,%ebx
+0xcd, 0x80, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}; // 

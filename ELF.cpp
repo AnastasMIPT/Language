@@ -10,6 +10,8 @@ unsigned int set_elem (char* buf_ptr, const Type* elem) {
     return size;
 }
 
+
+
 ELF::~ELF () {
     free (buf);
     delete header;
@@ -18,6 +20,12 @@ ELF::~ELF () {
     delete sh_text;
     delete sh_data;
 }
+
+unsigned int ELF::set_zeros (char* bf_ptr, int number) {
+    memchr (bf_ptr, 0, number);
+    return number;
+}
+
 
 ELF::ELF (unsigned int _bf_size) : bf_size (_bf_size) {
     buf    = reinterpret_cast<char*> (calloc (bf_size, sizeof (char)));
@@ -40,8 +48,10 @@ ELF::ELF (unsigned int _bf_size) : bf_size (_bf_size) {
 
     sh_data = new Section_Header (DATA_sh_type, DATA_sh_flags, DATA_sh_addr,      DATA_sh_offset, DATA_sh_size,
                                   DATA_sh_link, DATA_sh_info,  DATA_sh_addralign, DATA_sh_entsize);
-    bf_ptr += set_elem (bf_ptr, sh_data);
+    bf_ptr += set_elem  (bf_ptr, sh_data);
+    bf_ptr += set_zeros (bf_ptr, SizeOdDataSegm);
 
+    memcpy (bf_ptr, code, 56);
 }
 
 void ELF::load_to_file (const char * path) {
