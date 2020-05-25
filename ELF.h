@@ -14,28 +14,30 @@ constexpr DWORD PF_R = 4;
 
 
 
+
+
 constexpr DWORD  TEXT_p_flags  = PF_X + PF_R;
-constexpr QWORD  TEXT_p_offset = 0;            //Offset segment from 
-constexpr QWORD  TEXT_p_vaddr  = 0x400000;
-constexpr QWORD  TEXT_p_paddr  = 0x400000;
-constexpr QWORD  TEXT_p_filesz = 0xd6;         //SizeOfSegment in file
-constexpr QWORD  TEXT_p_memsz  = 0xd6;         //SizeOfSegment in memory
+constexpr QWORD  TEXT_p_offset = 64;            //Offset segment from 
+constexpr QWORD  TEXT_p_vaddr  = 0x400040;
+constexpr QWORD  TEXT_p_paddr  = 0x400040;
+constexpr QWORD  TEXT_p_filesz = 0xd6;         //SizeOfSegment in file     ????
+constexpr QWORD  TEXT_p_memsz  = 0xd6;         //SizeOfSegment in memory   ????
 constexpr QWORD  TEXT_p_align  = 0x200000;
 
 
 constexpr DWORD  DATA_p_flags  = PF_W + PF_R;
-constexpr QWORD  DATA_p_offset = 0xd8;            //Offset segment from start of file
-constexpr QWORD  DATA_p_vaddr  = 0x6000d8;
-constexpr QWORD  DATA_p_paddr  = 0x6000d8;
-constexpr QWORD  DATA_p_filesz = 10;
-constexpr QWORD  DATA_p_memsz  = 10;
+constexpr QWORD  DATA_p_offset = 0;            //Offset segment from start of file
+constexpr QWORD  DATA_p_vaddr  = 0x600000;
+constexpr QWORD  DATA_p_paddr  = 0x600000;
+constexpr QWORD  DATA_p_filesz = 64;
+constexpr QWORD  DATA_p_memsz  = 64;
 constexpr QWORD  DATA_p_align  = 0x200000;
 
 
 constexpr DWORD  TEXT_sh_type      = 1;    
 constexpr QWORD  TEXT_sh_flags     = 6;   
-constexpr QWORD  TEXT_sh_addr      = 0x4000b0;
-constexpr QWORD  TEXT_sh_offset    = 0xb0;
+constexpr QWORD  TEXT_sh_addr      = 0x400170;
+constexpr QWORD  TEXT_sh_offset    = 0x170;
 constexpr QWORD  TEXT_sh_size      = 0x37; ///////
 constexpr DWORD  TEXT_sh_link      = 0;
 constexpr DWORD  TEXT_sh_info      = 0;
@@ -45,9 +47,9 @@ constexpr QWORD  TEXT_sh_entsize   = 0;
 
 constexpr DWORD  DATA_sh_type      = 1;
 constexpr QWORD  DATA_sh_flags     = 0x03;
-constexpr QWORD  DATA_sh_addr      = 0x6000e8;
-constexpr QWORD  DATA_sh_offset    = 0xe8;
-constexpr QWORD  DATA_sh_size      = 0x0a;   ///
+constexpr QWORD  DATA_sh_addr      = 0x600130;
+constexpr QWORD  DATA_sh_offset    = 0x130;
+constexpr QWORD  DATA_sh_size      = 0x40;   // Size of data
 constexpr DWORD  DATA_sh_link      = 0;
 constexpr DWORD  DATA_sh_info      = 0;
 constexpr QWORD  DATA_sh_addralign = 0x04;
@@ -67,9 +69,9 @@ struct ELF_Header {
     const WORD   e_type       = 2;                   // ELF_EXEC
     const WORD   e_machine    = 0x003e;              // amd64
     const DWORD  e_version    = 1;                   // Original ELF
-    const QWORD  e_entry      = 0x000000000004000b;  // virtual point of entry
+    const QWORD  e_entry      = 0x400130;  // virtual point of entry
     const QWORD  e_phoff      = 0x40;                // Program header offset
-    const QWORD  e_shoff      = 0x0110;              // Section header offset
+    const QWORD  e_shoff      = 0x0b0;               // Section header offset
     const DWORD  e_flags      = 0x00;                // Processor flags
     const WORD   e_ehsize     = 64;                  // ElfHeaderSize
     const WORD   e_phentsize  = 56;                  // Program header size

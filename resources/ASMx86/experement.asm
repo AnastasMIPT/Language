@@ -32,5 +32,12 @@ _start:
 		mov rbx, 0           ; код завершения программы
 		int 80h
 
-section .data
-	number times 10 db 0x99
+section .data                           
+		number times 10 db 0 
+		db 0
+		sign db 0
+		number_new times 10 db 0
+		db 0
+		number_rev times 10 db 0
+		sqrt_from dq 0
+		sqrt_res  dq 0

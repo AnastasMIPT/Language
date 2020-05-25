@@ -97,6 +97,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                 ProgramToASM (_R,  FuncNumber, f_out);
                 fprintf (f_out, itoa_s);
                 fprintf (f_out, atoi_s);
+                fprintf (f_out, data_s);
                 fprintf(f_out, "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
                 break;
             case D:

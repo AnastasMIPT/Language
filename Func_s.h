@@ -75,7 +75,17 @@ constexpr char atoi_s[] =
 ".Exit_l:\n"
 "\t\tmov rsp, rbp\n"
 "\t\tpop rbp\n"
-"\t\tret\n"
+"\t\tret\n";
+// "section .data\n"                           
+// "\t\tnumber times 10 db 0\n" 
+// "\t\tdb 0\n" 
+// "\t\tsign db 0\n" 
+// "\t\tnumber_new times 10 db 0\n"
+// "\t\tdb 0\n"
+// "\t\tnumber_rev times 10 db 0\n"
+// "\t\tsqrt_from dq 0\n"
+// "\t\tsqrt_res  dq 0\n";
+constexpr char data_s[] =
 "section .data\n"                           
 "\t\tnumber times 10 db 0\n" 
 "\t\tdb 0\n" 
@@ -85,6 +95,7 @@ constexpr char atoi_s[] =
 "\t\tnumber_rev times 10 db 0\n"
 "\t\tsqrt_from dq 0\n"
 "\t\tsqrt_res  dq 0\n";
+
 
 constexpr char output_s[] =
 "\t\tpush rbx\n"
