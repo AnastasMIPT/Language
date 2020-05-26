@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include "ELF.h"
 #include "Commands.h"
-
+#include"Func_b.h"
 
 template <typename Type>
 unsigned int set_elem (char* buf_ptr, const Type* elem) {
@@ -59,9 +59,14 @@ ELF::ELF (unsigned int _bf_size, Code* _code) : bf_size (_bf_size), code (_code)
     
     bf_ptr += set_zeros (bf_ptr, SizeOdDataSegm);
 
-    //bf_ptr += set_elem  (bf_ptr, code)
     memcpy (bf_ptr, r_code, 64);
-    //memcpy (bf_ptr, code->get_code_buf (), code->get_size ());
+    bf_ptr += 64;
+    memcpy (bf_ptr, itoa_b, SizeItoa);
+    bf_ptr += SizeItoa;
+    memcpy (bf_ptr, output_b, SizeOutput);
+    bf_ptr += SizeOutput;
+    
+    bf_ptr += set_zeros (bf_ptr, 2);
 }
 
 void ELF::load_to_file (const char * path) {
