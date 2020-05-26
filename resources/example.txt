@@ -1,8 +1,16 @@
 start
+def factorial (n):
+{
+    if (n equal 1) {
+        return 1;
+    }
+    return n * factorial (n - 1);
+}
 def main ():
 {
-    x =5;
-    output (x)
-    return 0;
+    input (num)
+    fact = factorial (num);
+    output (fact)
+    return;
 }
 end
