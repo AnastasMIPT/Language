@@ -29,7 +29,7 @@ constexpr int ColVarsInOneFunc = 30;
 constexpr int VarNum = 40;
 constexpr int Bytes = 8;
 constexpr int Precision = 100;
-
+constexpr int SizeOfCode = 100;
 
 int IfNumber = 0;
 
@@ -98,10 +98,17 @@ int main () {
 
     // ProgramToASM (root, f_asm);
     // fclose (f_asm);
-    
-    ELF file (700);
+    // printf ("Hello\n");
+    // setbuf (stdout, NULL);
+    Code* code = new Code (SizeOfCode);
+    // printf ("Hello2\n");
+    // code->write_from_buf (const_cast <unsigned char*> (r_code), 64);
+    // printf ("Hello3\n");
+    // printf ("%u\n", code->get_size());
+    ELF file (SizeOfELF_header + SizeOfCode, code);
     file.load_to_file ("./resources/ASMx86/my_elf");
     
+    delete code;
     return 0;
 }
 

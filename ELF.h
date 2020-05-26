@@ -4,6 +4,7 @@
 #include <cstdio>
 #include "Commands.h"
 
+
 template <typename Type>
 unsigned int set_elem (char* buf_ptr, const Type* elem);
 
@@ -18,7 +19,7 @@ constexpr DWORD PF_R = 4;
 
 
 constexpr unsigned long long SizeOdDataSegm = 64;
-
+constexpr unsigned int SizeOfELF_header =  SizeOdDataSegm + 304;
 
 
 constexpr DWORD  TEXT_p_flags  = PF_X + PF_R;
@@ -129,6 +130,23 @@ struct Section_Header {
 };
 #pragma pack (pop)
 
+
+
+class Code {
+    char* buf;
+    char* buf_ptr;
+    unsigned int size;
+public:
+    Code (unsigned int buf_size);
+    ~Code ();
+    unsigned int get_size () const;
+    char* get_code_buf    () const;
+    void write_from_buf   (unsigned char* _buf, unsigned int num);
+    void add_command  (const Command& command);
+};
+
+
+
 class ELF {
     char* buf;
     char* bf_ptr;
@@ -138,27 +156,18 @@ class ELF {
     Program_Header* ph_data;
     Section_Header* sh_text;
     Section_Header* sh_data;
+    Code* code;
 public:
-    ELF (unsigned int _bf_size);
+    ELF (unsigned int _bf_size, Code* _code);
     ~ELF ();
     void load_to_file (const char* path);
-    unsigned int set_zeros (char* bf_ptr, int number);
+    
 };
 
+unsigned int set_zeros (char* bf_ptr, unsigned int number);
 
-class Code {
-    char* byte_code;
-    char* code_ptr;
-    unsigned int size;
-public:
-    unsigned int get_size () const;
-    char* get_code_buf () const;
-    void add_command  (const Command& command);
-};
-
-
-
-char code[] = {0x90,             	            // nop
+const unsigned char r_code[] = {
+0x90,             	            // nop
 0x90,             	            // nop
 0x90,             	            // nop
 0x55,             	            // push   %rbp

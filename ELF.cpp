@@ -27,15 +27,16 @@ ELF::~ELF () {
     delete sh_data;
 }
 
-unsigned int ELF::set_zeros (char* bf_ptr, int number) {
+unsigned int set_zeros (char* bf_ptr, unsigned int number) {
     memchr (bf_ptr, 0, number);
     return number;
 }
 
 
-ELF::ELF (unsigned int _bf_size) : bf_size (_bf_size) {
+ELF::ELF (unsigned int _bf_size, Code* _code) : bf_size (_bf_size), code (_code) {
     buf    = reinterpret_cast<char*> (calloc (bf_size, sizeof (char)));
     bf_ptr = buf;
+    printf ("Hello**\n");
     
     header =  new ELF_Header;
     bf_ptr += set_elem (bf_ptr, header);
@@ -58,7 +59,9 @@ ELF::ELF (unsigned int _bf_size) : bf_size (_bf_size) {
     
     bf_ptr += set_zeros (bf_ptr, SizeOdDataSegm);
 
-    memcpy (bf_ptr, code, 64);
+    //bf_ptr += set_elem  (bf_ptr, code)
+    memcpy (bf_ptr, r_code, 64);
+    //memcpy (bf_ptr, code->get_code_buf (), code->get_size ());
 }
 
 void ELF::load_to_file (const char * path) {
@@ -80,14 +83,29 @@ unsigned int Code::get_size () const {
 }
 
 char* Code::get_code_buf () const {
-    return byte_code;
+    return buf;
 }
 
 void Code::add_command  (const Command& command) {
-    command.write_command_to_buf (code_ptr);
-    code_ptr += command.get_byte_num ();
+    command.write_to_buf (buf_ptr);
+    buf_ptr += command.get_byte_num ();
+    size += command.get_byte_num ();
 }
 
+void Code::write_from_buf (unsigned char* _buf, unsigned int num) {
+    assert (_buf);
+    memcpy (buf_ptr, _buf, num);
+    printf ("hello33\n");
+    buf_ptr += num;
+    size += num;
+}
 
+Code::Code (unsigned int buf_size) {
+    buf = reinterpret_cast <char*> (calloc (buf_size, sizeof (char)));
+}
+
+Code::~Code () {
+    free (buf);
+}
 
 #endif //ELF_CPP

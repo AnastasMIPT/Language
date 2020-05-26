@@ -239,11 +239,12 @@ void RedusePrecision (FILE* f_out, Node* elem, int ret_value) {
 void Handle_start      (Node* root, FILE* f_out) {
     
     fprintf (f_out, start_s);
-    fprintf (f_out, itoa_s);
-    fprintf (f_out, atoi_s);
+    
 
     ProgramToASM (_R , f_out);
     
+    fprintf (f_out, itoa_s);
+    fprintf (f_out, atoi_s);
     fprintf (f_out, data_s);
     fprintf(f_out, "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
 

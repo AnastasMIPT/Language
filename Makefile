@@ -1,4 +1,4 @@
-Project_name = backend_elf
+Project_name = backend_x86
 second       = backend_x86
 libs         = Words.h Func_s.h
 CFlags       = --std=c++17 -O3

@@ -6,6 +6,39 @@ _start:
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
+main:
+		push rbp
+		mov rbp, rsp
+		sub rsp, 8
+
+		;assign
+		mov qword [rbp-8], 500
+
+
+
+		;output
+
+		mov rbx, qword [rbp-8]
+		push rbx
+		call itoa
+		sub rsp, 8
+
+		mov rax, 4
+		mov rbx, 1
+		mov rcx, number_new
+		mov rdx, 11
+		int 80h
+
+
+		;return
+
+		mov rbx, qword 0
+		mov rax, rbx
+
+		mov rsp, rbp
+		pop rbp
+		ret
+
 itoa:
 		push rbp
 		mov rbp, rsp
@@ -77,39 +110,6 @@ atoi:
 		mov rsp, rbp
 		pop rbp
 		ret
-main:
-		push rbp
-		mov rbp, rsp
-		sub rsp, 8
-
-		;assign
-		mov qword [rbp-8], 500
-
-
-
-		;output
-
-		mov rbx, qword [rbp-8]
-		push rbx
-		call itoa
-		sub rsp, 8
-
-		mov rax, 4
-		mov rbx, 1
-		mov rcx, number_new
-		mov rdx, 11
-		int 80h
-
-
-		;return
-
-		mov rbx, qword 0
-		mov rax, rbx
-
-		mov rsp, rbp
-		pop rbp
-		ret
-
 section .data
 		number times 10 db 0
 		db 0
