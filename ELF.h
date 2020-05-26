@@ -1,4 +1,8 @@
+#ifndef ELF_H
+#define ELF_H
+
 #include <cstdio>
+#include "Commands.h"
 
 template <typename Type>
 unsigned int set_elem (char* buf_ptr, const Type* elem);
@@ -125,12 +129,6 @@ struct Section_Header {
 };
 #pragma pack (pop)
 
-struct code {
-    char* byte_code;
-
-};
-
-
 class ELF {
     char* buf;
     char* bf_ptr;
@@ -146,6 +144,20 @@ public:
     void load_to_file (const char* path);
     unsigned int set_zeros (char* bf_ptr, int number);
 };
+
+
+class Code {
+    char* byte_code;
+    char* code_ptr;
+    unsigned int size;
+public:
+    unsigned int get_size () const;
+    char* get_code_buf () const;
+    void add_command  (const Command& command);
+};
+
+
+
 char code[] = {0x90,             	            // nop
 0x90,             	            // nop
 0x90,             	            // nop
@@ -166,3 +178,6 @@ char code[] = {0x90,             	            // nop
 0xb8, 0x01, 0x00, 0x00, 0x00,       	// mov    $0x1,%eax
 0xbb, 0x00, 0x00, 0x00, 0x00,       	// mov    $0x0,%ebx
 0xcd, 0x80, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}; // 
+
+
+#endif //ELF_H

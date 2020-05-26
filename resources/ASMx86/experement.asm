@@ -1,39 +1,117 @@
 section .text
 global _start
 _start:
-		nop
-		nop
-		nop
-		push rbp
-		mov rbp, rsp
-		nop
-		nop
-		nop
-
-
-		mov rbx, [rbp-8]
-		mov rbx, [rbp-16]
-		mov rbx, [rbp-24]
-		mov rbx, [rbp-32]
-
-		nop
-
-		mov rcx, [rbp-8]
-		mov rcx, [rbp-16]
-		mov rcx, [rbp-24]
-		mov rcx, [rbp-32]
-				
-		
-
-
-
+		call main
 
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
+itoa:
+		push rbp
+		mov rbp, rsp
+		xor rax, rax
+		mov rax, qword [rbp+16]
+		mov rbx, qword number_rev
+		mov rdi, number_new
+		xor r10, r10
+		or rax, rax
+		jns .Loop
+		neg rax
+		mov byte [rdi], '-'
+		inc rbx
+		inc rdi
+.Loop:
+		xor rdx, rdx
+		mov r8, 0ah
+		div r8
+		add rdx, '0'
+		mov byte [rbx+r10], dl
+		inc r10
+		cmp qword r10, SYMB_POINT
+		jne .NoPoint
+		mov byte [rbx+r10], '.'
+		inc r10
+.NoPoint:
+		cmp rax, 0
+		je .Loop2
+		jmp .Loop
+.Loop2:		;writing reversev
+		dec r10
+		mov al, [rbx+r10]
+		stosb
+		cmp r10, 0
+		je .Exit
+		jmp .Loop2
+.Exit:
 
-section .data                           
-		number times 10 db 0 
+		mov byte [rdi+1], 10
+		mov rsp, rbp
+		pop rbp
+		ret
+atoi:
+		push rbp
+		mov rbp, rsp
+		xor rax, rax
+
+		mov byte [sign], 0
+		mov rbx, qword [rbp+16]
+		xor rcx, rcx
+		cmp byte [rbx], '-'
+		jne .Next
+		mov byte [sign], 1
+		inc rbx
+.Next:
+		cmp byte [rbx], 10
+		je .Exit
+		mov cl, byte [rbx]
+		sub rcx, '0'
+		imul rax, 10
+		add rax, rcx
+		inc rbx
+		jmp .Next
+.Exit:
+		cmp byte[sign], 1
+		jne .Exit_l
+		neg rax
+.Exit_l:
+		mov rsp, rbp
+		pop rbp
+		ret
+main:
+		push rbp
+		mov rbp, rsp
+		sub rsp, 8
+
+		;assign
+		mov qword [rbp-8], 500
+
+
+
+		;output
+
+		mov rbx, qword [rbp-8]
+		push rbx
+		call itoa
+		sub rsp, 8
+
+		mov rax, 4
+		mov rbx, 1
+		mov rcx, number_new
+		mov rdx, 11
+		int 80h
+
+
+		;return
+
+		mov rbx, qword 0
+		mov rax, rbx
+
+		mov rsp, rbp
+		pop rbp
+		ret
+
+section .data
+		number times 10 db 0
 		db 0
 		sign db 0
 		number_new times 10 db 0
@@ -41,3 +119,4 @@ section .data
 		number_rev times 10 db 0
 		sqrt_from dq 0
 		sqrt_res  dq 0
+		SYMB_POINT equ 2

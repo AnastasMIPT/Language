@@ -1,7 +1,13 @@
+#ifndef ELF_CPP
+#define ELF_CPP
+
+
 #include <cstring>
 #include <cstdio>
 #include <cstdlib>
 #include "ELF.h"
+#include "Commands.h"
+
 
 template <typename Type>
 unsigned int set_elem (char* buf_ptr, const Type* elem) {
@@ -67,3 +73,21 @@ void ELF::load_to_file (const char * path) {
     fwrite (buf, sizeof (char), bf_size, f_out);
     fclose (f_out);
 }
+
+
+unsigned int Code::get_size () const {
+    return size;
+}
+
+char* Code::get_code_buf () const {
+    return byte_code;
+}
+
+void Code::add_command  (const Command& command) {
+    command.write_command_to_buf (code_ptr);
+    code_ptr += command.get_byte_num ();
+}
+
+
+
+#endif //ELF_CPP

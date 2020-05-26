@@ -5,7 +5,6 @@
 #ifndef LANGUAGE_WORDS_H
 #define LANGUAGE_WORDS_H
 
-#endif //LANGUAGE_WORDS_H
 
 enum {
     START,
@@ -195,3 +194,4 @@ const char* reg_for_math[] = {
         "r15",
         "?"
 };
+#endif //LANGUAGE_WORDS_H
