@@ -7,6 +7,7 @@
 #include "Func_s.h"
 #include "ELF.cpp"
 
+
 #define _NewEl(type)                                       \
 else if ( strcmp (#type, data) == 0)                                      \
     root =  CreateNode (type, #type, nullptr, nullptr);    \
@@ -60,14 +61,27 @@ Node* CreateNode (int type, const char* data, Node* left, Node* right, double nu
 Node* CreateNode (int type, const char* data, Node* left, Node* right);
 Node* CreateNode (double num);
 
-void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value = UNDEF);
+void ProgramToASM (Node* root, FILE* f_out, int ret_value = UNDEF);
+
 int ReduseRsp (Node* root);
+
 int Hash (const char* str);
-void Arithmetic_op_sum (Node* root, int FuncNumber, FILE* f_out, int ret_value);
-void Arithmetic_op_mul (Node* root, int FuncNumber, FILE* f_out, int ret_value);
-void RedusePrecision (FILE* f_out, Node* elem, int ret_value = UNDEF);
+
+void Arithmetic_op_sum (Node* root, FILE* f_out, int ret_value);
+void Arithmetic_op_mul (Node* root, FILE* f_out, int ret_value);
+void Arithmetic_op_div (Node* root, FILE* f_out, int ret_value);
+void Arithmetic_op_sub (Node* root, FILE* f_out, int ret_value);
+
+void Handle_call       (Node* root, FILE* f_out, int ret_value);
+void Handle_sqrt       (Node* root, FILE* f_out, int ret_value);
+void Handle_assign     (Node* root, FILE* f_out);
+void Handle_start      (Node* root, FILE* f_out);
+void Handle_ret        (Node* root, FILE* f_out);
+void Handle_comma      (Node* root, FILE* f_out);
+void Handle_def        (Node* root, FILE* f_out);
 
 
+void RedusePrecision   (FILE* f_out, Node* elem, int ret_value = UNDEF);
 
 int main () {
 
@@ -82,7 +96,7 @@ int main () {
     // assert (f_asm);
     // setbuf (f_asm, NULL);
 
-    // ProgramToASM (root, NullFunc, f_asm);
+    // ProgramToASM (root, f_asm);
     // fclose (f_asm);
     
     ELF file (432);
@@ -93,143 +107,85 @@ int main () {
 
 
 
-void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
+void ProgramToASM (Node* root, FILE* f_out, int ret_value) {
     if (root) {
         int buf = 0;
         switch (root->type) {
             case START:
-                fprintf (f_out, start_s);
-                ProgramToASM (_R,  FuncNumber, f_out);
-                fprintf (f_out, itoa_s);
-                fprintf (f_out, atoi_s);
-                fprintf(f_out, "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
+                Handle_start    (root, f_out);
                 break;
             case D:
-                ProgramToASM (_R,  FuncNumber, f_out);
-                ProgramToASM (_Lf, FuncNumber, f_out);
+                ProgramToASM (_R , f_out);
+                ProgramToASM (_Lf, f_out);
                 break;
             case DEF:
-                fprintf (f_out, "%s:\n"
-                                "\t\tpush rbp\n"
-                                "\t\tmov rbp, rsp\n"
-                                "\t\tsub rsp, %d\n\n", _R->data, Bytes * static_cast<int> (_R->left->num));
-                //POPargs      (_Lf, 1, f_out);
-                ProgramToASM (_R,  static_cast<int> (root->right->num) - NullFunc, f_out);
+                Handle_def     (root, f_out);
                 break;
             case FUNC:
-                ProgramToASM (_R,  FuncNumber, f_out);
+                ProgramToASM (_R , f_out);
                 break;
             case CALL:
-                fprintf (f_out, "\n\t\t;call\n\n");
-                ProgramToASM (_Lf, FuncNumber, f_out);
-                
-                fprintf (f_out, "\t\tcall %s\n", _R->data);
-                fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
-                if (ret_value != RAX) {
-                   fprintf (f_out, "\t\tmov %s, rax\n\n", reg_for_math[ret_value]); 
-                }
-                //ProgramToASM (_R,  FuncNumber, f_out);
+                Handle_call    (root, f_out, ret_value);
                 break;
             case COMMA:
-                ProgramToASM (_Lf, FuncNumber, f_out);
-                if (_R->type == NUM || _R->type == VAR) {
-                    if (_R->type == NUM) fprintf (f_out, "\t\tpush qword %d\n", Precision * static_cast<int> (_R->num));
-                    if (_R->type == VAR) fprintf (f_out, "\t\tpush qword [rbp%+d]\n", Bytes * static_cast<int> (_R->num));
-                } else {
-                    ProgramToASM (_R,  FuncNumber, f_out, RBX);
-                    fprintf (f_out, "\t\tpush qword rbx\n");
-                }
+                Handle_comma   (root, f_out);
                 break;
             case B:
-                ProgramToASM (_R,  FuncNumber, f_out);
+                ProgramToASM (_R , f_out);
                 break;
             case OP:
-                ProgramToASM (_R,  FuncNumber, f_out);
-                ProgramToASM (_Lf, FuncNumber, f_out);
+                ProgramToASM (_R , f_out);
+                ProgramToASM (_Lf, f_out);
                 break;
             case ASSIGN:
-                fprintf (f_out, "\t\t;assign\n");
-                if (_R->type == NUM) {
-                    fprintf (f_out, "\t\tmov qword [rbp%+d], %d\n", Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num));
-                } else if (_R->type == CALL) {
-                    ProgramToASM (_R,  FuncNumber, f_out, RAX);
-                    fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
-                } else {
-                    ProgramToASM (_R,  FuncNumber, f_out, RBX);
-                    fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
-                }
-                fprintf (f_out, "\n\n");
-                //fprintf (f_out, "%d\n", FuncNumber);
+                Handle_assign  (root, f_out);
                 break;
             case IF:
 
                 buf = IfNumber;
-                ProgramToASM (_Lf, FuncNumber, f_out);
+                ProgramToASM (_Lf, f_out);
                 IfNumber++;
-                ProgramToASM (_R,  FuncNumber, f_out);
+                ProgramToASM (_R , f_out);
                 fprintf (f_out, "end_if%d:\n", buf);
                 break;
             case EQUAL:
-                ProgramToASM (_Lf, FuncNumber, f_out, RBX);
-                ProgramToASM (_R,  FuncNumber, f_out, RCX);
+                ProgramToASM (_Lf, f_out, RBX);
+                ProgramToASM (_R , f_out, RCX);
 
                 fprintf (f_out, "\t\tcmp rbx, rcx\n"
                                 "\t\tjne end_if%d\n", IfNumber);
                 break;
             case UNEQUAL:
-                ProgramToASM (_Lf, FuncNumber, f_out, RBX);
-                ProgramToASM (_R,  FuncNumber, f_out, RCX);
+                ProgramToASM (_Lf, f_out, RBX);
+                ProgramToASM (_R , f_out, RCX);
                 fprintf (f_out, "\t\tcmp rbx, rcx\n"
                                 "\t\tje end_if%d\n", IfNumber);
                 break;
             case MORE:
-                ProgramToASM (_R,  FuncNumber, f_out, RBX);
-                ProgramToASM (_Lf, FuncNumber, f_out, RCX);
+                ProgramToASM (_R , f_out, RBX);
+                ProgramToASM (_Lf, f_out, RCX);
 
                 fprintf (f_out, "\t\tcmp rbx, rcx\n"
                                 "\t\tjg end_if%d\n", IfNumber);
                 break;
             case SUM:
-                Arithmetic_op_sum (root, FuncNumber, f_out, ret_value);
+                Arithmetic_op_sum (root, f_out, ret_value);
                 break;
             case SUB:
-                ProgramToASM (_Lf, FuncNumber, f_out, ret_value);
-                if (_R->type == NUM) {
-                    fprintf (f_out, "\t\tsub %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (_R->num));
-                } else if (_R->type == VAR) {
-                    fprintf (f_out, "\t\tsub %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
-                } else {
-                    ProgramToASM (_R, FuncNumber, f_out, ret_value + 1);
-                    fprintf (f_out, "\t\tsub %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
-                }
+                Arithmetic_op_sub (root, f_out, ret_value);
                 break;
             case MUL:
-                Arithmetic_op_mul (root, FuncNumber, f_out, ret_value);
+                Arithmetic_op_mul (root, f_out, ret_value);
                 break;
             case DIV:
-                ProgramToASM (_Lf, FuncNumber, f_out, ret_value);
-                if (_R->type == NUM) {
-                    fprintf (f_out, "\t\tmov %s, qword %lg\n", reg_for_math[ret_value + 1], _R->num);
-                } else {
-                    ProgramToASM (_R, FuncNumber, f_out, ret_value + 1);
-                    RedusePrecision (f_out, _R, ret_value + 1);
-                }
-                fprintf (f_out, "\t\tmov rax, %s\n", reg_for_math[ret_value]);
-                fprintf (f_out, "\t\tcqo\n");
-                fprintf (f_out, "\t\tidiv %s\n", reg_for_math[ret_value + 1]);
-                if (ret_value != RAX) {
-                    fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math[ret_value]);
-                }
+                Arithmetic_op_div (root, f_out, ret_value);
                 break;
             case RETURN:
-                fprintf (f_out, "\n\t\t;return\n\n");
-                ProgramToASM (_R,  FuncNumber, f_out, RBX);
-                fprintf (f_out, "\t\tmov rax, rbx\n");
-                fprintf (f_out, ret_s);
+                Handle_ret     (root, f_out);
                 break;
             case OUTPUT:
                 fprintf (f_out, "\n\t\t;output\n\n");
-                ProgramToASM (_R,  FuncNumber, f_out, RBX);
+                ProgramToASM (_R , f_out, RBX);
                 fprintf (f_out, output_s);
                 break;
             case INPUT:
@@ -239,19 +195,14 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
                                 "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
                 break;
             case SQRT:
-                fprintf (f_out, "\n\t\t;sqrt\n\n");
-                ProgramToASM (_R,  FuncNumber, f_out, ret_value);
-                fprintf (f_out, "\n\t\tmov qword [sqrt_from], %s\n", reg_for_math[ret_value]);
-                fprintf (f_out, sqrt_s);
-                fprintf (f_out, "\t\tmov %s, qword [sqrt_res]\n\n", reg_for_math[ret_value]);
-                fprintf (f_out, "\t\timul %s, %d\n", reg_for_math[ret_value], static_cast<int> (sqrt (Precision)));
+                Handle_sqrt    (root, f_out, ret_value);
                 break;  
             case BREAK:
-                ProgramToASM (_R,  FuncNumber, f_out);
+                ProgramToASM (_R , f_out);
                 fprintf (f_out, "\t\tBREAK\n");
                 break;
             case DIFF:
-                ProgramToASM (_R,  FuncNumber, f_out);
+                ProgramToASM (_R , f_out);
                 fprintf (f_out, "\t\tDIFF\n");
                 break;
             case VAR:
@@ -262,8 +213,6 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
             case NUM:
                 if (ret_value != UNDEF) {
                     fprintf (f_out, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (root->num));    
-                } else {
-                    //fprintf (f_out, "\t\tpush %lg\n", root->num);
                 }
                 break;
             default:
@@ -272,6 +221,7 @@ void ProgramToASM (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
         }
     }
 }
+
 void RedusePrecision (FILE* f_out, Node* elem, int ret_value) {
     if (ret_value != UNDEF) {
         fprintf (f_out, "\n\t\tmov rax, %s\n"
@@ -291,27 +241,180 @@ void RedusePrecision (FILE* f_out, Node* elem, int ret_value) {
     }
 }
 
-void Arithmetic_op_mul (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
-    if (_Lf->type == NUM) {
-        ProgramToASM (_R,   FuncNumber, f_out, ret_value);
-        fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_Lf->num));
+void Handle_start      (Node* root, FILE* f_out) {
+    
+    fprintf (f_out, start_s);
+    fprintf (f_out, itoa_s);
+    fprintf (f_out, atoi_s);
 
-    } else if (_R->type == NUM) {
-        ProgramToASM (_Lf,  FuncNumber, f_out, ret_value);
-        fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_R->num));
+    ProgramToASM (_R , f_out);
+    
+    fprintf (f_out, data_s);
+    fprintf(f_out, "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
+
+}
+
+void Handle_ret        (Node* root, FILE* f_out) {
+
+    fprintf (f_out, "\n\t\t;return\n\n");
+
+    ProgramToASM (_R , f_out, RBX);
+    
+    fprintf (f_out, "\t\tmov rax, rbx\n");
+    fprintf (f_out, ret_s);
+}
+
+void Handle_comma      (Node* root, FILE* f_out) {
+    ProgramToASM (_Lf, f_out);
+    
+    if (_R->type == NUM || _R->type == VAR) {
+    
+        if (_R->type == NUM) fprintf (f_out, "\t\tpush qword %d\n", Precision * static_cast<int> (_R->num));
+        if (_R->type == VAR) fprintf (f_out, "\t\tpush qword [rbp%+d]\n", Bytes * static_cast<int> (_R->num));
+    
     } else {
-        ProgramToASM (_Lf,  FuncNumber, f_out, ret_value);
-        ProgramToASM (_R,   FuncNumber, f_out, ret_value + 1);
-        RedusePrecision (f_out, _Lf, ret_value);
-        fprintf (f_out, "\t\timul %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+    
+        ProgramToASM (_R , f_out, RBX);
+        fprintf (f_out, "\t\tpush qword rbx\n");
+    
     }
 }
 
+void Handle_def        (Node* root, FILE* f_out) {
+    
+    fprintf (f_out, "%s:\n"
+                    "\t\tpush rbp\n"
+                    "\t\tmov rbp, rsp\n"
+                    "\t\tsub rsp, %d\n\n", _R->data, Bytes * static_cast<int> (_R->left->num));
+    
+    ProgramToASM (_R, f_out);
 
-void Arithmetic_op_sum (Node* root, int FuncNumber, FILE* f_out, int ret_value) {
+}
+
+void Handle_call       (Node* root, FILE* f_out, int ret_value) {
+
+    fprintf (f_out, "\n\t\t;call\n\n");
+
+    ProgramToASM (_Lf, f_out);
+    
+    fprintf (f_out, "\t\tcall %s\n", _R->data);
+    fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
+
+    if (ret_value != RAX) {
+        fprintf (f_out, "\t\tmov %s, rax\n\n", reg_for_math[ret_value]); 
+    }
+}
+
+void Handle_assign     (Node* root, FILE* f_out) {
+
+    fprintf (f_out, "\t\t;assign\n");
+
+    if (_R->type == NUM) {
+    
+        fprintf (f_out, "\t\tmov qword [rbp%+d], %d\n", Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num));
+    
+    } else if (_R->type == CALL) {
+    
+        ProgramToASM (_R , f_out, RAX);
+        fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
+    
+    } else {
+    
+        ProgramToASM (_R , f_out, RBX);
+        fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
+    
+    }
+    
+    fprintf (f_out, "\n\n");
+}
+
+void Handle_sqrt       (Node* root, FILE* f_out, int ret_value) {
+
+    fprintf (f_out, "\n\t\t;sqrt\n\n");
+
+    ProgramToASM (_R , f_out, ret_value);
+    
+    fprintf (f_out, "\n\t\tmov qword [sqrt_from], %s\n", reg_for_math[ret_value]);
+    fprintf (f_out, sqrt_s);
+    fprintf (f_out, "\t\tmov %s, qword [sqrt_res]\n\n", reg_for_math[ret_value]);
+    fprintf (f_out, "\t\timul %s, %d\n", reg_for_math[ret_value], static_cast<int> (sqrt (Precision)));
+}
+
+
+
+void Arithmetic_op_mul (Node* root, FILE* f_out, int ret_value) {
+    
+    if (_Lf->type == NUM) {
+    
+        ProgramToASM (_R,   f_out, ret_value);
+        fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_Lf->num));
+
+    } else if (_R->type == NUM) {
+    
+        ProgramToASM (_Lf , f_out, ret_value);
+        fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_R->num));
+    
+    } else {
+
+        ProgramToASM (_Lf , f_out, ret_value);
+        ProgramToASM (_R,   f_out, ret_value + 1);
+
+        RedusePrecision (f_out, _Lf, ret_value);
+        
+        fprintf (f_out, "\t\timul %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+
+    }
+}
+
+void Arithmetic_op_div (Node* root, FILE* f_out, int ret_value) {
+    
+    ProgramToASM (_Lf, f_out, ret_value);
+    
+    if (_R->type == NUM) {
+
+        fprintf (f_out, "\t\tmov %s, qword %lg\n", reg_for_math[ret_value + 1], _R->num);
+    
+    } else {
+
+        ProgramToASM    (_R, f_out, ret_value + 1);
+        RedusePrecision (f_out, _R, ret_value + 1);
+    }
+    
+    fprintf (f_out, "\t\tmov rax, %s\n", reg_for_math[ret_value]);
+    fprintf (f_out, "\t\tcqo\n"
+                    "\t\tidiv %s\n",     reg_for_math[ret_value + 1]);
+    
+    if (ret_value != RAX) {
+
+        fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math[ret_value]);
+
+    }
+}
+
+void Arithmetic_op_sub (Node* root, FILE* f_out, int ret_value) {
+    
+    ProgramToASM (_Lf, f_out, ret_value);
+
+    if (_R->type == NUM) {
+        
+        fprintf (f_out, "\t\tsub %s, qword %d\n",       reg_for_math[ret_value], Precision * static_cast<int> (_R->num));
+    
+    } else if (_R->type == VAR) {
+        
+        fprintf (f_out, "\t\tsub %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
+    
+    } else {
+        
+        ProgramToASM (_R, f_out,  ret_value + 1);
+        fprintf   (f_out, "\t\tsub %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+    
+    }
+}
+
+void Arithmetic_op_sum (Node* root, FILE* f_out, int ret_value) {
     if (_Lf->type == VAR || _Lf->type == NUM) {
         
-        ProgramToASM (_R,  FuncNumber, f_out, ret_value);
+        ProgramToASM (_R, f_out, ret_value);
         
         if (_Lf->type == VAR) {
             fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_Lf->num));
@@ -321,7 +424,7 @@ void Arithmetic_op_sum (Node* root, int FuncNumber, FILE* f_out, int ret_value) 
 
     } else if (_R->type == VAR || _R->type == NUM) {
         
-        ProgramToASM (_Lf,  FuncNumber, f_out, ret_value);
+        ProgramToASM (_Lf, f_out, ret_value);
         
         if (_R->type == VAR)
             fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
@@ -330,8 +433,8 @@ void Arithmetic_op_sum (Node* root, int FuncNumber, FILE* f_out, int ret_value) 
     
     } else {
     
-        ProgramToASM (_Lf, FuncNumber, f_out, ret_value);
-        ProgramToASM (_R,  FuncNumber, f_out, ret_value + 1);
+        ProgramToASM (_Lf, f_out, ret_value);
+        ProgramToASM (_R, f_out, ret_value + 1);
         fprintf (f_out, "\t\tadd %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
     
     }
