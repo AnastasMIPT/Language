@@ -1,4 +1,4 @@
-=======
+
 # My own programming language and compiler for it.
 ## The first stage: building a tree according to the program
 Here is an example program on my language:

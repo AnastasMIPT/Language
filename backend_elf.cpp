@@ -6,6 +6,8 @@
 #include "Words.h"
 #include "Func_s.h"
 #include "ELF.cpp"
+#include "Commands.cpp"
+
 
 
 #define _NewEl(type)                                       \
@@ -29,7 +31,7 @@ constexpr int ColVarsInOneFunc = 30;
 constexpr int VarNum = 40;
 constexpr int Bytes = 8;
 constexpr int Precision = 100;
-constexpr int SizeOfCode = 100;
+constexpr int SizeOfCode = 64;
 
 int IfNumber = 0;
 
@@ -99,134 +101,131 @@ int main () {
     // ProgramToASM (root, f_asm);
     // fclose (f_asm);
     // printf ("Hello\n");
-    // setbuf (stdout, NULL);
-    Code* code = new Code (SizeOfCode);
-    // printf ("Hello2\n");
-    // code->write_from_buf (const_cast <unsigned char*> (r_code), 64);
-    // printf ("Hello3\n");
-    // printf ("%u\n", code->get_size());
-    ELF file (SizeOfELF_header + SizeOfCode, code);
+    setbuf (stdout, NULL);
+    Code code (r_code, SizeOfCode);
+
+    ELF file (code);
     file.load_to_file ("./resources/ASMx86/my_elf");
-    
-    delete code;
     return 0;
 }
 
 
 
 void ProgramToASM (Node* root, FILE* f_out, int ret_value) {
-    if (root) {
-        int buf = 0;
-        switch (root->type) {
-            case START:
-                Handle_start    (root, f_out);
-                break;
-            case D:
-                ProgramToASM (_R , f_out);
-                ProgramToASM (_Lf, f_out);
-                break;
-            case DEF:
-                Handle_def     (root, f_out);
-                break;
-            case FUNC:
-                ProgramToASM (_R , f_out);
-                break;
-            case CALL:
-                Handle_call    (root, f_out, ret_value);
-                break;
-            case COMMA:
-                Handle_comma   (root, f_out);
-                break;
-            case B:
-                ProgramToASM (_R , f_out);
-                break;
-            case OP:
-                ProgramToASM (_R , f_out);
-                ProgramToASM (_Lf, f_out);
-                break;
-            case ASSIGN:
-                Handle_assign  (root, f_out);
-                break;
-            case IF:
+    
+    if (!root) return;
 
-                buf = IfNumber;
-                ProgramToASM (_Lf, f_out);
-                IfNumber++;
-                ProgramToASM (_R , f_out);
-                fprintf (f_out, "end_if%d:\n", buf);
-                break;
-            case EQUAL:
-                ProgramToASM (_Lf, f_out, RBX);
-                ProgramToASM (_R , f_out, RCX);
+    int buf = 0;
+    switch (root->type) {
+        case START:
+            Handle_start    (root, f_out);
+            break;
+        case D:
+            ProgramToASM (_R , f_out);
+            ProgramToASM (_Lf, f_out);
+            break;
+        case DEF:
+            Handle_def     (root, f_out);
+            break;
+        case FUNC:
+            ProgramToASM (_R , f_out);
+            break;
+        case CALL:
+            Handle_call    (root, f_out, ret_value);
+            break;
+        case COMMA:
+            Handle_comma   (root, f_out);
+            break;
+        case B:
+            ProgramToASM (_R , f_out);
+            break;
+        case OP:
+            ProgramToASM (_R , f_out);
+            ProgramToASM (_Lf, f_out);
+            break;
+        case ASSIGN:
+            Handle_assign  (root, f_out);
+            break;
+        case IF:
 
-                fprintf (f_out, "\t\tcmp rbx, rcx\n"
-                                "\t\tjne end_if%d\n", IfNumber);
-                break;
-            case UNEQUAL:
-                ProgramToASM (_Lf, f_out, RBX);
-                ProgramToASM (_R , f_out, RCX);
-                fprintf (f_out, "\t\tcmp rbx, rcx\n"
-                                "\t\tje end_if%d\n", IfNumber);
-                break;
-            case MORE:
-                ProgramToASM (_R , f_out, RBX);
-                ProgramToASM (_Lf, f_out, RCX);
+            buf = IfNumber;
+            ProgramToASM (_Lf, f_out);
+            IfNumber++;
+            ProgramToASM (_R , f_out);
+            fprintf (f_out, "end_if%d:\n", buf);
+            break;
+        case EQUAL:
+            ProgramToASM (_Lf, f_out, RBX);
+            ProgramToASM (_R , f_out, RCX);
 
-                fprintf (f_out, "\t\tcmp rbx, rcx\n"
-                                "\t\tjg end_if%d\n", IfNumber);
-                break;
-            case SUM:
-                Arithmetic_op_sum (root, f_out, ret_value);
-                break;
-            case SUB:
-                Arithmetic_op_sub (root, f_out, ret_value);
-                break;
-            case MUL:
-                Arithmetic_op_mul (root, f_out, ret_value);
-                break;
-            case DIV:
-                Arithmetic_op_div (root, f_out, ret_value);
-                break;
-            case RETURN:
-                Handle_ret     (root, f_out);
-                break;
-            case OUTPUT:
-                fprintf (f_out, "\n\t\t;output\n\n");
-                ProgramToASM (_R , f_out, RBX);
-                fprintf (f_out, output_s);
-                break;
-            case INPUT:
-                fprintf (f_out, "\n\t\t;input\n\n");
-                fprintf (f_out, input_s);
-                fprintf (f_out, "\t\timul rax, %d\n"
-                                "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
-                break;
-            case SQRT:
-                Handle_sqrt    (root, f_out, ret_value);
-                break;  
-            case BREAK:
-                ProgramToASM (_R , f_out);
-                fprintf (f_out, "\t\tBREAK\n");
-                break;
-            case DIFF:
-                ProgramToASM (_R , f_out);
-                fprintf (f_out, "\t\tDIFF\n");
-                break;
-            case VAR:
-                if (ret_value != UNDEF) {
-                    fprintf (f_out, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (root->num));    
-                } 
-                break;
-            case NUM:
-                if (ret_value != UNDEF) {
-                    fprintf (f_out, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (root->num));    
-                }
-                break;
-            default:
-                printf ("\n! ERROR ! Неизвестный узел %s, тип: %d", root->data, root->type);
-                break;
-        }
+            fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                            "\t\tjne end_if%d\n", IfNumber);
+            break;
+        case UNEQUAL:
+            ProgramToASM (_Lf, f_out, RBX);
+            ProgramToASM (_R , f_out, RCX);
+            fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                            "\t\tje end_if%d\n", IfNumber);
+            break;
+        case MORE:
+            ProgramToASM (_R , f_out, RBX);
+            ProgramToASM (_Lf, f_out, RCX);
+
+            fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                            "\t\tjg end_if%d\n", IfNumber);
+            break;
+        case SUM:
+            Arithmetic_op_sum (root, f_out, ret_value);
+            break;
+        case SUB:
+            Arithmetic_op_sub (root, f_out, ret_value);
+            break;
+        case MUL:
+            Arithmetic_op_mul (root, f_out, ret_value);
+            break;
+        case DIV:
+            Arithmetic_op_div (root, f_out, ret_value);
+            break;
+        case RETURN:
+            Handle_ret     (root, f_out);
+            break;
+        case OUTPUT:
+            fprintf (f_out, "\n\t\t;output\n\n");
+            ProgramToASM (_R , f_out, RBX);
+            fprintf (f_out, output_s);
+            break;
+        case INPUT:
+            fprintf (f_out, "\n\t\t;input\n\n");
+            fprintf (f_out, input_s);
+            fprintf (f_out, "\t\timul rax, %d\n"
+                            "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
+            break;
+        case SQRT:
+            Handle_sqrt    (root, f_out, ret_value);
+            break;  
+        case BREAK:
+            ProgramToASM (_R , f_out);
+            fprintf (f_out, "\t\tBREAK\n");
+            break;
+        case DIFF:
+            ProgramToASM (_R , f_out);
+            fprintf (f_out, "\t\tDIFF\n");
+            break;
+        case VAR:
+            if (ret_value != UNDEF) {
+                fprintf (f_out, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (root->num));    
+            } 
+            break;
+        case NUM:
+            if (ret_value != UNDEF) {
+                fprintf (f_out, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (root->num));    
+            }
+            break;
+        default:
+            printf ("\n! ERROR ! Неизвестный узел %s, тип: %d", root->data, root->type);
+            break;
     }
+    
 }
 
 void RedusePrecision (FILE* f_out, Node* elem, int ret_value) {

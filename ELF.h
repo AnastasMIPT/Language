@@ -2,11 +2,8 @@
 #define ELF_H
 
 #include <cstdio>
+#include <memory>
 #include "Commands.h"
-
-
-template <typename Type>
-unsigned int set_elem (char* buf_ptr, const Type* elem);
 
 typedef unsigned char      BYTE;
 typedef unsigned short int WORD;
@@ -131,40 +128,24 @@ struct Section_Header {
 #pragma pack (pop)
 
 
-
-class Code {
-    char* buf;
-    char* buf_ptr;
-    unsigned int size;
-public:
-    Code (unsigned int buf_size);
-    ~Code ();
-    unsigned int get_size () const;
-    char* get_code_buf    () const;
-    void write_from_buf   (unsigned char* _buf, unsigned int num);
-    void add_command  (const Command& command);
-};
-
-
-
 class ELF {
-    char* buf;
-    char* bf_ptr;
+    unsigned char* buf;
+    unsigned char* bf_ptr;
     unsigned int bf_size;
-    ELF_Header* header;
-    Program_Header* ph_text;
-    Program_Header* ph_data;
-    Section_Header* sh_text;
-    Section_Header* sh_data;
-    Code* code;
+    std::unique_ptr <ELF_Header> header;
+    std::unique_ptr <Program_Header> ph_text;
+    std::unique_ptr <Program_Header> ph_data;
+    std::unique_ptr <Section_Header> sh_text;
+    std::unique_ptr <Section_Header> sh_data;
+    Code code;
 public:
-    ELF (unsigned int _bf_size, Code* _code);
+    ELF (const Code& _code);
     ~ELF ();
     void load_to_file (const char* path);
     
 };
 
-unsigned int set_zeros (char* bf_ptr, unsigned int number);
+unsigned int set_zeros (unsigned char* bf_ptr, unsigned int number);
 
 const unsigned char r_code[] = {
 0x90,             	            // nop
