@@ -11,10 +11,16 @@ git_branch   = b_translation
 
 all: clean runfile
 	@./$(Project_name)
-runfile: ofile
-	@g++ $(Project_name).o -o $(Project_name)
+runfile: ofile Commands.o ELF.o
+	@g++ $(Project_name).o Commands.o ELF.o -o $(Project_name)
 ofile: $(Project_name).cpp $(libs)
 	@g++ $(CFlags) $(Warnings) $(NoWarnings) -c $(Project_name).cpp
+Commands.o: Commands.cpp
+	g++ $(CFlags) $(Warnings) $(NoWarnings) -c Commands.cpp
+ELF.o: Commands.cpp
+	g++ $(CFlags) $(Warnings) $(NoWarnings) -c ELF.cpp
+
+
 clean:
 	@rm -f $(Project_name) $(Project_name).o
 install:

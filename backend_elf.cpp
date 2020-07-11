@@ -5,9 +5,7 @@
 #include <cmath>
 #include "Words.h"
 #include "Func_s.h"
-#include "ELF.cpp"
-#include "Commands.cpp"
-
+#include "ELF.h"
 
 
 #define _NewEl(type)                                       \
