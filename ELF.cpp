@@ -43,10 +43,11 @@ unsigned int set_zeros (unsigned char* bf_ptr, unsigned int number) {
 
 
 ELF::ELF (const Code& _code) : bf_size (_code.get_size () + SizeItoa + SizeOutput + SizeOfELF_header), code (_code) {
+    
     unsigned int num_of_add_zeros = 16 - (bf_size % 16);
     bf_size += num_of_add_zeros;
 
-    buf    = reinterpret_cast<unsigned char*> (calloc (bf_size, sizeof (unsigned char)));
+    buf    = reinterpret_cast <unsigned char*> (calloc (bf_size, sizeof (unsigned char)));
     bf_ptr = buf;
 
     assert (buf);
@@ -56,20 +57,20 @@ ELF::ELF (const Code& _code) : bf_size (_code.get_size () + SizeItoa + SizeOutpu
     header =  std::make_unique <ELF_Header> ();
     bf_ptr += set_elem (bf_ptr, header.get ());
 
-    ph_text = std::make_unique <Program_Header> (TEXT_p_flags,  TEXT_p_offset, TEXT_p_vaddr, TEXT_p_paddr,
-                                  TEXT_p_filesz, TEXT_p_memsz,  TEXT_p_align);
+    // ph_text = std::make_unique <Program_Header> (TEXT_p_flags,  TEXT_p_offset, TEXT_p_vaddr, TEXT_p_paddr,
+    //                               TEXT_p_filesz, TEXT_p_memsz,  TEXT_p_align);
+
+    ph_text = std::make_unique <Program_Header> (PH_TEXT);
     bf_ptr += set_elem (bf_ptr, ph_text.get ());
 
-    ph_data = std::make_unique <Program_Header> (DATA_p_flags,  DATA_p_offset, DATA_p_vaddr, DATA_p_paddr,
-                                  DATA_p_filesz, DATA_p_memsz,  DATA_p_align);
+
+    ph_data = std::make_unique <Program_Header> (PH_DATA);
     bf_ptr += set_elem (bf_ptr, ph_data.get ());
 
-    sh_text = std::make_unique <Section_Header> (TEXT_sh_type, TEXT_sh_flags, TEXT_sh_addr,      TEXT_sh_offset, TEXT_sh_size,
-                                  TEXT_sh_link, TEXT_sh_info,  TEXT_sh_addralign, TEXT_sh_entsize);
+    sh_text = std::make_unique <Section_Header> (SH_TEXT);
     bf_ptr += set_elem (bf_ptr, sh_text.get ());
 
-    sh_data = std::make_unique <Section_Header> (DATA_sh_type, DATA_sh_flags, DATA_sh_addr,      DATA_sh_offset, DATA_sh_size,
-                                  DATA_sh_link, DATA_sh_info,  DATA_sh_addralign, DATA_sh_entsize);
+    sh_data = std::make_unique <Section_Header> (SH_DATA);
     bf_ptr += set_elem  (bf_ptr, sh_data.get ());
     
     // printf ("pointer before %p\n", bf_ptr);

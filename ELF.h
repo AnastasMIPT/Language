@@ -19,44 +19,6 @@ constexpr unsigned long long SizeOdDataSegm = 64;
 constexpr unsigned int SizeOfELF_header =  SizeOdDataSegm + 304;
 
 
-constexpr DWORD  TEXT_p_flags  = PF_X + PF_R;
-constexpr QWORD  TEXT_p_offset = SizeOdDataSegm;            //Offset segment from 
-constexpr QWORD  TEXT_p_vaddr  = 0x400000 + TEXT_p_offset;
-constexpr QWORD  TEXT_p_paddr  = TEXT_p_vaddr;
-constexpr QWORD  TEXT_p_filesz = 64;         //SizeOfSegment in file     ????
-constexpr QWORD  TEXT_p_memsz  = 64;         //SizeOfSegment in memory   ????
-constexpr QWORD  TEXT_p_align  = 0x200000;
-
-
-constexpr DWORD  DATA_p_flags  = PF_W + PF_R;
-constexpr QWORD  DATA_p_offset = 0;            //Offset segment from start of file
-constexpr QWORD  DATA_p_vaddr  = 0x600000 + DATA_p_offset;
-constexpr QWORD  DATA_p_paddr  = DATA_p_vaddr;
-constexpr QWORD  DATA_p_filesz = SizeOdDataSegm;
-constexpr QWORD  DATA_p_memsz  = SizeOdDataSegm;
-constexpr QWORD  DATA_p_align  = 0x200000;
-
-
-constexpr DWORD  TEXT_sh_type      = 1;    
-constexpr QWORD  TEXT_sh_flags     = 6;   
-constexpr QWORD  TEXT_sh_addr      = 0x400170;
-constexpr QWORD  TEXT_sh_offset    = 0x170;
-constexpr QWORD  TEXT_sh_size      = 64; ///////
-constexpr DWORD  TEXT_sh_link      = 0;
-constexpr DWORD  TEXT_sh_info      = 0;
-constexpr QWORD  TEXT_sh_addralign = 0x10;
-constexpr QWORD  TEXT_sh_entsize   = 0;
-
-
-constexpr DWORD  DATA_sh_type      = 1;
-constexpr QWORD  DATA_sh_flags     = 0x03;
-constexpr QWORD  DATA_sh_addr      = 0x600130;
-constexpr QWORD  DATA_sh_offset    = 0x130;
-constexpr QWORD  DATA_sh_size      = SizeOdDataSegm;   // Size of data
-constexpr DWORD  DATA_sh_link      = 0;
-constexpr DWORD  DATA_sh_info      = 0;
-constexpr QWORD  DATA_sh_addralign = 0x04;
-constexpr QWORD  DATA_sh_entsize   = 0;
     
 
 
@@ -86,28 +48,31 @@ struct ELF_Header {
 };
 #pragma pack (pop)
 
+
+
+
 #pragma pack (push, 1)
 struct Program_Header {
-    const DWORD  p_type = 1;     // LOAD
+    const DWORD  p_type;     
     const DWORD  p_flags;        // segment flags
-    const QWORD  p_offset; 
+    const QWORD  p_offset;       //Offset segment from start of file
     const QWORD  p_vaddr;
     const QWORD  p_paddr;
     const QWORD  p_filesz;
     const QWORD  p_memsz;
     const QWORD  p_align;
-    constexpr Program_Header (const DWORD  _p_flags, const QWORD  _p_offset, const QWORD  _p_vaddr,
-                              const QWORD  _p_paddr, const QWORD  _p_filesz, const QWORD  _p_memsz,
-                              const QWORD  _p_align) 
-    :   p_flags (_p_flags), p_offset (_p_offset), p_vaddr (_p_vaddr),
-        p_paddr (_p_paddr), p_filesz (_p_filesz), p_memsz (_p_memsz), p_align (_p_align) {}
+    constexpr Program_Header (const DWORD  _p_type,  const DWORD  _p_flags, const QWORD  _p_offset,
+                              const QWORD  _p_vaddr, const QWORD  _p_paddr, const QWORD  _p_filesz,
+                              const QWORD  _p_memsz, const QWORD  _p_align) 
+    :   p_type  (_p_type),  p_flags  (_p_flags), p_offset (_p_offset), p_vaddr (_p_vaddr),
+        p_paddr (_p_paddr), p_filesz (_p_filesz), p_memsz (_p_memsz),  p_align (_p_align) {}
 
 };
 #pragma pack (pop)
 
 #pragma pack (push, 1)
 struct Section_Header {
-    const DWORD  sh_name = 0;   
+    const DWORD  sh_name;   
     const DWORD  sh_type;    
     const QWORD  sh_flags;   
     const QWORD  sh_addr;
@@ -117,15 +82,64 @@ struct Section_Header {
     const DWORD  sh_info;
     const QWORD  sh_addralign;
     const QWORD  sh_entsize;
-    constexpr Section_Header (const DWORD  _sh_type,   const QWORD  _sh_flags,     const QWORD  _sh_addr,
+    constexpr Section_Header (const DWORD  _sh_name,   const DWORD  _sh_type,      const QWORD  _sh_flags,     const QWORD  _sh_addr,
                               const QWORD  _sh_offset, const QWORD  _sh_size,      const DWORD  _sh_link,
                               const DWORD  _sh_info,   const QWORD  _sh_addralign, const QWORD  _sh_entsize) 
-    :   sh_type (_sh_type),     sh_flags (_sh_flags),         sh_addr (_sh_addr),
-        sh_offset (_sh_offset), sh_size (_sh_size),           sh_link (_sh_link), 
-        sh_info (_sh_info),     sh_addralign (_sh_addralign), sh_entsize (_sh_entsize) {}
+    :   sh_name   (_sh_name),   sh_type      (_sh_type),      sh_flags   (_sh_flags),  sh_addr (_sh_addr),
+        sh_offset (_sh_offset), sh_size      (_sh_size),      sh_link    (_sh_link), 
+        sh_info   (_sh_info),   sh_addralign (_sh_addralign), sh_entsize (_sh_entsize) {}
 
 };
 #pragma pack (pop)
+
+
+constexpr Program_Header PH_TEXT = {
+    1,                               // p_type
+    PF_X + PF_R,                     // p_flags            
+    SizeOdDataSegm,                  // p_offset
+    0x400000 + SizeOdDataSegm,       // p_vaddr = 0x400000 + TEXT_p_offset
+    0x400000 + SizeOdDataSegm,       // p_paddr = TEXT_p_vaddr
+    64,                              // p_filesz
+    64,                              // p_memsz
+    0x200000                         // p_align
+};
+
+constexpr Program_Header PH_DATA = {
+    1,                               // p_type
+    PF_W + PF_R,                     // p_flags            
+    0,                               // p_offset
+    0x600000,                        // p_vaddr = 0x600000 + DATA_p_offset
+    0x600000,                        // p_paddr = DATA_p_vaddr
+    SizeOdDataSegm,                  // p_filesz
+    SizeOdDataSegm,                  // p_memsz
+    0x200000                         // p_align
+};
+
+constexpr Section_Header SH_TEXT = {
+    0,                                // sh_name
+    1,                                // sh_type
+    6,                                // sh_flags
+    0x400170,                         // sh_addr
+    0x170,                            // sh_offset
+    64,                               // sh_size
+    0,                                // sh_link
+    0,                                // sh_info
+    0x10,                             // sh_addralign
+    0                                 // sh_entsize
+};
+
+constexpr Section_Header SH_DATA = {
+    0,                                // sh_name
+    1,                                // sh_type
+    0x03,                                // sh_flags
+    0x600130,                         // sh_addr
+    0x130,                            // sh_offset
+    SizeOdDataSegm,                               // sh_size
+    0,                                // sh_link
+    0,                                // sh_info
+    0x04,                             // sh_addralign
+    0                                 // sh_entsize
+};
 
 
 class ELF {
