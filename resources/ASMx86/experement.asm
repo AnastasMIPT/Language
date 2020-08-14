@@ -1,190 +1,73 @@
 section .text
 global _start
 _start:
-		call main
+		
+		mov rax, rax
+		mov rax, rcx
+		mov rax, rdx
+		mov rax, rbx
+		mov rax, rsp
+		mov rax, rbp
+		mov rax, rsi
+		mov rax, rdi
+		
+		
+		mov eax, eax
+		mov eax, ecx
+		mov eax, edx
+		mov eax, ebx
+		mov eax, esp
+		mov eax, ebp
+		mov eax, esi
+		mov eax, edi
+		
+		nop
+		nop
+		nop
+		
+		mov rcx, rax
+		mov rcx, rcx
+		mov rcx, rdx
+		mov rcx, rbx
+		mov rcx, rsp
+		mov rcx, rbp
+		mov rcx, rsi
+		mov rcx, rdi
+		
+		nop
+		nop
+		nop
+		
+		mov rdx, rax
+		mov rdx, rcx
+		mov rdx, rdx
+		mov rdx, rbx
+		mov rdx, rsp
+		mov rdx, rbp
+		mov rdx, rsi
+		mov rdx, rdi
+		
+		
+		nop
+		nop
+		nop
+		
+		mov rbx, rax
+		mov rbx, rcx
+		mov rbx, rdx
+		mov rbx, rbx
+		mov rbx, rsp
+		mov rbx, rbp
+		mov rbx, rsi
+		mov rbx, rdi
+		
+		
+		
+		mov rax, [rbp - 4]
+		mov rax, [rbp - 8]
+		mov rax, [rbp - 16]
 
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
-factorial:
-		push rbp
-		mov rbp, rsp
-		sub rsp, 0
 
-		mov rbx, qword [rbp+16]
-		mov rcx, qword 100
-		cmp rbx, rcx
-		jne end_if0
-
-		;return
-
-		mov rbx, qword 100
-		mov rax, rbx
-
-		mov rsp, rbp
-		pop rbp
-		ret
-
-end_if0:
-
-		;return
-
-		mov rbx, qword [rbp+16]
-
-		;call
-
-		mov rbx, qword [rbp+16]
-		sub rbx, qword 100
-		push qword rbx
-		call factorial
-		add rsp, 8
-		mov rcx, rax
-
-
-		mov rax, rbx
-		mov r15 , 100
-		cqo
-		idiv r15
-		mov qword rbx, rax
-
-		imul rbx, rcx
-		mov rax, rbx
-
-		mov rsp, rbp
-		pop rbp
-		ret
-
-main:
-		push rbp
-		mov rbp, rsp
-		sub rsp, 16
-
-
-		;input
-
-
-		mov rax, 3
-		mov rbx, 2
-		mov rcx, number
-		mov rdx, 10
-		int 80h
-		push qword number
-		call atoi
-		sub rsp, 8
-		imul rax, 100
-		mov qword [rbp-8], rax
-
-		;assign
-
-		;call
-
-		push qword [rbp-8]
-		call factorial
-		add rsp, 8
-		mov qword [rbp-16], rax
-
-
-
-		;output
-
-		mov rbx, qword [rbp-16]
-		push rbx
-		call itoa
-		sub rsp, 8
-
-		mov rax, 4
-		mov rbx, 1
-		mov rcx, number_new
-		mov rdx, 11
-		int 80h
-
-
-		;return
-
-		mov rax, rbx
-
-		mov rsp, rbp
-		pop rbp
-		ret
-
-itoa:
-		push rbp
-		mov rbp, rsp
-		xor rax, rax
-		mov rax, qword [rbp+16]
-		mov rbx, qword number_rev
-		mov rdi, number_new
-		xor r10, r10
-		or rax, rax
-		jns .Loop
-		neg rax
-		mov byte [rdi], '-'
-		inc rbx
-		inc rdi
-.Loop:
-		xor rdx, rdx
-		mov r8, 0ah
-		div r8
-		add rdx, '0'
-		mov byte [rbx+r10], dl
-		inc r10
-		cmp qword r10, SYMB_POINT
-		jne .NoPoint
-		mov byte [rbx+r10], '.'
-		inc r10
-.NoPoint:
-		cmp rax, 0
-		je .Loop2
-		jmp .Loop
-.Loop2:		;writing reversev
-		dec r10
-		mov al, [rbx+r10]
-		stosb
-		cmp r10, 0
-		je .Exit
-		jmp .Loop2
-.Exit:
-
-		mov byte [rdi+1], 10
-		mov rsp, rbp
-		pop rbp
-		ret
-atoi:
-		push rbp
-		mov rbp, rsp
-		xor rax, rax
-
-		mov byte [sign], 0
-		mov rbx, qword [rbp+16]
-		xor rcx, rcx
-		cmp byte [rbx], '-'
-		jne .Next
-		mov byte [sign], 1
-		inc rbx
-.Next:
-		cmp byte [rbx], 10
-		je .Exit
-		mov cl, byte [rbx]
-		sub rcx, '0'
-		imul rax, 10
-		add rax, rcx
-		inc rbx
-		jmp .Next
-.Exit:
-		cmp byte[sign], 1
-		jne .Exit_l
-		neg rax
-.Exit_l:
-		mov rsp, rbp
-		pop rbp
-		ret
-section .data
-		number times 10 db 0
-		db 0
-		sign db 0
-		number_new times 10 db 0
-		db 0
-		number_rev times 10 db 0
-		sqrt_from dq 0
-		sqrt_res  dq 0
-		SYMB_POINT equ 2

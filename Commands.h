@@ -1,7 +1,7 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-
+//#include "ELF.h"
 
 class Command {
 public:
@@ -37,5 +37,18 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+
+class Mov64_RR : public Command {
+    unsigned int byte_num;
+public:
+    Mov64_RR (unsigned int to, unsigned int from) {
+       
+    }
+
+    void write_to_buf (unsigned char* buf) const override {
+        //set_elem (buf,  REX (1) , OpCode (89) , RM (0x11, to, from));
+    }
+
+};
 
 #endif //COMMANDS_H

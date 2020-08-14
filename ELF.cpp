@@ -28,6 +28,21 @@ unsigned int set_elem (unsigned char* buf_ptr, const Type* elem) {
 
 
 
+template <typename Head_T>
+void set_elems (unsigned char* buf_ptr, const Head_T& head) {
+    unsigned int size = sizeof (Head_T);
+    memcpy (buf_ptr, &head, size);
+}
+
+template <typename Head_T, typename ... Args_T>
+void set_elems (unsigned char* buf_ptr, const Head_T& head, const Args_T&... args) {
+    unsigned int size = sizeof (Head_T);
+    memcpy (buf_ptr, &head, size);
+    //printf ("Helllllllo\n");
+    set_elems (buf_ptr + size, args...);
+}
+
+
 ELF::~ELF () {
     assert (buf);
     DEB_INFO
@@ -45,6 +60,16 @@ unsigned int set_zeros (unsigned char* bf_ptr, unsigned int number) {
 
 ELF::ELF (const Code& _code) : bf_size (_code.get_size () /* + SizeItoa + SizeOutput*/ +  SizeOfELF_header), code (_code) {
     
+
+    unsigned short int x = 110;
+    unsigned short int b = 200;
+    unsigned int g = 0;
+    set_elems (reinterpret_cast<unsigned char*> (&g), x, b);
+
+    printf ("** %u\n", g);
+
+
+
     unsigned int num_of_add_zeros = 16 - (bf_size % 16);
     bf_size += num_of_add_zeros;
     

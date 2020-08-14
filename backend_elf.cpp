@@ -83,6 +83,7 @@ void Handle_def        (Node* root, FILE* f_out);
 
 void RedusePrecision   (FILE* f_out, Node* elem, int ret_value = UNDEF);
 
+
 int main () {
 
     // FILE* f_in = fopen ("./resources/tree.txt", "r");
@@ -104,13 +105,12 @@ int main () {
     FILE* f_in = fopen ("./resources/ASMx86/experement.com", "rb");
     fread (buf, sizeof (unsigned char), 500, f_in);
     unsigned char* load_code = buf + 0xb0;
-    printf ("&&&11 %u\n", *reinterpret_cast<int*>(load_code));
     
-
     Code code (load_code, 287);
 
     ELF file (code);
     file.load_to_file ("./resources/ASMx86/my_elf");
+
     return 0;
 }
 

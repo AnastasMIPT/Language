@@ -165,6 +165,15 @@ template <typename Type>
 unsigned int set_elem (unsigned char* buf_ptr, const Type* elem);
 
 
+
+template <typename Head_T>
+void set_elems (unsigned char* buf_ptr, const Head_T& head);
+
+template <typename Head_T, typename ... Args_T>
+void set_elems (unsigned char* buf_ptr, const Head_T& head, const Args_T&... args);
+
+
+
 const unsigned char r_code[] = {
 0x90,             	            // nop
 0x90,             	            // nop
