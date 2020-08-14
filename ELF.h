@@ -161,6 +161,10 @@ public:
 
 unsigned int set_zeros (unsigned char* bf_ptr, unsigned int number);
 
+template <typename Type>
+unsigned int set_elem (unsigned char* buf_ptr, const Type* elem);
+
+
 const unsigned char r_code[] = {
 0x90,             	            // nop
 0x90,             	            // nop

@@ -22,6 +22,7 @@ template <typename Type>
 unsigned int set_elem (unsigned char* buf_ptr, const Type* elem) {
     unsigned int size = sizeof (Type);
     memcpy (buf_ptr, elem, size);
+    
     return size;
 }
 
@@ -42,27 +43,21 @@ unsigned int set_zeros (unsigned char* bf_ptr, unsigned int number) {
 }
 
 
-ELF::ELF (const Code& _code) : bf_size (_code.get_size () + SizeItoa + SizeOutput + SizeOfELF_header), code (_code) {
+ELF::ELF (const Code& _code) : bf_size (_code.get_size () /* + SizeItoa + SizeOutput*/ +  SizeOfELF_header), code (_code) {
     
     unsigned int num_of_add_zeros = 16 - (bf_size % 16);
     bf_size += num_of_add_zeros;
-
+    
     buf    = reinterpret_cast <unsigned char*> (calloc (bf_size, sizeof (unsigned char)));
     bf_ptr = buf;
 
     assert (buf);
 
-    //printf ("Hello**\n");
-    
     header =  std::make_unique <ELF_Header> ();
     bf_ptr += set_elem (bf_ptr, header.get ());
 
-    // ph_text = std::make_unique <Program_Header> (TEXT_p_flags,  TEXT_p_offset, TEXT_p_vaddr, TEXT_p_paddr,
-    //                               TEXT_p_filesz, TEXT_p_memsz,  TEXT_p_align);
-
     ph_text = std::make_unique <Program_Header> (PH_TEXT);
     bf_ptr += set_elem (bf_ptr, ph_text.get ());
-
 
     ph_data = std::make_unique <Program_Header> (PH_DATA);
     bf_ptr += set_elem (bf_ptr, ph_data.get ());
@@ -73,17 +68,16 @@ ELF::ELF (const Code& _code) : bf_size (_code.get_size () + SizeItoa + SizeOutpu
     sh_data = std::make_unique <Section_Header> (SH_DATA);
     bf_ptr += set_elem  (bf_ptr, sh_data.get ());
     
-    // printf ("pointer before %p\n", bf_ptr);
-    bf_ptr += set_zeros (bf_ptr, SizeOdDataSegm);
-    // printf ("data %d\n", *reinterpret_cast<int*> (bf_ptr - 4));
-    // printf ("pointer after %p\n", bf_ptr);
 
+    bf_ptr += set_zeros (bf_ptr, SizeOdDataSegm);
+    
     memcpy (bf_ptr, _code.get_code_buf () , _code.get_size ());
     bf_ptr += _code.get_size ();
-    memcpy (bf_ptr, itoa_b, SizeItoa);
+    
+    /*memcpy (bf_ptr, itoa_b, SizeItoa);
     bf_ptr += SizeItoa;
     memcpy (bf_ptr, output_b, SizeOutput);
-    bf_ptr += SizeOutput;
+    bf_ptr += SizeOutput;*/
     
     bf_ptr += set_zeros (bf_ptr, num_of_add_zeros);
 }

@@ -84,4 +84,8 @@ void Call::write_to_buf (unsigned char* buf) const {
     *reinterpret_cast<QWORD*> (buf + 1) = offset;
 }
 
+
+
+
+
 #endif //COMMANDS_CPP

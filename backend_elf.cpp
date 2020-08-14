@@ -49,10 +49,10 @@ Node* GetTreeFromFile (Node* root, FILE* f_in);
 
 /*! Функция, создающая новый узел
 *
-*	@param [in] type Тип узла
-*	@param [in] data Символ оператора
-*	@param [in] left Указатель на левое поддерево
-*	@param [in] right Указатель на правое поддерево
+*	@param[in] type Тип узла
+*	@param[in] data Символ оператора
+*	@param[in] left Указатель на левое поддерево
+*	@param[in] right Указатель на правое поддерево
 *
 *	@return Указатель на созданный узел
 *
@@ -100,7 +100,14 @@ int main () {
     // fclose (f_asm);
     // printf ("Hello\n");
     setbuf (stdout, NULL);
-    Code code (r_code, SizeOfCode);
+    unsigned char* buf = reinterpret_cast <unsigned char*> (calloc (500, sizeof (unsigned char)));
+    FILE* f_in = fopen ("./resources/ASMx86/experement.com", "rb");
+    fread (buf, sizeof (unsigned char), 500, f_in);
+    unsigned char* load_code = buf + 0xb0;
+    printf ("&&&11 %u\n", *reinterpret_cast<int*>(load_code));
+    
+
+    Code code (load_code, 287);
 
     ELF file (code);
     file.load_to_file ("./resources/ASMx86/my_elf");
