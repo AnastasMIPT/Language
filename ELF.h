@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <memory>
+#include <cstring>
 #include "Commands.h"
 #include "Types.h"
 
@@ -163,43 +164,21 @@ unsigned int set_elem (unsigned char* buf_ptr, const Type* elem);
 
 
 
+
 template <typename Head_T>
 void set_elems (unsigned char* buf_ptr, const Head_T& head) {
     unsigned int size = sizeof (Head_T);
+    printf ("size = %u\n", size);
     memcpy (buf_ptr, &head, size);
 }
 
 template <typename Head_T, typename ... Args_T>
 void set_elems (unsigned char* buf_ptr, const Head_T& head, const Args_T&... args) {
     unsigned int size = sizeof (Head_T);
+    printf ("size = %u\n", size);
     memcpy (buf_ptr, &head, size);
-    //printf ("Helllllllo\n");
+    
     set_elems (buf_ptr + size, args...);
 }
-
-
-
-const unsigned char r_code[] = {
-0x90,             	            // nop
-0x90,             	            // nop
-0x90,             	            // nop
-0x55,             	            // push   %rbp
-0x48, 0x89, 0xe5,             	    // mov    %rsp,%rbp
-0x90,             	            // nop
-0x90,            	            // nop
-0x90,            	            // nop
-0x48, 0x8b, 0x5d, 0xf8,          	// mov    -0x8(%rbp),%rbx
-0x48, 0x8b, 0x5d, 0xf0,          	// mov    -0x10(%rbp),%rbx
-0x48, 0x8b, 0x5d, 0xe8,          	// mov    -0x18(%rbp),%rbx
-0x48, 0x8b, 0x5d, 0xe0,          	// mov    -0x20(%rbp),%rbx
-0x90,            	// nop
-0x48, 0x8b, 0x4d, 0xf8,          	// mov    -0x8(%rbp),%rcx
-0x48, 0x8b, 0x4d, 0xf0,          	// mov    -0x10(%rbp),%rcx
-0x48, 0x8b, 0x4d, 0xe8,          	// mov    -0x18(%rbp),%rcx
-0x48, 0x8b, 0x4d, 0xe0,          	// mov    -0x20(%rbp),%rcx
-0xb8, 0x01, 0x00, 0x00, 0x00,       	// mov    $0x1,%eax
-0xbb, 0x00, 0x00, 0x00, 0x00,       	// mov    $0x0,%ebx
-0xcd, 0x80, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90}; // 
-
 
 #endif //ELF_H

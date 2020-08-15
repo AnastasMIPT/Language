@@ -2,71 +2,64 @@ section .text
 global _start
 _start:
 		
-		mov rax, rax
-		mov rax, rcx
-		mov rax, rdx
-		mov rax, rbx
-		mov rax, rsp
-		mov rax, rbp
-		mov rax, rsi
-		mov rax, rdi
-		
-		
-		mov eax, eax
-		mov eax, ecx
-		mov eax, edx
-		mov eax, ebx
-		mov eax, esp
-		mov eax, ebp
-		mov eax, esi
-		mov eax, edi
-		
-		nop
-		nop
-		nop
-		
-		mov rcx, rax
-		mov rcx, rcx
-		mov rcx, rdx
-		mov rcx, rbx
-		mov rcx, rsp
-		mov rcx, rbp
-		mov rcx, rsi
-		mov rcx, rdi
-		
-		nop
-		nop
-		nop
-		
-		mov rdx, rax
-		mov rdx, rcx
-		mov rdx, rdx
-		mov rdx, rbx
-		mov rdx, rsp
-		mov rdx, rbp
-		mov rdx, rsi
-		mov rdx, rdi
-		
-		
-		nop
-		nop
-		nop
-		
-		mov rbx, rax
-		mov rbx, rcx
-		mov rbx, rdx
-		mov rbx, rbx
-		mov rbx, rsp
-		mov rbx, rbp
-		mov rbx, rsi
-		mov rbx, rdi
-		
-		
-		
-		mov rax, [rbp - 4]
-		mov rax, [rbp - 8]
-		mov rax, [rbp - 16]
+		mov rax, [rbp-1]
+		mov rax, [rbp-2]
+		mov rax, [rbp-3]
+		mov rax, [rbp-4]
+		mov rax, [rbp-5]
+		mov rax, [rbp-6]
+		mov rax, [rbp-7]
+		mov rax, [rbp-8]
+		mov rax, [rbp-9]
+		mov rax, [rbp-10]
 
+
+		nop
+		nop
+		nop
+
+		mov rax, [rbp+100]
+		mov rax, [rbp+200]
+		mov rax, [rbp+300]
+		mov rax, [rbp+400]
+		mov rax, [rbp+5000]
+		mov rax, [rbp+60000]
+		mov rax, [rbp+3000000000]
+		mov rax, [rbp+8]
+		mov rax, [rbp+9]
+		mov rax, [rbp+10]
+
+		nop
+		nop
+		nop
+
+		mov rcx, [rbp+1]
+		mov rcx, [rbp+2]
+		mov rcx, [rbp+3]
+		mov rcx, [rbp+4]
+		mov rcx, [rbp+5]
+		mov rcx, [rbp+6]
+		mov rcx, [rbp+7]
+		mov rcx, [rbp+8]
+		mov rcx, [rbp+9]
+		mov rcx, [rbp+10]
+		
+		nop
+		nop
+		nop
+
+		mov rdx, [rbp+1]
+		mov rdx, [rbp+2]
+		mov rdx, [rbp+3]
+		mov rdx, [rbp+4]
+		mov rdx, [rbp+5]
+		mov rdx, [rbp+6]
+		mov rdx, [rbp+7]
+		mov rdx, [rbp+8]
+		mov rdx, [rbp+9]
+		mov rdx, [rbp+10]
+
+		
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h

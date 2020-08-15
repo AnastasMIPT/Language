@@ -104,27 +104,18 @@ int main () {
 
 
     setbuf (stdout, NULL);
-    // unsigned char* buf = reinterpret_cast <unsigned char*> (calloc (500, sizeof (unsigned char)));
-    // FILE* f_in = fopen ("./resources/ASMx86/experement.com", "rb");
-    // fread (buf, sizeof (unsigned char), 500, f_in);
-    // unsigned char* load_code = buf + 0xb0;
-    
-    // Code code (load_code, 287);
 
-    
-
-
-    Code code2 (32);
-    code2.add_command (Mov64_RR (REGS::RAX, REGS::RAX));
-    code2.add_command (Mov64_RR (REGS::RAX, REGS::RCX));
-    code2.add_command (Mov64_RR (REGS::RAX, REGS::RDX));
-    code2.add_command (Mov64_RR (REGS::RAX, REGS::RBX));
-    code2.add_command (Mov64_RR (REGS::RAX, REGS::RSP));
-    code2.add_command (Mov64_RR (REGS::RAX, REGS::RBP));
-    code2.add_command (Mov64_RR (REGS::RAX, REGS::RSI));
-    code2.add_command (Mov64_RR (REGS::RAX, REGS::RDI));
-    code2.add_command (Mov64_RR (REGS::RCX, REGS::RAX));
-    code2.add_command (Mov64_RR (REGS::RDX, REGS::RAX));
+    Code code2 (64);
+    code2.add_command (Mov64_RM (REGS::RAX, 129));
+    code2.add_command (Mov64_RM (REGS::RAX, -1));
+    code2.add_command (Mov64_RM (REGS::RAX, 3));
+    code2.add_command (Mov64_RM (REGS::RAX, 4));
+    code2.add_command (Mov64_RM (REGS::RAX, 5));
+    code2.add_command (Mov64_RM (REGS::RAX, 6));
+    code2.add_command (Mov64_RM (REGS::RAX, 7));
+    code2.add_command (Mov64_RM (REGS::RAX, 8));
+    code2.add_command (Mov64_RM (REGS::RCX, 9));
+    code2.add_command (Mov64_RM (REGS::RDX, 10));
     
 
     ELF file (code2);

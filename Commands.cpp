@@ -1,7 +1,7 @@
 #ifndef COMMANDS_CPP
 #define COMMANDS_CPP
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
     #define DEB_INFO printf ("DEBUG_INFO:  Called from FILE: %s from FUNCTION: %s   LINE: %d\n", __FILE__, __func__, __LINE__);
@@ -95,6 +95,32 @@ void Mov64_RR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b11, RM_REG_by_registers (to, from)));
 }
 
+unsigned int Mov64_RR::get_byte_num () const {
+    return byte_num;
+}
 
+Mov64_RM::Mov64_RM (unsigned int _to, int _from_offset)
+: to (_to), from_offset (_from_offset) {
+    setbuf (stdout, NULL);
+    byte_num = (from_offset < 128 ? 4 : 7);
+    DEB_INFO
+    printf ("byte_num constr = %u\n", byte_num);
+}
+
+void Mov64_RM::write_to_buf (unsigned char* buf) const {
+        if (byte_num == 4) {
+            DEB_INFO
+            unsigned char displacment = from_offset;
+            set_elems (buf,  REX (1) , OpCode (0x8b) , ModRM (0b01, to << 3, 0b101), displacment);
+        } else {
+            DEB_INFO
+            printf ("byte_num = %u\n", byte_num);
+            set_elems (buf,  REX (1) , OpCode (0x8b) , ModRM (0b10, to << 3, 0b101), from_offset);
+        }
+}
+
+unsigned int Mov64_RM::get_byte_num () const {
+    return byte_num;
+}
 
 #endif //COMMANDS_CPP

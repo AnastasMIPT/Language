@@ -4,16 +4,16 @@
 #include "Types.h"
 
 namespace REGS {
-enum Registers {
-    RAX,
-    RCX,
-    RDX,
-    RBX,
-    RSP,
-    RBP,
-    RSI,
-    RDI
-};
+    enum Registers {
+        RAX,
+        RCX,
+        RDX,
+        RBX,
+        RSP,
+        RBP,
+        RSI,
+        RDI
+    };
 };
 
 unsigned int RM_REG_by_registers (unsigned int to, unsigned int from);
@@ -46,7 +46,7 @@ class REX {
 public:
     BYTE data;
 public:
-    REX (bool W, bool R = 0, bool X = 0, bool B = 0)
+    REX (BYTE W, BYTE R = 0, BYTE X = 0, BYTE B = 0)
     : data (0b01000000 | (W << 3) | (R << 2) | (X << 1) | B) {}
     //explicit REX (BYTE _data) : data (_data) {}
     
@@ -61,7 +61,7 @@ public:
 class ModRM {
     BYTE data;
 public:
-    ModRM (unsigned int Mod, unsigned int Reg, unsigned int RM = 0U)
+    ModRM (BYTE Mod, BYTE Reg, BYTE RM = 0U)
     : data ((Mod << 6) + Reg + RM) {}
 };
 
@@ -85,8 +85,23 @@ public:
     : byte_num (3), to (_to), from (_from) {}
 
     void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
 
-    unsigned int get_byte_num () const override {return byte_num;}
+
+
+class Mov64_RM : public Command {
+    unsigned int byte_num;
+    unsigned int to;
+    int from_offset;
+    
+public:
+
+    Mov64_RM (unsigned int _to, int _from_offset);
+    Mov64_RM () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
 };
 
 #endif //COMMANDS_H
