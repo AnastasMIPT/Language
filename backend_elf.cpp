@@ -100,6 +100,8 @@ int main () {
     // ProgramToASM (root, f_asm);
     // fclose (f_asm);
     // printf ("Hello\n");
+
+    
     setbuf (stdout, NULL);
     unsigned char* buf = reinterpret_cast <unsigned char*> (calloc (500, sizeof (unsigned char)));
     FILE* f_in = fopen ("./resources/ASMx86/experement.com", "rb");
@@ -112,9 +114,6 @@ int main () {
     file.load_to_file ("./resources/ASMx86/my_elf");
 
 
-
-    REX byte (1,0,1,0);
-    printf ("$$  %x\n", byte.data);
     return 0;
 }
 

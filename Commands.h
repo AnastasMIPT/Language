@@ -3,6 +3,22 @@
 
 #include "Types.h"
 
+enum REGS {
+    RAX,
+    RCX,
+    RDX,
+    RBX,
+    RSP,
+    RBP,
+    RSI,
+    RDI
+};
+
+unsigned int RM_REG_by_registers (unsigned int to, unsigned int from) {
+    return to + (from << 3);
+}
+
+
 class Command {
 public:
     virtual void write_to_buf (unsigned char* buf) const = 0; 
@@ -31,10 +47,25 @@ class REX {
 public:
     BYTE data;
 public:
-    REX (bool W, bool R, bool X, bool B)
+    REX (bool W, bool R = 0, bool X = 0, bool B = 0)
     : data (0b01000000 | (W << 3) | (R << 2) | (X << 1) | B) {}
+    //explicit REX (BYTE _data) : data (_data) {}
     
 };
+
+class OpCode {
+    BYTE data;
+public:
+    explicit OpCode (BYTE _data) : data (_data) {};
+};
+
+class ModRM {
+    BYTE data;
+public:
+    ModRM (unsigned int Mod, unsigned int Reg, unsigned int RM = 0U)
+    : data ((Mod << 6) | (Reg << 3) | RM) {}
+};
+
 
 class Call : public Command {
     unsigned int byte_num;
@@ -48,15 +79,17 @@ public:
 
 class Mov64_RR : public Command {
     unsigned int byte_num;
+    unsigned int to;
+    unsigned int from;
 public:
-    Mov64_RR (unsigned int to, unsigned int from) {
-       
-    }
+    Mov64_RR (unsigned int _to, unsigned int _from)
+    : to (_to), from (_from), byte_num (3) {}
 
     void write_to_buf (unsigned char* buf) const override {
-        //set_elem (buf,  REX (1) , OpCode (89) , RM (0x11, to, from));
+        set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b11, RM_REG_by_registers (to, from)));
     }
 
+    unsigned int get_byte_num () const override {return byte_num;}
 };
 
 #endif //COMMANDS_H
