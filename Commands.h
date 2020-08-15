@@ -3,7 +3,8 @@
 
 #include "Types.h"
 
-enum REGS {
+namespace REGS {
+enum Registers {
     RAX,
     RCX,
     RDX,
@@ -13,11 +14,9 @@ enum REGS {
     RSI,
     RDI
 };
+};
 
-unsigned int RM_REG_by_registers (unsigned int to, unsigned int from) {
-    return to + (from << 3);
-}
-
+unsigned int RM_REG_by_registers (unsigned int to, unsigned int from);
 
 class Command {
 public:
@@ -63,7 +62,7 @@ class ModRM {
     BYTE data;
 public:
     ModRM (unsigned int Mod, unsigned int Reg, unsigned int RM = 0U)
-    : data ((Mod << 6) | (Reg << 3) | RM) {}
+    : data ((Mod << 6) + Reg + RM) {}
 };
 
 
@@ -83,11 +82,9 @@ class Mov64_RR : public Command {
     unsigned int from;
 public:
     Mov64_RR (unsigned int _to, unsigned int _from)
-    : to (_to), from (_from), byte_num (3) {}
+    : byte_num (3), to (_to), from (_from) {}
 
-    void write_to_buf (unsigned char* buf) const override {
-        set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b11, RM_REG_by_registers (to, from)));
-    }
+    void write_to_buf (unsigned char* buf) const override;
 
     unsigned int get_byte_num () const override {return byte_num;}
 };

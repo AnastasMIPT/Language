@@ -28,20 +28,6 @@ unsigned int set_elem (unsigned char* buf_ptr, const Type* elem) {
 
 
 
-template <typename Head_T>
-void set_elems (unsigned char* buf_ptr, const Head_T& head) {
-    unsigned int size = sizeof (Head_T);
-    memcpy (buf_ptr, &head, size);
-}
-
-template <typename Head_T, typename ... Args_T>
-void set_elems (unsigned char* buf_ptr, const Head_T& head, const Args_T&... args) {
-    unsigned int size = sizeof (Head_T);
-    memcpy (buf_ptr, &head, size);
-    //printf ("Helllllllo\n");
-    set_elems (buf_ptr + size, args...);
-}
-
 
 ELF::~ELF () {
     assert (buf);

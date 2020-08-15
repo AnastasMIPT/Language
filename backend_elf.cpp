@@ -6,6 +6,7 @@
 #include "Words.h"
 #include "Func_s.h"
 #include "ELF.h"
+#include "Commands.h"
 
 
 #define _NewEl(type)                                       \
@@ -101,18 +102,33 @@ int main () {
     // fclose (f_asm);
     // printf ("Hello\n");
 
-    
+
     setbuf (stdout, NULL);
-    unsigned char* buf = reinterpret_cast <unsigned char*> (calloc (500, sizeof (unsigned char)));
-    FILE* f_in = fopen ("./resources/ASMx86/experement.com", "rb");
-    fread (buf, sizeof (unsigned char), 500, f_in);
-    unsigned char* load_code = buf + 0xb0;
+    // unsigned char* buf = reinterpret_cast <unsigned char*> (calloc (500, sizeof (unsigned char)));
+    // FILE* f_in = fopen ("./resources/ASMx86/experement.com", "rb");
+    // fread (buf, sizeof (unsigned char), 500, f_in);
+    // unsigned char* load_code = buf + 0xb0;
     
-    Code code (load_code, 287);
+    // Code code (load_code, 287);
 
-    ELF file (code);
+    
+
+
+    Code code2 (32);
+    code2.add_command (Mov64_RR (REGS::RAX, REGS::RAX));
+    code2.add_command (Mov64_RR (REGS::RAX, REGS::RCX));
+    code2.add_command (Mov64_RR (REGS::RAX, REGS::RDX));
+    code2.add_command (Mov64_RR (REGS::RAX, REGS::RBX));
+    code2.add_command (Mov64_RR (REGS::RAX, REGS::RSP));
+    code2.add_command (Mov64_RR (REGS::RAX, REGS::RBP));
+    code2.add_command (Mov64_RR (REGS::RAX, REGS::RSI));
+    code2.add_command (Mov64_RR (REGS::RAX, REGS::RDI));
+    code2.add_command (Mov64_RR (REGS::RCX, REGS::RAX));
+    code2.add_command (Mov64_RR (REGS::RDX, REGS::RAX));
+    
+
+    ELF file (code2);
     file.load_to_file ("./resources/ASMx86/my_elf");
-
 
     return 0;
 }

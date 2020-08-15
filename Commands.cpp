@@ -18,6 +18,14 @@
 #include <sys/stat.h>
 
 
+
+unsigned int RM_REG_by_registers (unsigned int to, unsigned int from) {
+    printf ("hhhh %u\n", 192U + to + (from << 3) + 0U);
+    return to + (from << 3);
+}
+
+
+
 unsigned int Code::get_size () const {
     return size;
 }
@@ -72,7 +80,6 @@ Code::~Code () {
 
 
 
-
 unsigned int Call::get_byte_num () const {
     return byte_num;
 }
@@ -84,7 +91,9 @@ void Call::write_to_buf (unsigned char* buf) const {
     *reinterpret_cast<QWORD*> (buf + 1) = offset;
 }
 
-
+void Mov64_RR::write_to_buf (unsigned char* buf) const {
+        set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b11, RM_REG_by_registers (to, from)));
+}
 
 
 
