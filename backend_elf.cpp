@@ -106,7 +106,7 @@ int main () {
     setbuf (stdout, NULL);
 
     Code code2 (64);
-    code2.add_command (Mov64_RM (REGS::RAX, 129));
+    code2.add_command (Mov64_RM (REGS::RAX, -1290));
     code2.add_command (Mov64_RM (REGS::RAX, -1));
     code2.add_command (Mov64_RM (REGS::RAX, 3));
     code2.add_command (Mov64_RM (REGS::RAX, 4));

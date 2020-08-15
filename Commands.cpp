@@ -1,7 +1,7 @@
 #ifndef COMMANDS_CPP
 #define COMMANDS_CPP
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
     #define DEB_INFO printf ("DEBUG_INFO:  Called from FILE: %s from FUNCTION: %s   LINE: %d\n", __FILE__, __func__, __LINE__);
@@ -102,7 +102,7 @@ unsigned int Mov64_RR::get_byte_num () const {
 Mov64_RM::Mov64_RM (unsigned int _to, int _from_offset)
 : to (_to), from_offset (_from_offset) {
     setbuf (stdout, NULL);
-    byte_num = (from_offset < 128 ? 4 : 7);
+    byte_num = ( -128 <= from_offset && from_offset < 128 ? 4 : 7);
     DEB_INFO
     printf ("byte_num constr = %u\n", byte_num);
 }
