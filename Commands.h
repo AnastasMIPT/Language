@@ -31,9 +31,9 @@ class REX {
 public:
     BYTE data;
 public:
-    REX (bool W, bool R, bool X, bool B) {
-        data = 0b01000000 | (W << 3) | (R << 2) | (X << 1) | B;
-    }
+    REX (bool W, bool R, bool X, bool B)
+    : data (0b01000000 | (W << 3) | (R << 2) | (X << 1) | B) {}
+    
 };
 
 class Call : public Command {
