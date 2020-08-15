@@ -111,6 +111,10 @@ int main () {
     ELF file (code);
     file.load_to_file ("./resources/ASMx86/my_elf");
 
+
+
+    REX byte (1,0,1,0);
+    printf ("$$  %x\n", byte.data);
     return 0;
 }
 

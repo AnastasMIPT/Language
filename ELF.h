@@ -4,11 +4,8 @@
 #include <cstdio>
 #include <memory>
 #include "Commands.h"
+#include "Types.h"
 
-typedef unsigned char      BYTE;
-typedef unsigned short int WORD;
-typedef unsigned int       DWORD;
-typedef unsigned long long QWORD;
 
 constexpr DWORD PF_X = 1;
 constexpr DWORD PF_W = 2;

@@ -1,7 +1,7 @@
 #ifndef COMMANDS_H
 #define COMMANDS_H
 
-//#include "ELF.h"
+#include "Types.h"
 
 class Command {
 public:
@@ -27,6 +27,14 @@ public:
     void add_command  (const Command& command);
 };
 
+class REX {
+public:
+    BYTE data;
+public:
+    REX (bool W, bool R, bool X, bool B) {
+        data = 0b01000000 | (W << 3) | (R << 2) | (X << 1) | B;
+    }
+};
 
 class Call : public Command {
     unsigned int byte_num;
