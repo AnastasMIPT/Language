@@ -123,4 +123,31 @@ unsigned int Mov64_RM::get_byte_num () const {
     return byte_num;
 }
 
+
+
+
+Mov64_MR::Mov64_MR (unsigned int _from_offset, int _to)
+: to (_to), from_offset (_from_offset) {
+    //setbuf (stdout, NULL);
+    byte_num = ( -128 <= from_offset && from_offset < 128 ? 4 : 7);
+    //DEB_INFO
+    //printf ("byte_num constr = %u\n", byte_num);
+}
+
+void Mov64_MR::write_to_buf (unsigned char* buf) const {
+        if (byte_num == 4) {
+            //DEB_INFO
+            unsigned char displacment = from_offset;
+            set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b01, to << 3, 0b101), displacment);
+        } else {
+            //DEB_INFO
+            //printf ("byte_num = %u\n", byte_num);
+            set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b10, to << 3, 0b101), from_offset);
+        }
+}
+
+unsigned int Mov64_MR::get_byte_num () const {
+    return byte_num;
+}
+
 #endif //COMMANDS_CPP

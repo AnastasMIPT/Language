@@ -104,4 +104,20 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+
+
+class Mov64_MR : public Command {
+    unsigned int byte_num;
+    unsigned int to;
+    int from_offset;
+    
+public:
+
+    Mov64_MR (unsigned int _from_offset, int _to);
+    Mov64_MR () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
 #endif //COMMANDS_H

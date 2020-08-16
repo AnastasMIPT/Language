@@ -106,16 +106,16 @@ int main () {
     setbuf (stdout, NULL);
 
     Code code2 (64);
-    code2.add_command (Mov64_RM (REGS::RAX, -1290));
-    code2.add_command (Mov64_RM (REGS::RAX, -1));
-    code2.add_command (Mov64_RM (REGS::RAX, 3));
-    code2.add_command (Mov64_RM (REGS::RAX, 4));
-    code2.add_command (Mov64_RM (REGS::RAX, 5));
-    code2.add_command (Mov64_RM (REGS::RAX, 6));
-    code2.add_command (Mov64_RM (REGS::RAX, 7));
-    code2.add_command (Mov64_RM (REGS::RAX, 8));
-    code2.add_command (Mov64_RM (REGS::RCX, 9));
-    code2.add_command (Mov64_RM (REGS::RDX, 10));
+    code2.add_command (Mov64_MR (1, REGS::RAX));
+    code2.add_command (Mov64_MR (2, REGS::RAX));
+    code2.add_command (Mov64_MR (3, REGS::RAX));
+    code2.add_command (Mov64_MR (4, REGS::RAX));
+    code2.add_command (Mov64_MR (5, REGS::RAX));
+    code2.add_command (Mov64_MR (6, REGS::RAX));
+    code2.add_command (Mov64_MR (7, REGS::RAX));
+    code2.add_command (Mov64_MR (8, REGS::RAX));
+    code2.add_command (Mov64_MR (9, REGS::RCX));
+    code2.add_command (Mov64_MR (10, REGS::RDX));
     
 
     ELF file (code2);
