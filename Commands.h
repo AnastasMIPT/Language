@@ -113,8 +113,22 @@ class Mov64_MR : public Command {
     
 public:
 
-    Mov64_MR (unsigned int _from_offset, int _to);
+    Mov64_MR (int _from_offset, unsigned int _to);
     Mov64_MR () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+class Mov64_MImm : public Command {
+    unsigned int byte_num;
+    int from_offset;
+    int imm;
+    
+public:
+
+    Mov64_MImm (int _from_offset, int _imm);
+    Mov64_MImm () = delete;
 
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;

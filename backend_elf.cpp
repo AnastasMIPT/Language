@@ -105,17 +105,17 @@ int main () {
 
     setbuf (stdout, NULL);
 
-    Code code2 (64);
-    code2.add_command (Mov64_MR (1, REGS::RAX));
-    code2.add_command (Mov64_MR (2, REGS::RAX));
-    code2.add_command (Mov64_MR (3, REGS::RAX));
-    code2.add_command (Mov64_MR (4, REGS::RAX));
-    code2.add_command (Mov64_MR (5, REGS::RAX));
-    code2.add_command (Mov64_MR (6, REGS::RAX));
-    code2.add_command (Mov64_MR (7, REGS::RAX));
-    code2.add_command (Mov64_MR (8, REGS::RAX));
-    code2.add_command (Mov64_MR (9, REGS::RCX));
-    code2.add_command (Mov64_MR (10, REGS::RDX));
+    Code code2 (128);
+    code2.add_command (Mov64_MImm (100, 123));
+    code2.add_command (Mov64_MImm (200, 13));
+    code2.add_command (Mov64_MImm (300, 98));
+    code2.add_command (Mov64_MImm (400, -2323));
+    code2.add_command (Mov64_MImm (5000, 12));
+    code2.add_command (Mov64_MImm (60, 3443));
+    code2.add_command (Mov64_MImm (30, 12));
+    code2.add_command (Mov64_MImm (8, 12));
+    code2.add_command (Mov64_MImm (9, 3456));
+    code2.add_command (Mov64_MImm (10, 123));
     
 
     ELF file (code2);
