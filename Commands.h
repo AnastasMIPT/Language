@@ -120,6 +120,8 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+
+
 class Mov64_MImm : public Command {
     unsigned int byte_num;
     int from_offset;
@@ -129,6 +131,24 @@ public:
 
     Mov64_MImm (int _from_offset, int _imm);
     Mov64_MImm () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
+
+
+class Mov64_RImm : public Command {
+    unsigned int byte_num;
+    unsigned int to;
+    int imm;
+    
+public:
+
+    Mov64_RImm (unsigned int _to, int _imm);
+    Mov64_RImm () = delete;
 
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;

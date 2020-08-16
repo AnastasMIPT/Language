@@ -178,4 +178,27 @@ unsigned int Mov64_MImm::get_byte_num () const {
     return byte_num;
 }
 
+
+
+
+Mov64_RImm::Mov64_RImm (unsigned int _to, int _imm)
+: to (_to), imm (_imm) {
+    //setbuf (stdout, NULL);
+    byte_num = ( imm < 0 ? 7 : 5);
+    //DEB_INFO
+    //printf ("byte_num constr = %u\n", byte_num);
+}
+
+void Mov64_RImm::write_to_buf (unsigned char* buf) const {
+        if (byte_num == 7) {
+            set_elems (buf,  REX (1) , OpCode (0xc7) , ModRM (0b11, 0, to), imm);
+        } else {
+            set_elems (buf,  OpCode (0xb8 + to) , imm);
+        }
+}
+
+unsigned int Mov64_RImm::get_byte_num () const {
+    return byte_num;
+}
+
 #endif //COMMANDS_CPP

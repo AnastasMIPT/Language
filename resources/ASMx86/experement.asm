@@ -2,40 +2,59 @@ section .text
 global _start
 _start:
 		
-		mov qword [rbp-1], 123
-		mov qword [rbp-2], 1234
-		mov qword [rbp-3], 12
-		mov qword [rbp-4], 900
-		mov qword [rbp-5], 3000
-		mov qword [rbp-6], 123
-		mov qword [rbp-7], 134
-		mov qword [rbp-8], 23
-		mov qword [rbp-9], 1
-		mov qword [rbp-10], 345
+		mov rax, qword -1
+		mov rcx, qword -2
+		mov rdx, qword -3
+		mov rbx, qword 2000000000
+		mov rsp, qword -35000000
+		mov rbp, qword -35000000
+		mov rdi, qword 1234
+		mov rsi, qword 12
+		mov rax, qword 900
+		mov rax, qword 3000
+		mov rax, qword 123
+		mov rax, qword 134
+		mov rax, qword 23
+		mov rax, qword 1
+		mov rax, qword 345
 
 
 		nop
 		nop
 		nop
 
-		
-		nop
+		mov rcx, 123
+		mov rcx, 1234
+		mov rcx, 12
+		mov rcx, 900
+		mov rcx, 3000
+		mov rcx, 123
+		mov rcx, 134
+		mov rcx, 23
+		mov rcx, 1
+		mov rcx, 345
 
-		mov qword [rbp+100], 123
-		mov qword [rbp+200], 13 
-		mov qword [rbp+300], 98
-		mov qword [rbp+400], -2323
-		mov qword [rbp+5000], 12 
-		mov qword [rbp+60], 3443
-		mov qword [rbp+30], 12
-		mov qword [rbp+8], 12 
-		mov qword [rbp+9], 3456 
-		mov qword [rbp+10], 123 
 
 		nop
 		nop
 		nop
 
+
+		mov rdx, 123
+		mov rdx, 1234
+		mov rdx, 12
+		mov rdx, 900
+		mov rdx, 3000
+		mov rdx, 123
+		mov rdx, 134
+		mov rdx, 23
+		mov rdx, 1
+		mov rdx, 345
+
+
+		nop
+		nop
+		nop
 		
 		
 		mov rax, 1           ; номер системного вызова  sys_exit
