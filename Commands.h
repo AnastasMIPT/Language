@@ -93,11 +93,11 @@ public:
 class Mov64_RM : public Command {
     unsigned int byte_num;
     unsigned int to;
-    int from_offset;
+    int mem_offset;
     
 public:
 
-    Mov64_RM (unsigned int _to, int _from_offset);
+    Mov64_RM (unsigned int _to, int _mem_offset);
     Mov64_RM () = delete;
 
     void write_to_buf (unsigned char* buf) const override;
@@ -109,11 +109,11 @@ public:
 class Mov64_MR : public Command {
     unsigned int byte_num;
     unsigned int to;
-    int from_offset;
+    int mem_offset;
     
 public:
 
-    Mov64_MR (int _from_offset, unsigned int _to);
+    Mov64_MR (int _mem_offset, unsigned int _to);
     Mov64_MR () = delete;
 
     void write_to_buf (unsigned char* buf) const override;
@@ -124,12 +124,12 @@ public:
 
 class Mov64_MImm : public Command {
     unsigned int byte_num;
-    int from_offset;
+    int mem_offset;
     int imm;
     
 public:
 
-    Mov64_MImm (int _from_offset, int _imm);
+    Mov64_MImm (int _mem_offset, int _imm);
     Mov64_MImm () = delete;
 
     void write_to_buf (unsigned char* buf) const override;
@@ -153,5 +153,23 @@ public:
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;
 };
+
+
+
+class PushMem : public Command {
+    unsigned int byte_num;
+    int mem_offset;
+    
+public:
+
+    PushMem (int _mem_offset);
+    PushMem () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
 
 #endif //COMMANDS_H

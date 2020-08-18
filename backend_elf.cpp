@@ -106,16 +106,16 @@ int main () {
     setbuf (stdout, NULL);
 
     Code code2 (128);
-    code2.add_command (Mov64_RImm (REGS::RAX, -1));
-    code2.add_command (Mov64_RImm (REGS::RCX, -2));
-    code2.add_command (Mov64_RImm (REGS::RDX, -3));
-    code2.add_command (Mov64_RImm (REGS::RBX, 2000000000));
-    code2.add_command (Mov64_RImm (REGS::RSP, -35000000));
-    code2.add_command (Mov64_RImm (REGS::RBP, -35000000));
-    code2.add_command (Mov64_RImm (REGS::RDI, 1234));
-    code2.add_command (Mov64_RImm (REGS::RSI, 12));
-    code2.add_command (Mov64_RImm (REGS::RAX, 900));
-    code2.add_command (Mov64_RImm (REGS::RAX, 3000));
+    code2.add_command (PushMem (-1));
+    code2.add_command (PushMem (-2));
+    code2.add_command (PushMem (-3));
+    code2.add_command (PushMem (127));
+    code2.add_command (PushMem (128));
+    code2.add_command (PushMem (-127));
+    code2.add_command (PushMem (-128));
+    code2.add_command (PushMem (-129));
+    code2.add_command (PushMem (900));
+    code2.add_command (PushMem (3000));
     
 
     ELF file (code2);

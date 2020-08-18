@@ -91,6 +91,8 @@ void Call::write_to_buf (unsigned char* buf) const {
     *reinterpret_cast<QWORD*> (buf + 1) = offset;
 }
 
+
+
 void Mov64_RR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b11, RM_REG_by_registers (to, from)));
 }
@@ -99,10 +101,13 @@ unsigned int Mov64_RR::get_byte_num () const {
     return byte_num;
 }
 
-Mov64_RM::Mov64_RM (unsigned int _to, int _from_offset)
-: to (_to), from_offset (_from_offset) {
+
+
+
+Mov64_RM::Mov64_RM (unsigned int _to, int _mem_offset)
+: to (_to), mem_offset (_mem_offset) {
     setbuf (stdout, NULL);
-    byte_num = ( -128 <= from_offset && from_offset < 128 ? 4 : 7);
+    byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 4 : 7);
     DEB_INFO
     printf ("byte_num constr = %u\n", byte_num);
 }
@@ -110,12 +115,12 @@ Mov64_RM::Mov64_RM (unsigned int _to, int _from_offset)
 void Mov64_RM::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             DEB_INFO
-            unsigned char displacment = from_offset;
+            unsigned char displacment = mem_offset;
             set_elems (buf,  REX (1) , OpCode (0x8b) , ModRM (0b01, to << 3, 0b101), displacment);
         } else {
             DEB_INFO
             printf ("byte_num = %u\n", byte_num);
-            set_elems (buf,  REX (1) , OpCode (0x8b) , ModRM (0b10, to << 3, 0b101), from_offset);
+            set_elems (buf,  REX (1) , OpCode (0x8b) , ModRM (0b10, to << 3, 0b101), mem_offset);
         }
 }
 
@@ -126,10 +131,10 @@ unsigned int Mov64_RM::get_byte_num () const {
 
 
 
-Mov64_MR::Mov64_MR (int _from_offset, unsigned int _to)
-: to (_to), from_offset (_from_offset) {
+Mov64_MR::Mov64_MR (int _mem_offset, unsigned int _to)
+: to (_to), mem_offset (_mem_offset) {
     //setbuf (stdout, NULL);
-    byte_num = ( -128 <= from_offset && from_offset < 128 ? 4 : 7);
+    byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 4 : 7);
     //DEB_INFO
     //printf ("byte_num constr = %u\n", byte_num);
 }
@@ -137,12 +142,12 @@ Mov64_MR::Mov64_MR (int _from_offset, unsigned int _to)
 void Mov64_MR::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             //DEB_INFO
-            unsigned char displacment = from_offset;
+            unsigned char displacment = mem_offset;
             set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b01, to << 3, 0b101), displacment);
         } else {
             //DEB_INFO
             //printf ("byte_num = %u\n", byte_num);
-            set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b10, to << 3, 0b101), from_offset);
+            set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b10, to << 3, 0b101), mem_offset);
         }
 }
 
@@ -154,10 +159,10 @@ unsigned int Mov64_MR::get_byte_num () const {
 
 
 
-Mov64_MImm::Mov64_MImm (int _from_offset, int _imm)
-: from_offset (_from_offset), imm (_imm) {
+Mov64_MImm::Mov64_MImm (int _mem_offset, int _imm)
+: mem_offset (_mem_offset), imm (_imm) {
     //setbuf (stdout, NULL);
-    byte_num = ( -128 <= from_offset && from_offset < 128 ? 8 : 11);
+    byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 8 : 11);
     //DEB_INFO
     //printf ("byte_num constr = %u\n", byte_num);
 }
@@ -165,12 +170,12 @@ Mov64_MImm::Mov64_MImm (int _from_offset, int _imm)
 void Mov64_MImm::write_to_buf (unsigned char* buf) const {
         if (byte_num == 8) {
             //DEB_INFO
-            unsigned char displacment = from_offset;
+            unsigned char displacment = mem_offset;
             set_elems (buf,  REX (1) , OpCode (0xc7) , ModRM (0b01, 0, 0b101), displacment, imm);
         } else {
             //DEB_INFO
             //printf ("byte_num = %u\n", byte_num);
-            set_elems (buf,  REX (1) , OpCode (0xc7) , ModRM (0b10, 0, 0b101), from_offset, imm);
+            set_elems (buf,  REX (1) , OpCode (0xc7) , ModRM (0b10, 0, 0b101), mem_offset, imm);
         }
 }
 
@@ -200,5 +205,28 @@ void Mov64_RImm::write_to_buf (unsigned char* buf) const {
 unsigned int Mov64_RImm::get_byte_num () const {
     return byte_num;
 }
+
+
+
+
+PushMem::PushMem (int _mem_offset)
+: mem_offset (_mem_offset) {
+    byte_num = (-128 <= mem_offset && mem_offset < 128 ? 3 : 6);
+}
+
+void PushMem::write_to_buf (unsigned char* buf) const {
+        if (byte_num == 3) {
+            set_elems (buf,  OpCode (0xff) , ModRM (0b01, 0b110 << 3, 0b101), static_cast<unsigned char> (mem_offset));
+        } else {
+            set_elems (buf,  OpCode (0xff) , ModRM (0b10, 0b110 << 3, 0b101), mem_offset);
+        }
+}
+
+unsigned int PushMem::get_byte_num () const {
+    return byte_num;
+}
+
+
+
 
 #endif //COMMANDS_CPP
