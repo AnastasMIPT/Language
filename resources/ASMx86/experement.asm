@@ -2,6 +2,24 @@ section .text
 global _start
 _start:
 		
+		sub rax, 100
+		sub rcx, 2
+		sub rdx, 3
+		sub rbx, 4
+		sub rax, 100
+
+		sub rax, 200
+		sub rax, 300
+		sub rax, 400
+		sub rax, 500
+		sub rax, 600
+		sub rax, 700
+		sub rax, 800
+
+		nop
+		nop
+		nop
+
 		add rax, 100
 		add rax, 200
 		add rax, 300
@@ -15,41 +33,44 @@ _start:
 		nop
 		nop
 
-		add rcx, 100
-		add rcx, 200
-		add rcx, 300
-		add rcx, 400
-		add rcx, 500
-		add rcx, 600
-		add rcx, 700
-		add rcx, 800
+
+
+
+		sub rcx, 100
+		sub rcx, 200
+		sub rcx, 300
+		sub rcx, 400
+		sub rcx, 500
+		sub rcx, 600
+		sub rcx, 700
+		sub rcx, 800
 		
 		nop
 		nop
 		nop
 
-		add rdx, 100
-		add rdx, 200
-		add rdx, 300
-		add rdx, 400
-		add rdx, 500
-		add rdx, 600
-		add rdx, 700
-		add rdx, 800
+		sub rdx, 100
+		sub rdx, 200
+		sub rdx, 300
+		sub rdx, 400
+		sub rdx, 500
+		sub rdx, 600
+		sub rdx, 700
+		sub rdx, 800
 		
 		nop
 		nop
 		nop
 
 
-		add rcx, -10
-		add rcx, -20
-		add rcx, -30
-		add rcx, -40
-		add rcx, -50
-		add rcx, -60
-		add rcx, -70
-		add rcx, -80
+		sub rcx, -10
+		sub rcx, -20
+		sub rcx, -30
+		sub rcx, -40
+		sub rcx, -50
+		sub rcx, -60
+		sub rcx, -70
+		sub rcx, -80
 
 
 		nop
@@ -57,14 +78,14 @@ _start:
 		nop
 
 
-		add rcx, 1
-		add rcx, 2
-		add rcx, 3
-		add rcx, 4
-		add rcx, 5
-		add rcx, 6
-		add rcx, 7
-		add rcx, 8
+		sub rcx, 1
+		sub rcx, 2
+		sub rcx, 3
+		sub rcx, 4
+		sub rcx, 5
+		sub rcx, 6
+		sub rcx, 7
+		sub rcx, 8
 
 
 		mov rcx, 1
@@ -79,4 +100,3 @@ _start:
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
-

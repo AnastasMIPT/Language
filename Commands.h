@@ -257,4 +257,21 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+
+
+class Sub64_RImm : public Command {
+    unsigned int byte_num;
+    unsigned int to;
+    int imm;
+    
+public:
+
+    Sub64_RImm (unsigned int _to, int _imm);
+    Sub64_RImm () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
 #endif //COMMANDS_H

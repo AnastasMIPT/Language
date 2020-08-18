@@ -529,7 +529,7 @@ Node* GetP () {
     }
     else if (NT == VAR) {
         val = Nods[ind];
-        printf ("$$$$$ VarNumber %lf , var = %s\n", VarNumber, val->data);
+        printf ("$$$$$ VarNumber %lf , var = %s   val->num = %lf\n", VarNumber, val->data, val->num);
         if (val->num < VarNumber) VarNumber = val->num;
         ind++;
         return val;
@@ -816,7 +816,7 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 return nullptr;
         }
     } else {
-        num = ElementIsInArr (FuncArray, hash) + COL_WORDS;
+        num = ElementIsInArr (FuncArray, hash) + COL_WORDS + 1;
         if (num  != COL_WORDS) {
             switch (num) {
                 case SIN:
@@ -952,7 +952,7 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, IdsArray* IdsParam, int* KeyWor
             }
             else
                 Nodes[i] = NewVarOrKeyWordNode (word, Ids, IdsParam, KeyWords, sign);
-            printf ("%s %s %d   num = %lg sqrt_num = %d\n", word, Nodes[i]->data, Nodes[i]->type, Nodes[i]->num, SQRT);
+            printf ("%s %s %d   num = %lg\n", word, Nodes[i]->data, Nodes[i]->type, Nodes[i]->num);
             i++;
             //printf ("********* %d  %d  %d********\n", KeyWords[10], KeyWords[11], Hash ("def"));
             //printf ("%s\n", word);

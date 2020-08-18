@@ -97,6 +97,7 @@ int main () {
     ProgramToASM (root, f_asm);
     fclose (f_asm);
 
+    printf ("Heeeeellllloooo!\n");
     return 0;
 }
 
@@ -282,6 +283,9 @@ void Handle_def        (Node* root, FILE* f_out) {
                     "\t\tpush rbp\n"
                     "\t\tmov rbp, rsp\n"
                     "\t\tsub rsp, %d\n\n", _R->data, Bytes * static_cast<int> (_R->left->num));
+
+    fprintf (f_out, "; _R->left->num %lf\n", _R->left->num);
+    
     
     ProgramToASM (_R, f_out);
 
