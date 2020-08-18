@@ -2,61 +2,54 @@ section .text
 global _start
 _start:
 		
-		sub rax, [rbp-100]
-		sub rcx, [rbp-2]
-		sub rdx, [rbp-3]
-		sub rbx, [rbp-4]
-		
-		sub rax, [rbp-100]
-		sub rax, [rbp-200]
-		sub rax, [rbp-300]
-		sub rax, [rbp-400]
-		sub rax, [rbp-500]
-		sub rax, [rbp-600]
-		sub rax, [rbp-700]
-		sub rax, [rbp-800]
-
+		sub rax, rax
+		sub rax, rcx
+		sub rax, rdx
+		sub rax, rbx
+		sub rax, rbp
+		sub rax, rsp
+		sub rax, rdi
+		sub rax, rsi
 		nop
 		nop
 		nop
 
-		add rax, [rbp-100]
-		add rax, [rbp-200]
-		add rax, [rbp-300]
-		add rax, [rbp-400]
-		add rax, [rbp-500]
-		add rax, [rbp-600]
-		add rax, [rbp-700]
-		add rax, [rbp-800]
-
-		nop
-		nop
-		nop
-
-
-
-
-		sub rcx, [rbp-100]
-		sub rcx, [rbp-200]
-		sub rcx, [rbp-300]
-		sub rcx, [rbp-400]
-		sub rcx, [rbp-500]
-		sub rcx, [rbp-600]
-		sub rcx, [rbp-700]
-		sub rcx, [rbp-800]
+		sub rax, rax
+		sub rax, rcx
+		sub rax, rdx
+		sub rax, rbx
+		sub rax, rbp
+		sub rax, rsp
+		sub rax, rdi
+		sub rax, rsi
 		
 		nop
 		nop
 		nop
 
-		sub rdx, 100
-		sub rdx, 200
-		sub rdx, 300
-		sub rdx, 400
-		sub rdx, 500
-		sub rdx, 600
-		sub rdx, 700
-		sub rdx, 800
+
+
+		sub rcx, rax
+		sub rcx, rcx
+		sub rcx, rdx
+		sub rcx, rbx
+		sub rcx, rbp
+		sub rcx, rsp
+		sub rcx, rdi
+		sub rcx, rsi
+		
+		nop
+		nop
+		nop
+
+		add rcx, rax
+		add rcx, rcx
+		add rcx, rdx
+		add rcx, rbx
+		add rcx, rbp
+		add rcx, rsp
+		add rcx, rdi
+		add rcx, rsi
 		
 		nop
 		nop
