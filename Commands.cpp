@@ -304,4 +304,28 @@ unsigned int Add64_RM::get_byte_num () const {
 }
 
 
+
+Add64_RImm::Add64_RImm (unsigned int _to, int _imm)
+: to (_to), imm (_imm) {
+    if (to == REGS::RAX) {
+        byte_num = ( -128 <= imm && imm < 128 ? 4 : 6);
+    } else {
+        byte_num = ( -128 <= imm && imm < 128 ? 4 : 7);
+    }
+}
+
+void Add64_RImm::write_to_buf (unsigned char* buf) const {
+        if (byte_num == 4) {
+            set_elems (buf,  REX (1) , OpCode (0x83) , ModRM (0b11, 0, to), static_cast<char> (imm));
+        } else if (byte_num == 6) {
+            set_elems (buf,  REX (1) , OpCode (0x05), imm);
+        } else {
+            set_elems (buf,  REX (1) , OpCode (0x81) , ModRM (0b11, 0, to), imm);
+        }
+}
+
+unsigned int Add64_RImm::get_byte_num () const {
+    return byte_num;
+}
+
 #endif //COMMANDS_CPP
