@@ -171,5 +171,19 @@ public:
 
 
 
+class PushImm : public Command {
+    unsigned int byte_num;
+    int imm;
+    
+public:
+
+    PushImm (int _imm);
+    PushImm () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
 
 #endif //COMMANDS_H

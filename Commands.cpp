@@ -228,5 +228,21 @@ unsigned int PushMem::get_byte_num () const {
 
 
 
+PushImm::PushImm (int _imm)
+: imm (_imm) {
+    byte_num = (-128 <= imm && imm < 128 ? 2 : 5);
+}
+
+void PushImm::write_to_buf (unsigned char* buf) const {
+        if (byte_num == 2) {
+            set_elems (buf,  OpCode (0x6a), static_cast<unsigned char> (imm));
+        } else {
+            set_elems (buf,  OpCode (0x68) , imm);
+        }
+}
+
+unsigned int PushImm::get_byte_num () const {
+    return byte_num;
+}
 
 #endif //COMMANDS_CPP
