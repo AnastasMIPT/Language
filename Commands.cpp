@@ -209,12 +209,12 @@ unsigned int Mov64_RImm::get_byte_num () const {
 
 
 
-PushMem::PushMem (int _mem_offset)
+PushM::PushM (int _mem_offset)
 : mem_offset (_mem_offset) {
     byte_num = (-128 <= mem_offset && mem_offset < 128 ? 3 : 6);
 }
 
-void PushMem::write_to_buf (unsigned char* buf) const {
+void PushM::write_to_buf (unsigned char* buf) const {
         if (byte_num == 3) {
             set_elems (buf,  OpCode (0xff) , ModRM (0b01, 0b110 << 3, 0b101), static_cast<unsigned char> (mem_offset));
         } else {
@@ -222,7 +222,7 @@ void PushMem::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int PushMem::get_byte_num () const {
+unsigned int PushM::get_byte_num () const {
     return byte_num;
 }
 
@@ -244,5 +244,19 @@ void PushImm::write_to_buf (unsigned char* buf) const {
 unsigned int PushImm::get_byte_num () const {
     return byte_num;
 }
+
+
+
+PushR::PushR (unsigned int _reg)
+: reg (_reg), byte_num (1) {}
+
+void PushR::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  OpCode (0x50+reg));
+}
+
+unsigned int PushR::get_byte_num () const {
+    return byte_num;
+}
+
 
 #endif //COMMANDS_CPP

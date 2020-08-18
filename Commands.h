@@ -156,14 +156,14 @@ public:
 
 
 
-class PushMem : public Command {
+class PushM : public Command {
     unsigned int byte_num;
     int mem_offset;
     
 public:
 
-    PushMem (int _mem_offset);
-    PushMem () = delete;
+    PushM (int _mem_offset);
+    PushM () = delete;
 
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;
@@ -184,6 +184,19 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+
+class PushR : public Command {
+    unsigned int byte_num;
+    unsigned int reg;
+    
+public:
+
+    PushR (unsigned int _reg);
+    PushR () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
 
 
 #endif //COMMANDS_H
