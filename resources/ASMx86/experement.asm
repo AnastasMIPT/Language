@@ -2,48 +2,48 @@ section .text
 global _start
 _start:
 		
-		sub rax, 100
-		sub rcx, 2
-		sub rdx, 3
-		sub rbx, 4
-		sub rax, 100
-
-		sub rax, 200
-		sub rax, 300
-		sub rax, 400
-		sub rax, 500
-		sub rax, 600
-		sub rax, 700
-		sub rax, 800
-
-		nop
-		nop
-		nop
-
-		add rax, 100
-		add rax, 200
-		add rax, 300
-		add rax, 400
-		add rax, 500
-		add rax, 600
-		add rax, 700
-		add rax, 800
+		sub rax, [rbp-100]
+		sub rcx, [rbp-2]
+		sub rdx, [rbp-3]
+		sub rbx, [rbp-4]
+		
+		sub rax, [rbp-100]
+		sub rax, [rbp-200]
+		sub rax, [rbp-300]
+		sub rax, [rbp-400]
+		sub rax, [rbp-500]
+		sub rax, [rbp-600]
+		sub rax, [rbp-700]
+		sub rax, [rbp-800]
 
 		nop
 		nop
 		nop
 
+		add rax, [rbp-100]
+		add rax, [rbp-200]
+		add rax, [rbp-300]
+		add rax, [rbp-400]
+		add rax, [rbp-500]
+		add rax, [rbp-600]
+		add rax, [rbp-700]
+		add rax, [rbp-800]
+
+		nop
+		nop
+		nop
 
 
 
-		sub rcx, 100
-		sub rcx, 200
-		sub rcx, 300
-		sub rcx, 400
-		sub rcx, 500
-		sub rcx, 600
-		sub rcx, 700
-		sub rcx, 800
+
+		sub rcx, [rbp-100]
+		sub rcx, [rbp-200]
+		sub rcx, [rbp-300]
+		sub rcx, [rbp-400]
+		sub rcx, [rbp-500]
+		sub rcx, [rbp-600]
+		sub rcx, [rbp-700]
+		sub rcx, [rbp-800]
 		
 		nop
 		nop

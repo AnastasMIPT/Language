@@ -274,4 +274,20 @@ public:
 };
 
 
+
+
+class Sub64_RM : public Command {
+    unsigned int byte_num;
+    unsigned int to;
+    int mem_offset;
+    
+public:
+
+    Sub64_RM (unsigned int _to, int _mem_offset);
+    Sub64_RM () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
 #endif //COMMANDS_H

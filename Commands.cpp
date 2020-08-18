@@ -354,4 +354,25 @@ unsigned int Sub64_RImm::get_byte_num () const {
     return byte_num;
 }
 
+
+
+
+Sub64_RM::Sub64_RM (unsigned int _to, int _mem_offset)
+: to (_to), mem_offset (_mem_offset) {
+    byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 4 : 7);
+}
+
+void Sub64_RM::write_to_buf (unsigned char* buf) const {
+        if (byte_num == 4) {
+            unsigned char displacment = mem_offset;
+            set_elems (buf,  REX (1) , OpCode (0x2b) , ModRM (0b01, to << 3, 0b101), displacment);
+        } else {
+            set_elems (buf,  REX (1) , OpCode (0x2b) , ModRM (0b10, to << 3, 0b101), mem_offset);
+        }
+}
+
+unsigned int Sub64_RM::get_byte_num () const {
+    return byte_num;
+}
+
 #endif //COMMANDS_CPP
