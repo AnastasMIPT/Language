@@ -274,5 +274,13 @@ unsigned int PopR::get_byte_num () const {
 
 
 
+void Add64_RR::write_to_buf (unsigned char* buf) const {
+        set_elems (buf,  REX (1) , OpCode (0x01) , ModRM (0b11, RM_REG_by_registers (to, from)));
+}
+
+unsigned int Add64_RR::get_byte_num () const {
+    return byte_num;
+}
+
 
 #endif //COMMANDS_CPP

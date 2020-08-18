@@ -106,16 +106,16 @@ int main () {
     setbuf (stdout, NULL);
 
     Code code2 (128);
-    code2.add_command (PopR (REGS::RAX));
-    code2.add_command (PopR (REGS::RCX));
-    code2.add_command (PopR (REGS::RDX));
-    code2.add_command (PopR (REGS::RBX));
-    code2.add_command (PopR (REGS::RSP));
-    code2.add_command (PopR (REGS::RBP));
-    code2.add_command (PopR (REGS::RDI));
-    code2.add_command (PopR (REGS::RSI));
-    code2.add_command (PopR (REGS::RAX));
-    code2.add_command (PopR (REGS::RAX));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RAX));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RCX));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RDX));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RBX));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RSP));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RBP));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RDI));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RSI));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RAX));
+    code2.add_command (Add64_RR (REGS::RCX, REGS::RAX));
     
 
     ELF file (code2);
