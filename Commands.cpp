@@ -387,4 +387,15 @@ unsigned int Sub64_RR::get_byte_num () const {
 }
 
 
+Idiv_R::Idiv_R (unsigned int _reg)
+: reg (_reg), byte_num (3) {}
+
+void Idiv_R::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  REX (1), OpCode (0xf7),ModRM (0b11, 0b110 << 3, 0b1000 + reg));
+}
+
+unsigned int Idiv_R::get_byte_num () const {
+    return byte_num;
+}
+
 #endif //COMMANDS_CPP

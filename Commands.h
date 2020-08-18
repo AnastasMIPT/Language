@@ -12,7 +12,7 @@ namespace REGS {
         RSP,
         RBP,
         RSI,
-        RDI
+        RDI,
     };
 };
 
@@ -299,6 +299,21 @@ class Sub64_RR : public Command {
 public:
     Sub64_RR (unsigned int _to, unsigned int _from)
     : byte_num (3), to (_to), from (_from) {}
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
+class Idiv_R : public Command {
+    unsigned int byte_num;
+    unsigned int reg;
+    
+public:
+
+    Idiv_R (unsigned int _reg);
+    Idiv_R () = delete;
 
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;

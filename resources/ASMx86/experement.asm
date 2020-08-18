@@ -2,14 +2,24 @@ section .text
 global _start
 _start:
 		
-		sub rax, rax
-		sub rax, rcx
-		sub rax, rdx
-		sub rax, rbx
-		sub rax, rbp
-		sub rax, rsp
-		sub rax, rdi
-		sub rax, rsi
+		cqo
+		idiv rax
+		idiv rcx
+		idiv rdx
+		idiv rbx
+		idiv rbp
+		idiv rsp
+		idiv rdi
+		idiv rsi
+		idiv r8
+		idiv r9
+		idiv r10
+		idiv r11
+		idiv r12
+		idiv r13
+		idiv r14
+		idiv r15
+
 		nop
 		nop
 		nop
