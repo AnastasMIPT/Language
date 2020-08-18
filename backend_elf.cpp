@@ -106,8 +106,8 @@ int main () {
     setbuf (stdout, NULL);
 
     Code code2 (128);
-    code2.add_command (Add64_RR (REGS::RCX, REGS::RAX));
-    code2.add_command (Add64_RR (REGS::RCX, REGS::RCX));
+    code2.add_command (Add64_RM (REGS::RCX, 200));
+    code2.add_command (Add64_RM (REGS::RAX, -1));
     code2.add_command (Add64_RR (REGS::RCX, REGS::RDX));
     code2.add_command (Add64_RR (REGS::RCX, REGS::RBX));
     code2.add_command (Add64_RR (REGS::RCX, REGS::RSP));
