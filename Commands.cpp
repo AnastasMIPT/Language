@@ -259,4 +259,20 @@ unsigned int PushR::get_byte_num () const {
 }
 
 
+
+
+PopR::PopR (unsigned int _reg)
+: reg (_reg), byte_num (1) {}
+
+void PopR::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  OpCode (0x58+reg));
+}
+
+unsigned int PopR::get_byte_num () const {
+    return byte_num;
+}
+
+
+
+
 #endif //COMMANDS_CPP

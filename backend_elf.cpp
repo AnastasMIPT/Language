@@ -106,16 +106,16 @@ int main () {
     setbuf (stdout, NULL);
 
     Code code2 (128);
-    code2.add_command (PushR (REGS::RAX));
-    code2.add_command (PushR (REGS::RCX));
-    code2.add_command (PushR (REGS::RDX));
-    code2.add_command (PushR (REGS::RBX));
-    code2.add_command (PushR (REGS::RSP));
-    code2.add_command (PushR (REGS::RBP));
-    code2.add_command (PushR (REGS::RDI));
-    code2.add_command (PushR (REGS::RSI));
-    code2.add_command (PushR (REGS::RAX));
-    code2.add_command (PushR (REGS::RAX));
+    code2.add_command (PopR (REGS::RAX));
+    code2.add_command (PopR (REGS::RCX));
+    code2.add_command (PopR (REGS::RDX));
+    code2.add_command (PopR (REGS::RBX));
+    code2.add_command (PopR (REGS::RSP));
+    code2.add_command (PopR (REGS::RBP));
+    code2.add_command (PopR (REGS::RDI));
+    code2.add_command (PopR (REGS::RSI));
+    code2.add_command (PopR (REGS::RAX));
+    code2.add_command (PopR (REGS::RAX));
     
 
     ELF file (code2);
