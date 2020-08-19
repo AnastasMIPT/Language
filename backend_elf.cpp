@@ -114,7 +114,7 @@ int main () {
     code2.add_command (Itoa ());
     code2.add_command (PushR (REGS::RBP));
     code2.add_command (Mov64_RR (REGS::RBP, REGS::RSP));
-    code2.add_command (Mov64_RImm (REGS::RBX, 100));
+    code2.add_command (Mov64_RImm (REGS::RBX, 300));
     code2.add_command (OutputRBX (labels.find ("itoa")->second));
     code2.add_command (Mov64_RR (REGS::RSP, REGS::RBP));
     code2.add_command (PopR (REGS::RBP));
