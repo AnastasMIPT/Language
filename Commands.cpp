@@ -391,7 +391,11 @@ Idiv_R::Idiv_R (unsigned int _reg)
 : reg (_reg), byte_num (3) {}
 
 void Idiv_R::write_to_buf (unsigned char* buf) const {
-    set_elems (buf,  REX (1), OpCode (0xf7),ModRM (0b11, 0b110 << 3, 0b1000 + reg));
+    if (reg < 8) {
+        set_elems (buf,  REX (1), OpCode (0xf7),ModRM (0b11, 0b110 << 3, 0b1000 + reg));
+    } else {
+        set_elems (buf,  REX (1, 0, 0, 1), OpCode (0xf7),ModRM (0b11, 0b110 << 3, 0b1000 + reg - 8));
+    }
 }
 
 unsigned int Idiv_R::get_byte_num () const {
