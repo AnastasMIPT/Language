@@ -1,105 +1,93 @@
 section .text
 global _start
 _start:
-		
-		cqo
-		idiv rax
-		idiv rcx
-		idiv rdx
-		idiv rbx
-		idiv rbp
-		idiv rsp
-		idiv rdi
-		idiv rsi
-		idiv r8
-		idiv r9
-		idiv r10
-		idiv r11
-		idiv r12
-		idiv r13
-		idiv r14
-		idiv r15
-
-		nop
-		nop
-		nop
-
-		sub rax, rax
-		sub rax, rcx
-		sub rax, rdx
-		sub rax, rbx
-		sub rax, rbp
-		sub rax, rsp
-		sub rax, rdi
-		sub rax, rsi
-		
-		nop
-		nop
-		nop
-
-
-
-		sub rcx, rax
-		sub rcx, rcx
-		sub rcx, rdx
-		sub rcx, rbx
-		sub rcx, rbp
-		sub rcx, rsp
-		sub rcx, rdi
-		sub rcx, rsi
-		
-		nop
-		nop
-		nop
-
-		add rcx, rax
-		add rcx, rcx
-		add rcx, rdx
-		add rcx, rbx
-		add rcx, rbp
-		add rcx, rsp
-		add rcx, rdi
-		add rcx, rsi
-		
-		nop
-		nop
-		nop
-
-
-		sub rcx, -10
-		sub rcx, -20
-		sub rcx, -30
-		sub rcx, -40
-		sub rcx, -50
-		sub rcx, -60
-		sub rcx, -70
-		sub rcx, -80
-
-
-		nop
-		nop
-		nop
-
-
-		sub rcx, 1
-		sub rcx, 2
-		sub rcx, 3
-		sub rcx, 4
-		sub rcx, 5
-		sub rcx, 6
-		sub rcx, 7
-		sub rcx, 8
-
-
-		mov rcx, 1
-		mov rcx, 2
-		mov rcx, 3
-		mov rcx, 4
-		mov rcx, 5
-		mov rcx, 6
-		mov rcx, 7
-		mov rcx, 8
+		call main
 
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
+
+itoa:
+		push rbp
+		mov rbp, rsp
+		xor rax, rax
+		mov rax, qword [rbp+16]
+		mov rbx, qword number_rev
+		mov rdi, number_new
+		xor r10, r10
+		or rax, rax
+		jns .Loop
+		neg rax
+		mov byte [rdi], '-'
+		inc rbx
+		inc rdi
+.Loop:
+		xor rdx, rdx
+		mov r8, 0ah
+		div r8
+		add rdx, '0'
+		mov byte [rbx+r10], dl
+		inc r10
+		cmp qword r10, SYMB_POINT
+		jne .NoPoint
+		mov byte [rbx+r10], '.'
+		inc r10
+.NoPoint:
+		cmp rax, 0
+		je .Loop2
+		jmp .Loop
+.Loop2:		;writing reversev
+		dec r10
+		mov al, [rbx+r10]
+		stosb
+		cmp r10, 0
+		je .Exit
+		jmp .Loop2
+.Exit:
+
+		mov byte [rdi+1], 10
+		mov rsp, rbp
+		pop rbp
+		ret
+
+
+
+
+
+
+
+
+main:
+		push rbp
+		mov rbp, rsp
+
+	
+		mov rbx, qword 100
+		push rbx
+		call itoa
+		sub rsp, 8
+
+		mov rax, 4
+		mov rbx, 1
+		mov rcx, number_new
+		mov rdx, 11
+		int 80h
+
+		mov rsp, rbp
+		pop rbp
+		ret
+
+
+
+
+
+section .data
+		number times 10 db 0
+		db 0
+		sign db 0
+		number_new times 10 db 0
+		db 0
+		number_rev times 10 db 0
+		sqrt_from dq 0
+		sqrt_res  dq 0
+		SYMB_POINT equ 2

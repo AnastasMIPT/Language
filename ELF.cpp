@@ -75,14 +75,16 @@ ELF::ELF (const Code& _code) : bf_size (_code.get_size () /* + SizeItoa + SizeOu
 
     bf_ptr += set_zeros (bf_ptr, SizeOdDataSegm);
     
+    
+    
+    // memcpy (bf_ptr, itoa_b, SizeItoa);
+    // bf_ptr += SizeItoa;
+    // memcpy (bf_ptr, output_b, SizeOutput);
+    // bf_ptr += SizeOutput;
+    
     memcpy (bf_ptr, _code.get_code_buf () , _code.get_size ());
     bf_ptr += _code.get_size ();
-    
-    /*memcpy (bf_ptr, itoa_b, SizeItoa);
-    bf_ptr += SizeItoa;
-    memcpy (bf_ptr, output_b, SizeOutput);
-    bf_ptr += SizeOutput;*/
-    
+
     bf_ptr += set_zeros (bf_ptr, num_of_add_zeros);
 }
 

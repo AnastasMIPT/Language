@@ -5,6 +5,7 @@
 #include <cmath>
 #include "Words.h"
 #include "Func_s.h"
+#include "Func_b.h"
 #include "ELF.h"
 #include "Commands.h"
 
@@ -105,17 +106,18 @@ int main () {
 
     setbuf (stdout, NULL);
 
-    Code code2 (128);
-    code2.add_command (Idiv_R (REGS::R8));
-    code2.add_command (Idiv_R (REGS::R9));
-    code2.add_command (Idiv_R (REGS::R10));
-    code2.add_command (Idiv_R (REGS::R11));
-    code2.add_command (Idiv_R (REGS::R15));
-    code2.add_command (Add64_RR (REGS::RCX, REGS::RBP));
-    code2.add_command (Add64_RR (REGS::RCX, REGS::RDI));
-    code2.add_command (Add64_RR (REGS::RCX, REGS::RSI));
-    code2.add_command (Add64_RR (REGS::RCX, REGS::RAX));
-    code2.add_command (Add64_RR (REGS::RCX, REGS::RAX));
+    Code code2 (512);
+    code2.add_command (GStart ());
+    unsigned char* addr_of_itoa = code2.get_code_buf_ptr ();
+    printf ("first pointer %p\n", addr_of_itoa);
+    code2.add_command (Itoa ());
+    code2.add_command (PushR (REGS::RBP));
+    code2.add_command (Mov64_RR (REGS::RBP, REGS::RSP));
+    code2.add_command (Mov64_RImm (REGS::RBX, 100));
+    code2.add_command (OutputRBX (addr_of_itoa));
+    code2.add_command (Mov64_RR (REGS::RSP, REGS::RBP));
+    code2.add_command (PopR (REGS::RBP));
+	code2.add_command (Ret ());
     
 
     ELF file (code2);

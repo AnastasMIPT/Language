@@ -12,6 +12,7 @@
 
 #include "Commands.h"
 #include "ELF.h"
+#include "Func_b.h"
 #include <cstring>
 #include <cstdlib>
 #include <cassert>
@@ -33,6 +34,11 @@ unsigned int Code::get_size () const {
 unsigned char* Code::get_code_buf () const {
     return buf;
 }
+
+unsigned char* Code::get_code_buf_ptr () const {
+    return buf_ptr;
+}
+
 
 void Code::add_command  (const Command& command) {
     command.write_to_buf (buf_ptr);
@@ -401,5 +407,65 @@ void Idiv_R::write_to_buf (unsigned char* buf) const {
 unsigned int Idiv_R::get_byte_num () const {
     return byte_num;
 }
+
+
+
+Ret::Ret ()
+: byte_num (1) {}
+
+void Ret::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  OpCode (0xc3));
+}
+
+unsigned int Ret::get_byte_num () const {
+    return byte_num;
+}
+
+
+
+Itoa::Itoa ()
+: byte_num (SizeItoa) {}
+
+void Itoa::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  itoa_b);
+}
+
+unsigned int Itoa::get_byte_num () const {
+    return byte_num;
+}
+
+
+
+
+GStart::GStart ()
+: byte_num (SizeGStart) {}
+
+void GStart::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  g_start_b);
+}
+
+unsigned int GStart::get_byte_num () const {
+    return byte_num;
+}
+
+
+
+
+OutputRBX::OutputRBX (unsigned char* _addr_of_itoa)
+: addr_of_itoa (_addr_of_itoa) ,byte_num (SizeOutput) {}
+
+void OutputRBX::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  output_b);
+    printf ("second pointer %p\n", buf+6);
+    *(buf + 2) = static_cast<unsigned int> (addr_of_itoa - (buf + 6));  // displacement by itoa ()
+}
+
+unsigned int OutputRBX::get_byte_num () const {
+    return byte_num;
+}
+
+
+
+
 
 #endif //COMMANDS_CPP

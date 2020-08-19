@@ -46,6 +46,7 @@ public:
     ~Code ();
     unsigned int get_size () const;
     unsigned char* get_code_buf    () const;
+    unsigned char* get_code_buf_ptr    () const;
     void write_from_buf   (unsigned char* _buf, unsigned int num);
     void add_command  (const Command& command);
 };
@@ -54,7 +55,7 @@ class REX {
 public:
     BYTE data;
 public:
-    REX (BYTE W, BYTE R = 0, BYTE X = 0, BYTE B = 0)
+    REX (BYTE W, BYTE R = 0U, BYTE X = 0U, BYTE B = 0U)
     : data (0b01000000 | (W << 3) | (R << 2) | (X << 1) | B) {}
     //explicit REX (BYTE _data) : data (_data) {}
     
@@ -326,5 +327,56 @@ public:
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;
 };
+
+
+
+class Ret : public Command {
+    unsigned int byte_num;
+    
+public:
+
+    Ret ();
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
+class Itoa : public Command {
+    unsigned int byte_num;
+public:
+
+    Itoa ();
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+class GStart : public Command {
+    unsigned int byte_num;
+public:
+
+    GStart ();
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
+class OutputRBX : public Command {
+    unsigned int byte_num;
+    unsigned char* addr_of_itoa;
+public:
+
+    OutputRBX (unsigned char* _addr_of_itoa);
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
 
 #endif //COMMANDS_H
