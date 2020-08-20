@@ -9,101 +9,46 @@ _start:
 
 
 
-itoa:
-		push rbp
-		mov rbp, rsp
-		xor rax, rax
-		mov rax, qword [rbp+16]
-		mov rbx, qword number_rev
-		mov rdi, number_new
-		xor r10, r10
-		or rax, rax
-		jns .Loop
-		neg rax
-		mov byte [rdi], '-'
-		inc rbx
-		inc rdi
-.Loop:
-		xor rdx, rdx
-		mov r8, 0ah
-		div r8
-		add rdx, '0'
-		mov byte [rbx+r10], dl
-		inc r10
-		cmp qword r10, SYMB_POINT
-		jne .NoPoint
-		mov byte [rbx+r10], '.'
-		inc r10
-.NoPoint:
-		cmp rax, 0
-		je .Loop2
-		jmp .Loop
-.Loop2:		;writing reversev
-		dec r10
-		mov al, [rbx+r10]
-		stosb
-		cmp r10, 0
-		je .Exit
-		jmp .Loop2
-.Exit:
-
-		mov byte [rdi+1], 10
-		mov rsp, rbp
-		pop rbp
-		ret	
-atoi:
-		push rbp
-		mov rbp, rsp
-		xor rax, rax
-
-		mov byte [sign], 0
-		mov rbx, qword [rbp+16]
-		xor rcx, rcx
-		cmp byte [rbx], '-'
-		jne .Next
-		mov byte [sign], 1
-		inc rbx
-.Next:
-		cmp byte [rbx], 10
-		je .Exit
-		mov cl, byte [rbx]
-		sub rcx, '0'
-		imul rax, 10
-		add rax, rcx
-		inc rbx
-		jmp .Next
-.Exit:
-		cmp byte[sign], 1
-		jne .Exit_l
-		neg rax
-.Exit_l:
-		mov rsp, rbp
-		pop rbp
-		ret
-
 main:
 		push rbp
 		mov rbp, rsp
 
-		mov rax, 3
-		mov rbx, 2
-		mov rcx, number
-		mov rdx, 10
-		int 80h
-		push qword number
-		call atoi
-		sub rsp, 8
+		cmp rax, rax
+		cmp rax, rcx
+		cmp rax, rdx
+		cmp rax, rbx
+		cmp rax, rsp
+		cmp rax, rbp
+		cmp rax, rsi
+		cmp rax, rdi
+		mov rax, rdi
 
-		mov rbx, rax
+		nop
+		nop
+		nop
 
-		push rbx
-		call itoa
-		sub rsp, 8
-		mov rax, 4
-		mov rbx, 1
-		mov rcx, number_new
-		mov rdx, 11
-		int 80h
+		cmp rcx, rax
+		cmp rcx, rcx
+		cmp rcx, rdx
+		cmp rcx, rbx
+		cmp rcx, rsp
+		cmp rcx, rbp
+		cmp rcx, rsi
+		cmp rcx, rdi
+
+		nop
+		nop
+		nop
+
+		cmp rdx, rax
+		cmp rdx, rcx
+		cmp rdx, rdx
+		cmp rdx, rbx
+		cmp rdx, rsp
+		cmp rdx, rbp
+		cmp rdx, rsi
+		cmp rdx, rdi
+		
 
 		mov rsp, rbp
 		pop rbp

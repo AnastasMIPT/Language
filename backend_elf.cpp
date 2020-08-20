@@ -117,19 +117,20 @@ int main () {
     Code code2 (512);
     code2.add_command (Call ("main", &label_requests));
     code2.add_command (GStart ());
-    labels.insert ("itoa", code2.get_code_buf_ptr ());
-    printf ("itoa the first pointer %p\n", code2.get_code_buf_ptr ());
-    code2.add_command (Itoa ());
-    printf ("atoi the first pointer %p\n", code2.get_code_buf_ptr ());
-    labels.insert ("atoi", code2.get_code_buf_ptr ());
-    code2.add_command (Atoi ());
     labels.insert ("main", code2.get_code_buf_ptr ());
     code2.add_command (PushR (REGS::RBP));
     code2.add_command (Mov64_RR  (REGS::RBP, REGS::RSP));
-    code2.add_command (InputRAX  (labels.find ("atoi")->second));
-    code2.add_command (Mov64_RR  (REGS::RBX, REGS::RAX));
-    // code2.add_command (Mov64_RImm  (REGS::RBX, 100));
-    code2.add_command (OutputRBX (labels.find ("itoa")->second));
+    
+    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RAX));
+    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RCX));
+    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RDX));
+    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RBX));
+    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RSP));
+    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RBP));
+    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RSI));
+    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RDI));
+    
+
     code2.add_command (Mov64_RR  (REGS::RSP, REGS::RBP));
     code2.add_command (PopR (REGS::RBP));
 	code2.add_command (Ret ());

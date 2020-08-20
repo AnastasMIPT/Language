@@ -493,4 +493,16 @@ unsigned int InputRAX::get_byte_num () const {
 
 
 
+
+
+void Cmp_RR::write_to_buf (unsigned char* buf) const {
+        set_elems (buf,  REX (1) , OpCode (0x39) , ModRM (0b11, RM_REG_by_registers (to, from)));
+}
+
+unsigned int Cmp_RR::get_byte_num () const {
+    return byte_num;
+}
+
+
+
 #endif //COMMANDS_CPP
