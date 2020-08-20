@@ -434,6 +434,16 @@ unsigned int Itoa::get_byte_num () const {
     return byte_num;
 }
 
+Atoi::Atoi ()
+: byte_num (SizeAtoi) {}
+
+void Atoi::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  atoi_b);
+}
+
+unsigned int Atoi::get_byte_num () const {
+    return byte_num;
+}
 
 
 
@@ -456,8 +466,9 @@ OutputRBX::OutputRBX (unsigned char* _addr_of_itoa)
 
 void OutputRBX::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  output_b);
-    printf ("second pointer %p\n", buf+6);
-    *(buf + 2) = static_cast<unsigned int> (addr_of_itoa - (buf + 6));  // displacement by itoa ()
+    printf ("output second pointer %p\n", buf+6);
+    printf ("??? %x\n", (addr_of_itoa - (buf + 6)));
+    *reinterpret_cast<unsigned int*> (buf + 2) = static_cast<unsigned int> (addr_of_itoa - (buf + 6));  // displacement by itoa ()
 }
 
 unsigned int OutputRBX::get_byte_num () const {
@@ -465,6 +476,19 @@ unsigned int OutputRBX::get_byte_num () const {
 }
 
 
+
+InputRAX::InputRAX (unsigned char* _addr_of_atoi)
+: addr_of_atoi (_addr_of_atoi) ,byte_num (SizeInput) {}
+
+void InputRAX::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  input_b);
+    printf ("input second pointer %p\n", buf+37);
+    *reinterpret_cast<unsigned int*>(buf + 33) = static_cast<unsigned int> (addr_of_atoi - (buf + 37));  // displacement by atoi ()
+}
+
+unsigned int InputRAX::get_byte_num () const {
+    return byte_num;
+}
 
 
 

@@ -353,6 +353,18 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+class Atoi : public Command {
+    unsigned int byte_num;
+public:
+
+    Atoi ();
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
 class GStart : public Command {
     unsigned int byte_num;
 public:
@@ -376,6 +388,19 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+
+
+
+class InputRAX : public Command {
+    unsigned int byte_num;
+    unsigned char* addr_of_atoi;
+public:
+
+    InputRAX (unsigned char* _addr_of_atoi);
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
 
 
 
