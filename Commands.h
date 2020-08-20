@@ -2,6 +2,7 @@
 #define COMMANDS_H
 
 #include "Types.h"
+#include "my_vector.h"
 
 namespace REGS {
     enum Registers {
@@ -51,6 +52,14 @@ public:
     void add_command  (const Command& command);
 };
 
+class Request {
+ public:
+    const char* label;
+    unsigned char* address;
+
+    Request (const char* _label, unsigned char* _address) : label (_label), address (_address) {};
+};
+
 class REX {
 public:
     BYTE data;
@@ -76,10 +85,14 @@ public:
 
 
 class Call : public Command {
-    unsigned int byte_num;
-    unsigned int offset;
+    unsigned int byte_num = 5;
+    unsigned int offset = 0;
+    Vector <Request>* label_requests = nullptr;
+    const char* func_name;
 public:
-    Call (unsigned int _offset) : byte_num (5), offset (_offset) {};
+    Call (unsigned int _offset) : offset (_offset) {};
+    Call (const char* _func_name, Vector <Request>* _label_requests) 
+    : func_name (_func_name), label_requests (_label_requests) {};
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;
 };

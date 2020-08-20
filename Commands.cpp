@@ -84,8 +84,6 @@ Code::~Code () {
 }
 
 
-
-
 unsigned int Call::get_byte_num () const {
     return byte_num;
 }
@@ -94,6 +92,9 @@ void Call::write_to_buf (unsigned char* buf) const {
     assert (buf);
 
     *buf = 0xe8;
+    if (label_requests) {
+        (*label_requests).emplase_back (func_name, buf + 1); // do request for label
+    }
     *reinterpret_cast<QWORD*> (buf + 1) = offset;
 }
 

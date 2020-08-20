@@ -88,6 +88,8 @@ void Handle_def        (Node* root, FILE* f_out);
 void RedusePrecision   (FILE* f_out, Node* elem, int ret_value = UNDEF);
 
 
+void Handle_of_label_requests (const Vector <Request>& requests, const HashTable <unsigned char*>& labels);
+
 int main () {
 
     // FILE* f_in = fopen ("./resources/tree.txt", "r");
@@ -108,17 +110,12 @@ int main () {
 
     setbuf (stdout, NULL);
 
-    Vector <int> vec (10);
-    for (int i = 0; i < vec.size (); ++i) {
-        vec[i] = i;
-    }
-    for (int i = 0; i < vec.size (); ++i) {
-        printf ("el = %d\n", vec[i]);
-    }
-
+    Vector <Request> label_requests;
     HashTable <unsigned char*> labels (1009, CRC_32_fast);
 
+
     Code code2 (512);
+    code2.add_command (Call ("main", &label_requests));
     code2.add_command (GStart ());
     labels.insert ("itoa", code2.get_code_buf_ptr ());
     printf ("itoa the first pointer %p\n", code2.get_code_buf_ptr ());
@@ -126,6 +123,7 @@ int main () {
     printf ("atoi the first pointer %p\n", code2.get_code_buf_ptr ());
     labels.insert ("atoi", code2.get_code_buf_ptr ());
     code2.add_command (Atoi ());
+    labels.insert ("main", code2.get_code_buf_ptr ());
     code2.add_command (PushR (REGS::RBP));
     code2.add_command (Mov64_RR  (REGS::RBP, REGS::RSP));
     code2.add_command (InputRAX  (labels.find ("atoi")->second));
@@ -135,7 +133,7 @@ int main () {
     code2.add_command (Mov64_RR  (REGS::RSP, REGS::RBP));
     code2.add_command (PopR (REGS::RBP));
 	code2.add_command (Ret ());
-    
+    Handle_of_label_requests (label_requests, labels);
 
     ELF file (code2);
     file.load_to_file ("./resources/ASMx86/my_elf");
@@ -143,6 +141,12 @@ int main () {
     return 0;
 }
 
+void Handle_of_label_requests (const Vector <Request>& requests, const HashTable <unsigned char*>& labels) {
+    for (int i = 0; i < requests.size (); ++i) {
+        unsigned int offset = labels.find (requests[i].label)->second - (requests[i].address + 4);
+        *reinterpret_cast<unsigned int*> (requests[i].address) =  offset;
+    }
+}
 
 
 void ProgramToASM (Node* root, FILE* f_out, int ret_value) {
