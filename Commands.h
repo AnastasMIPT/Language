@@ -98,6 +98,51 @@ public:
 };
 
 
+class Je : public Command {
+    unsigned int byte_num = 6;
+    unsigned int offset = 0;
+    Vector <Request>* label_requests = nullptr;
+    const char* cond_name;
+public:
+    Je (unsigned int _offset) : offset (_offset) {};
+    Je (const char* _cond_name, Vector <Request>* _label_requests) 
+    : cond_name (_cond_name), label_requests (_label_requests) {};
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
+class Jne : public Command {
+    unsigned int byte_num = 6;
+    unsigned int offset = 0;
+    Vector <Request>* label_requests = nullptr;
+    const char* cond_name;
+public:
+    Jne (unsigned int _offset) : offset (_offset) {};
+    Jne (const char* _cond_name, Vector <Request>* _label_requests) 
+    : cond_name (_cond_name), label_requests (_label_requests) {};
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
+class Jg : public Command {
+    unsigned int byte_num = 6;
+    unsigned int offset = 0;
+    Vector <Request>* label_requests = nullptr;
+    const char* cond_name;
+public:
+    Jg (unsigned int _offset) : offset (_offset) {};
+    Jg (const char* _cond_name, Vector <Request>* _label_requests) 
+    : cond_name (_cond_name), label_requests (_label_requests) {};
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+
 class Mov64_RR : public Command {
     unsigned int byte_num;
     unsigned int to;
@@ -427,6 +472,7 @@ public:
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;
 };
+
 
 
 

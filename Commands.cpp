@@ -100,6 +100,50 @@ void Call::write_to_buf (unsigned char* buf) const {
 
 
 
+void Je::write_to_buf (unsigned char* buf) const {
+    assert (buf);
+
+    set_elems (buf, OpCode (0x0f), OpCode (0x84));
+    if (label_requests) {
+        (*label_requests).emplase_back (cond_name, buf + 2); // do request for label
+    }
+    *reinterpret_cast<QWORD*> (buf + 2) = offset;
+}
+
+unsigned int Je::get_byte_num () const {
+    return byte_num;
+}
+
+
+void Jne::write_to_buf (unsigned char* buf) const {
+    assert (buf);
+
+    set_elems (buf, OpCode (0x0f), OpCode (0x85));
+    if (label_requests) {
+        (*label_requests).emplase_back (cond_name, buf + 2); // do request for label
+    }
+    *reinterpret_cast<QWORD*> (buf + 2) = offset;
+}
+
+unsigned int Jne::get_byte_num () const {
+    return byte_num;
+}
+
+
+void Jg::write_to_buf (unsigned char* buf) const {
+    assert (buf);
+
+    set_elems (buf, OpCode (0x0f), OpCode (0x8f));
+    if (label_requests) {
+        (*label_requests).emplase_back (cond_name, buf + 2); // do request for label
+    }
+    *reinterpret_cast<QWORD*> (buf + 2) = offset;
+}
+
+unsigned int Jg::get_byte_num () const {
+    return byte_num;
+}
+
 void Mov64_RR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b11, RM_REG_by_registers (to, from)));
 }

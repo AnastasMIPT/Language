@@ -13,42 +13,25 @@ main:
 		push rbp
 		mov rbp, rsp
 
-		cmp rax, rax
-		cmp rax, rcx
-		cmp rax, rdx
-		cmp rax, rbx
-		cmp rax, rsp
-		cmp rax, rbp
-		cmp rax, rsi
-		cmp rax, rdi
-		mov rax, rdi
 
-		nop
-		nop
-		nop
 
-		cmp rcx, rax
-		cmp rcx, rcx
-		cmp rcx, rdx
-		cmp rcx, rbx
-		cmp rcx, rsp
-		cmp rcx, rbp
-		cmp rcx, rsi
-		cmp rcx, rdi
+		je  end_if1
+		jne  end_if1
+		jg  end_if1
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+		mov qword [rbp-256], -256
+end_if1:
 
-		nop
-		nop
-		nop
-
-		cmp rdx, rax
-		cmp rdx, rcx
-		cmp rdx, rdx
-		cmp rdx, rbx
-		cmp rdx, rsp
-		cmp rdx, rbp
-		cmp rdx, rsi
-		cmp rdx, rdi
-		
 
 		mov rsp, rbp
 		pop rbp

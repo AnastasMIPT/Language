@@ -120,16 +120,24 @@ int main () {
     labels.insert ("main", code2.get_code_buf_ptr ());
     code2.add_command (PushR (REGS::RBP));
     code2.add_command (Mov64_RR  (REGS::RBP, REGS::RSP));
+    code2.add_command (Je ("end_if1", &label_requests));
+    code2.add_command (Jne ("end_if1", &label_requests));
+    code2.add_command (Jg ("end_if1", &label_requests));
+
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
+    code2.add_command (Mov64_MImm  (-256, -256));
     
-    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RAX));
-    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RCX));
-    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RDX));
-    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RBX));
-    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RSP));
-    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RBP));
-    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RSI));
-    code2.add_command (Cmp_RR  (REGS::RCX, REGS::RDI));
-    
+    labels.insert ("end_if1", code2.get_code_buf_ptr ());
 
     code2.add_command (Mov64_RR  (REGS::RSP, REGS::RBP));
     code2.add_command (PopR (REGS::RBP));
