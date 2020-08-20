@@ -9,6 +9,8 @@
 #include "ELF.h"
 #include "Commands.h"
 #include "hash_table.h"
+#include "my_vector.h"
+
 
 #define _NewEl(type)                                       \
 else if ( strcmp (#type, data) == 0)                                      \
@@ -105,6 +107,14 @@ int main () {
 
 
     setbuf (stdout, NULL);
+
+    Vector <int> vec (10);
+    for (int i = 0; i < vec.size (); ++i) {
+        vec[i] = i;
+    }
+    for (int i = 0; i < vec.size (); ++i) {
+        printf ("el = %d\n", vec[i]);
+    }
 
     HashTable <unsigned char*> labels (1009, CRC_32_fast);
 
