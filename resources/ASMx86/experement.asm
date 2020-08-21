@@ -19,35 +19,47 @@ main:
 
 
 		;25 = 00 100 101
-		mov qword [sqrt_from], rax
-		mov qword [sqrt_from], rcx
-		mov qword [sqrt_from], rdx
-		mov qword [sqrt_from], rbx
-		mov qword [sqrt_from], rbp
-		mov qword [sqrt_from], rsp
-		mov qword [sqrt_from], rsi
-		mov qword [sqrt_from], rdi
-		nop
-		nop
-		finit
-		fild qword [sqrt_from]
-		fsqrt
-		fistp qword [sqrt_res]
-		nop
-		nop
-		mov rax, qword [sqrt_from]
-		mov rcx, qword [sqrt_from]
-		mov rdx, qword [sqrt_from]
-		mov rbx, qword [sqrt_from]
-		mov rbp, qword [sqrt_from]
-		mov rsp, qword [sqrt_from]
-		mov rsi, qword [sqrt_from]
-		mov rdi, qword [sqrt_from]
 		
 		
-		imul rax, 10
+		
+		
+		
+		imul rax, rax
+		imul rax, rcx
+		imul rax, rdx
+		imul rax, rbx
+		imul rax, rsp
+		imul rax, rbp
+		imul rax, rsi
+		imul rax, rdi
+		nop
+		nop
+		nop
 
-		mov qword [number], 100
+		imul rcx, rax
+		imul rcx, rcx
+		imul rcx, rdx
+		imul rcx, rbx
+		nop
+		nop
+		nop
+
+		imul rdx, rax
+		imul rdx, rcx
+		imul rdx, rdx
+		imul rdx, rbx
+		nop
+		nop
+		nop
+
+		imul rbx, rax
+		imul rbx, rcx
+		imul rbx, rdx
+		imul rbx, rbx
+		nop
+		nop
+		nop
+
 
 		mov rsp, rbp
 		pop rbp

@@ -458,6 +458,37 @@ unsigned int Sub64_RR::get_byte_num () const {
 }
 
 
+Imul64_RImm::Imul64_RImm (unsigned int _to, int _imm)
+: to (_to), imm (_imm) {
+    byte_num = ( -128 <= imm && imm < 128 ? 4 : 7);
+}
+
+void Imul64_RImm::write_to_buf (unsigned char* buf) const {
+        if (byte_num == 4) {
+            set_elems (buf,  REX (1) , OpCode (0x6b) , ModRM (0b11, to << 3, to), static_cast<char> (imm));
+        } else {
+            set_elems (buf,  REX (1) , OpCode (0x69) , ModRM (0b11, to << 3, to), imm);
+        }
+}
+
+unsigned int Imul64_RImm::get_byte_num () const {
+    return byte_num;
+}
+
+
+
+
+void Imul64_RR::write_to_buf (unsigned char* buf) const {
+        set_elems (buf,  REX (1) , OpCode (0x0f) , OpCode (0xaf), ModRM (0b11, to << 3, from));
+}
+
+unsigned int Imul64_RR::get_byte_num () const {
+    return byte_num;
+}
+
+
+
+
 Idiv_R::Idiv_R (unsigned int _reg)
 : reg (_reg), byte_num (3) {}
 

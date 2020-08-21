@@ -136,7 +136,10 @@ int main () {
     code2.add_command (Mov64_AddrR (Addr_sqrt_from, REGS::RBX));
     code2.add_command (Sqrt ());
     code2.add_command (Mov64_RAddr (REGS::RBX, Addr_sqrt_res));
+    code2.add_command (Mov64_RImm  (REGS::RDX, 100));
     
+    code2.add_command (Imul64_RR (REGS::RBX, REGS::RDX));
+
     code2.add_command (OutputRBX (labels.find ("itoa")->second));
     code2.add_command (Mov64_RR  (REGS::RSP, REGS::RBP));
     code2.add_command (PopR (REGS::RBP));

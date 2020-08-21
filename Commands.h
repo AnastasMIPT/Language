@@ -379,6 +379,8 @@ public:
 
 
 
+
+
 class Sub64_RM : public Command {
     unsigned int byte_num;
     unsigned int to;
@@ -402,6 +404,34 @@ class Sub64_RR : public Command {
 public:
     Sub64_RR (unsigned int _to, unsigned int _from)
     : byte_num (3), to (_to), from (_from) {}
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+class Imul64_RImm : public Command {
+    unsigned int byte_num;
+    unsigned int to;
+    int imm;
+    
+public:
+
+    Imul64_RImm (unsigned int _to, int _imm);
+    Imul64_RImm () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+
+class Imul64_RR : public Command {
+    unsigned int byte_num;
+    unsigned int to;
+    unsigned int from;
+public:
+    Imul64_RR (unsigned int _to, unsigned int _from)
+    : byte_num (4), to (_to), from (_from) {}
 
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;
