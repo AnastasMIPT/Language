@@ -556,6 +556,17 @@ unsigned int InputRAX::get_byte_num () const {
 }
 
 
+Sqrt::Sqrt () : byte_num (SizeSqrt) {}
+
+void Sqrt::write_to_buf (unsigned char* buf) const {
+    set_elems (buf,  sqrt_b);
+}
+
+unsigned int Sqrt::get_byte_num () const {
+    return byte_num;
+}
+
+
 
 
 
