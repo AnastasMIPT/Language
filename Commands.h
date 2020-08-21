@@ -83,6 +83,14 @@ public:
     : data ((Mod << 6) + Reg + RM) {}
 };
 
+class SIB {
+    BYTE data;
+public:
+    SIB (BYTE Scale, BYTE Index, BYTE Base)
+    : data ((Scale << 6) | (Index << 3) | Base) {}
+};
+
+
 
 class Call : public Command {
     unsigned int byte_num = 5;
@@ -155,6 +163,33 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+class Mov64_RAddr : public Command {
+    unsigned int byte_num;
+    unsigned int to;
+    unsigned int addr;
+    
+public:
+
+    Mov64_RAddr (unsigned int _to, unsigned int _addr) : byte_num (8), to (_to), addr (_addr) {};
+    Mov64_RAddr () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
+
+class Mov64_AddrR : public Command {
+    unsigned int byte_num;
+    unsigned int addr;
+    unsigned int from;
+
+public:
+
+    Mov64_AddrR (unsigned int _addr, unsigned int _from) : byte_num (8), addr (_addr) , from (_from) {};
+    Mov64_AddrR () = delete;
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
 
 
 class Mov64_RM : public Command {
@@ -220,6 +255,7 @@ public:
     void write_to_buf (unsigned char* buf) const override;
     unsigned int get_byte_num () const override;
 };
+
 
 
 

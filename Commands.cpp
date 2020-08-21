@@ -155,6 +155,26 @@ unsigned int Mov64_RR::get_byte_num () const {
 
 
 
+void Mov64_RAddr::write_to_buf (unsigned char* buf) const {
+        set_elems (buf,  REX (1) , OpCode (0x8b) , ModRM (0b00, to << 3, 0b100), SIB (0b00, 0b100, 0b101), addr);
+}
+
+unsigned int Mov64_RAddr::get_byte_num () const {
+    return byte_num;
+}
+
+
+void Mov64_AddrR::write_to_buf (unsigned char* buf) const {
+        set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b00, from << 3, 0b100), SIB (0b00, 0b100, 0b101), addr);
+}
+
+unsigned int Mov64_AddrR::get_byte_num () const {
+    return byte_num;
+}
+
+
+
+
 Mov64_RM::Mov64_RM (unsigned int _to, int _mem_offset)
 : to (_to), mem_offset (_mem_offset) {
     setbuf (stdout, NULL);

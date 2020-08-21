@@ -9,7 +9,7 @@ constexpr unsigned int SizeAtoi = 95;
 constexpr unsigned int SizeOutput = 37;
 constexpr unsigned int SizeInput = 41;
 constexpr unsigned int SizeGStart = 17;
-
+constexpr unsigned int SizeSqrt = 19;
 
 //0xe8, 0xe4, 0x00, 0x00, 0x00,       	                    // callq  0x400189
 constexpr unsigned char g_start_b[] = {
@@ -119,3 +119,9 @@ constexpr unsigned char output_b[] = {
 0xba, 0x0b, 0x00, 0x00, 0x00,       	        // mov    $0xb,%edx
 0xcd, 0x80};                	                // int    $0x80
 
+constexpr unsigned char sqrt_b[] = {
+0x9b, 0xdb, 0xe3,             	                  // finit  
+0xdf, 0x2c, 0x25, 0x51, 0x01, 0x60, 0x00, 	      // fildll 0x600151
+0xd9, 0xfa,                    	                  // fsqrt  
+0xdf, 0x3c, 0x25, 0x59, 0x01, 0x60, 0x00, 	      // fistpll 0x600159
+};

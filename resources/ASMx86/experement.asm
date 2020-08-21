@@ -13,25 +13,41 @@ main:
 		push rbp
 		mov rbp, rsp
 
+		;04 = 00 000 100
+		;0c = 00 001 100
+		;14 = 00 010 100
 
 
-		je  end_if1
-		jne  end_if1
-		jg  end_if1
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-		mov qword [rbp-256], -256
-end_if1:
+		;25 = 00 100 101
+		mov qword [sqrt_from], rax
+		mov qword [sqrt_from], rcx
+		mov qword [sqrt_from], rdx
+		mov qword [sqrt_from], rbx
+		mov qword [sqrt_from], rbp
+		mov qword [sqrt_from], rsp
+		mov qword [sqrt_from], rsi
+		mov qword [sqrt_from], rdi
+		nop
+		nop
+		finit
+		fild qword [sqrt_from]
+		fsqrt
+		fistp qword [sqrt_res]
+		nop
+		nop
+		mov rax, qword [sqrt_from]
+		mov rcx, qword [sqrt_from]
+		mov rdx, qword [sqrt_from]
+		mov rbx, qword [sqrt_from]
+		mov rbp, qword [sqrt_from]
+		mov rsp, qword [sqrt_from]
+		mov rsi, qword [sqrt_from]
+		mov rdi, qword [sqrt_from]
+		
+		
+		imul rax, 10
 
+		mov qword [number], 100
 
 		mov rsp, rbp
 		pop rbp

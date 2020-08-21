@@ -114,36 +114,38 @@ int main () {
     HashTable <unsigned char*> labels (1009, CRC_32_fast);
 
 
-    Code code2 (512);
+ Code code2 (512);
     code2.add_command (Call ("main", &label_requests));
     code2.add_command (GStart ());
+    // labels.insert ("itoa", code2.get_code_buf_ptr ());
+    // printf ("itoa the first pointer %p\n", code2.get_code_buf_ptr ());
+    // code2.add_command (Itoa ());
+    // printf ("atoi the first pointer %p\n", code2.get_code_buf_ptr ());
+    // labels.insert ("atoi", code2.get_code_buf_ptr ());
+    // code2.add_command (Atoi ());
     labels.insert ("main", code2.get_code_buf_ptr ());
     code2.add_command (PushR (REGS::RBP));
     code2.add_command (Mov64_RR  (REGS::RBP, REGS::RSP));
-    code2.add_command (Je ("end_if1", &label_requests));
-    code2.add_command (Jne ("end_if1", &label_requests));
-    code2.add_command (Jg ("end_if1", &label_requests));
+    // code2.add_command (InputRAX  (labels.find ("atoi")->second));
+    // code2.add_command (Mov64_RR  (REGS::RBX, REGS::RAX));
+    // code2.add_command (Mov64_RImm  (REGS::RBX, 100));
+    // code2.add_command (OutputRBX (labels.find ("itoa")->second));
 
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    code2.add_command (Mov64_MImm  (-256, -256));
-    
-    labels.insert ("end_if1", code2.get_code_buf_ptr ());
+    code2.add_command (Mov64_AddrR (0x600195, REGS::RAX));
+    code2.add_command (Mov64_AddrR (0x600195, REGS::RCX));
+    code2.add_command (Mov64_AddrR (0x600195, REGS::RDX));
+    code2.add_command (Mov64_AddrR (0x600195, REGS::RBX));
+
+
+    code2.add_command (Mov64_RAddr (REGS::RAX, 0x600195));
+    code2.add_command (Mov64_RAddr (REGS::RCX, 0x600195));
+    code2.add_command (Mov64_RAddr (REGS::RDX, 0x600195));
+    code2.add_command (Mov64_RAddr (REGS::RBX, 0x600195));
 
     code2.add_command (Mov64_RR  (REGS::RSP, REGS::RBP));
     code2.add_command (PopR (REGS::RBP));
 	code2.add_command (Ret ());
     Handle_of_label_requests (label_requests, labels);
-
     ELF file (code2);
     file.load_to_file ("./resources/ASMx86/my_elf");
 
