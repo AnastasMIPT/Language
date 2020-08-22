@@ -5,6 +5,7 @@
 #ifndef LANGUAGE_WORDS_H
 #define LANGUAGE_WORDS_H
 
+#include "Commands.h"
 
 enum {
     START,
@@ -158,40 +159,14 @@ const char* arithmeic[] = {
         "idiv"
 };
 
-enum {
-        RAX,
-        RDX,
-        RBX,
-        RCX,
-        RDI,
-        RSI,
-        R8,
-        R9,
-        R10,
-        R11,
-        R12,
-        R13,
-        R14,
-        R15,
-        UNDEF,
-        NUM_REGS
-};
+constexpr unsigned int UNDEF = 7;
 
-const char* reg_for_math[] = {
-        "rax",
-        "rdx",
-        "rbx",
-        "rcx",
-        "rdi",
-        "rsi",
-        "r8",
-        "r9",
-        "r10",
-        "r11",
-        "r12",
-        "r13",
-        "r14",
-        "r15",
-        "?"
+constexpr unsigned int reg_for_math[] = {
+        REGS::RAX,
+        REGS::RCX,
+        REGS::RDX,
+        REGS::RBX,
+        REGS::RSI,
+        REGS::RDI,
 };
 #endif //LANGUAGE_WORDS_H

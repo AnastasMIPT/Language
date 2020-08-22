@@ -12,6 +12,18 @@
 #include "my_vector.h"
 
 
+#define DEBUG
+
+#ifdef DEBUG
+    #define DEB_INFO printf ("DEBUG_INFO:  Called from FILE: %s from FUNCTION: %s   LINE: %d\n", __FILE__, __func__, __LINE__);
+#else 
+    #define DEB_INFO ;
+#endif
+
+
+
+
+
 #define _NewEl(type)                                       \
 else if ( strcmp (#type, data) == 0)                                      \
     root =  CreateNode (type, #type, nullptr, nullptr);    \
@@ -37,6 +49,9 @@ constexpr int SizeOfCode = 64;
 constexpr unsigned int Addr_sqrt_from = 0x600151;
 constexpr unsigned int Addr_sqrt_res  = 0x600159;
 
+
+
+using HashTable_t = HashTable <unsigned char*>;
 
 int IfNumber = 0;
 
@@ -68,90 +83,50 @@ Node* CreateNode (int type, const char* data, Node* left, Node* right, double nu
 Node* CreateNode (int type, const char* data, Node* left, Node* right);
 Node* CreateNode (double num);
 
-void ProgramToASM (Node* root, FILE* f_out, int ret_value = UNDEF);
+//void ProgramToASM (Node* root, FILE* f_out, int ret_value = UNDEF);
+void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, 
+                      Vector<Request>& requests, const char* path_ex_file, int ret_value = UNDEF);
 
 int ReduseRsp (Node* root);
 
 int Hash (const char* str);
 
-void Arithmetic_op_sum (Node* root, FILE* f_out, int ret_value);
-void Arithmetic_op_mul (Node* root, FILE* f_out, int ret_value);
-void Arithmetic_op_div (Node* root, FILE* f_out, int ret_value);
-void Arithmetic_op_sub (Node* root, FILE* f_out, int ret_value);
+// void Arithmetic_op_sum_b (Node* root, const char* path_ex_file, int ret_value);
+// void Arithmetic_op_mul_b (Node* root, const char* path_ex_file, int ret_value);
+// void Arithmetic_op_div_b (Node* root, const char* path_ex_file, int ret_value);
+// void Arithmetic_op_sub_b (Node* root, const char* path_ex_file, int ret_value);
 
-void Handle_call       (Node* root, FILE* f_out, int ret_value);
-void Handle_sqrt       (Node* root, FILE* f_out, int ret_value);
-void Handle_assign     (Node* root, FILE* f_out);
-void Handle_start      (Node* root, FILE* f_out);
-void Handle_ret        (Node* root, FILE* f_out);
-void Handle_comma      (Node* root, FILE* f_out);
-void Handle_def        (Node* root, FILE* f_out);
+// void Handle_call_b       (Node* root, const char* path_ex_file, int ret_value);
+// void Handle_sqrt_b       (Node* root, const char* path_ex_file, int ret_value);
+// void Handle_assign_b     (Node* root, const char* path_ex_file);
+// void Handle_start_b      (Node* root, const char* path_ex_file, const HashTable <unsigned char*>& labels);
+// void Handle_ret_b        (Node* root, const char* path_ex_file);
+// void Handle_comma_b      (Node* root, const char* path_ex_file);
+void Handle_def_b        (Node* root, Code& code, HashTable_t& labels);
 
 
-void RedusePrecision   (FILE* f_out, Node* elem, int ret_value = UNDEF);
 
 
 void Handle_of_label_requests (const Vector <Request>& requests, const HashTable <unsigned char*>& labels);
 
 int main () {
 
-    // FILE* f_in = fopen ("./resources/tree.txt", "r");
-    // assert (f_in);
+    FILE* f_in = fopen ("./resources/tree.txt", "r");
+    assert (f_in);
 
-    // Node* root = {};
-    // root = GetTreeFromFile (root, f_in);
-    // fclose (f_in);
-
-    // FILE* f_asm = fopen ("./resources/ASMx86/experement.asm", "w");
-    // assert (f_asm);
-    // setbuf (f_asm, NULL);
-
-    // ProgramToASM (root, f_asm);
-    // fclose (f_asm);
-    // printf ("Hello\n");
-
-
-    setbuf (stdout, NULL);
+    Node* root = {};
+    root = GetTreeFromFile (root, f_in);
+    fclose (f_in);
 
     Vector <Request> label_requests;
     HashTable <unsigned char*> labels (1009, CRC_32_fast);
-
-
- Code code2 (512);
-    code2.add_command (Call ("main", &label_requests));
-    code2.add_command (GStart ());
-    labels.insert ("itoa", code2.get_code_buf_ptr ());
-    printf ("itoa the first pointer %p\n", code2.get_code_buf_ptr ());
-    code2.add_command (Itoa ());
-    printf ("atoi the first pointer %p\n", code2.get_code_buf_ptr ());
-    labels.insert ("atoi", code2.get_code_buf_ptr ());
-    code2.add_command (Atoi ());
-    labels.insert ("main", code2.get_code_buf_ptr ());
-    code2.add_command (PushR (REGS::RBP));
-    code2.add_command (Mov64_RR  (REGS::RBP, REGS::RSP));
-    code2.add_command (InputRAX  (labels.find ("atoi")->second));
-    code2.add_command (Mov64_RR  (REGS::RBX, REGS::RAX));
-    // code2.add_command (Mov64_RImm  (REGS::RBX, 100));
-    
-    code2.add_command (Mov64_AddrR (Addr_sqrt_from, REGS::RBX));
-    code2.add_command (Sqrt ());
-    code2.add_command (Mov64_RAddr (REGS::RBX, Addr_sqrt_res));
-    code2.add_command (Mov64_RImm  (REGS::RDX, 100));
-    
-    code2.add_command (Imul64_RR (REGS::RBX, REGS::RDX));
-
-    code2.add_command (OutputRBX (labels.find ("itoa")->second));
-    code2.add_command (Mov64_RR  (REGS::RSP, REGS::RBP));
-    code2.add_command (PopR (REGS::RBP));
-	code2.add_command (Ret ());
-    Handle_of_label_requests (label_requests, labels);
-    ELF file (code2);
-    file.load_to_file ("./resources/ASMx86/my_elf");
+    Code code (1024);
+    ProgramToBinary (root, code, labels, label_requests, "./resources/ASMx86/my_elf");
 
     return 0;
 }
 
-void Handle_of_label_requests (const Vector <Request>& requests, const HashTable <unsigned char*>& labels) {
+void Handle_of_label_requests (const Vector <Request>& requests, const HashTable_t& labels) {
     for (int i = 0; i < requests.size (); ++i) {
         unsigned int offset = labels.find (requests[i].label)->second - (requests[i].address + 4);
         *reinterpret_cast<unsigned int*> (requests[i].address) =  offset;
@@ -159,114 +134,173 @@ void Handle_of_label_requests (const Vector <Request>& requests, const HashTable
 }
 
 
-void ProgramToASM (Node* root, FILE* f_out, int ret_value) {
-    
+void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Request>& requests, 
+                      const char* path_ex_file, int ret_value) {
     if (!root) return;
+
+    
+    
 
     int buf = 0;
     switch (root->type) {
         case START:
-            Handle_start    (root, f_out);
+            {
+            //Handle_start_b    (root, path_ex_file);
+            code.add_command (Call ("main", &requests));
+            code.add_command (GStart ());
+
+            labels.insert ("itoa", code.get_code_buf_ptr ());
+            code.add_command (Itoa ());
+            //assert (labels.find ("itoa")->second);
+            labels.insert ("atoi", code.get_code_buf_ptr ());
+            code.add_command (Atoi ());
+            
+            labels.insert ("main", code.get_code_buf_ptr ());
+            //assert (labels.find ("itoa")->second);
+            
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
+
+
+            Handle_of_label_requests (requests, labels);
+            ELF file (code);
+            file.load_to_file (path_ex_file);
+
             break;
+            }
         case D:
-            ProgramToASM (_R , f_out);
-            ProgramToASM (_Lf, f_out);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
+            ProgramToBinary (_Lf, code, labels, requests, path_ex_file);
             break;
         case DEF:
-            Handle_def     (root, f_out);
+            Handle_def_b     (root, code, labels);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
             break;
         case FUNC:
-            ProgramToASM (_R , f_out);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
             break;
         case CALL:
-            Handle_call    (root, f_out, ret_value);
+            // Handle_call_b    (root, path_ex_file, ret_value);
             break;
         case COMMA:
-            Handle_comma   (root, f_out);
+            // Handle_comma_b   (root, path_ex_file);
             break;
         case B:
-            ProgramToASM (_R , f_out);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
             break;
         case OP:
-            ProgramToASM (_R , f_out);
-            ProgramToASM (_Lf, f_out);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
+            ProgramToBinary (_Lf, code, labels, requests, path_ex_file);
             break;
         case ASSIGN:
-            Handle_assign  (root, f_out);
+            if (_R->type == NUM) {
+                code.add_command (Mov64_MImm (Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num)));
+                DEB_INFO
+                
+                assert (labels.find ("itoa"));
+            
+                //fprintf (f_out, "\t\tmov qword [rbp%+d], %d\n", Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num));
+            } else if (_R->type == CALL) {
+                ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RAX);
+                code.add_command (Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RAX));
+                //fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
+            
+            } else {
+            
+                ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
+                code.add_command (Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RCX));
+                //fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
+            
+            }
+
+
+            // Handle_assign_b  (root, path_ex_file);
             break;
         case IF:
 
             buf = IfNumber;
-            ProgramToASM (_Lf, f_out);
+            ProgramToBinary (_Lf, code, labels, requests, path_ex_file);
             IfNumber++;
-            ProgramToASM (_R , f_out);
-            fprintf (f_out, "end_if%d:\n", buf);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
+            // fprintf (f_out, "end_if%d:\n", buf);
             break;
         case EQUAL:
-            ProgramToASM (_Lf, f_out, RBX);
-            ProgramToASM (_R , f_out, RCX);
+            ProgramToBinary (_Lf, code, labels, requests, path_ex_file, REGS::RCX);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RDX);
 
-            fprintf (f_out, "\t\tcmp rbx, rcx\n"
-                            "\t\tjne end_if%d\n", IfNumber);
+            // fprintf (f_out, "\t\tcmp RCX, RDX\n"
+            //                "\t\tjne end_if%d\n", IfNumber);
             break;
         case UNEQUAL:
-            ProgramToASM (_Lf, f_out, RBX);
-            ProgramToASM (_R , f_out, RCX);
-            fprintf (f_out, "\t\tcmp rbx, rcx\n"
-                            "\t\tje end_if%d\n", IfNumber);
+            ProgramToBinary (_Lf, code, labels, requests, path_ex_file, REGS::RCX);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RDX);
+            // fprintf (f_out, "\t\tcmp RCX, RDX\n"
+            //                "\t\tje end_if%d\n", IfNumber);
             break;
         case MORE:
-            ProgramToASM (_R , f_out, RBX);
-            ProgramToASM (_Lf, f_out, RCX);
+            ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
+            ProgramToBinary (_Lf, code, labels, requests, path_ex_file, REGS::RDX);
 
-            fprintf (f_out, "\t\tcmp rbx, rcx\n"
-                            "\t\tjg end_if%d\n", IfNumber);
+            // fprintf (f_out, "\t\tcmp RCX, RDX\n"
+            //                "\t\tjg end_if%d\n", IfNumber);
             break;
         case SUM:
-            Arithmetic_op_sum (root, f_out, ret_value);
+            // Arithmetic_op_sum_b (root, path_ex_file, ret_value);
             break;
         case SUB:
-            Arithmetic_op_sub (root, f_out, ret_value);
+            // Arithmetic_op_sub_b (root, path_ex_file, ret_value);
             break;
         case MUL:
-            Arithmetic_op_mul (root, f_out, ret_value);
+            // Arithmetic_op_mul_b (root, path_ex_file, ret_value);
             break;
         case DIV:
-            Arithmetic_op_div (root, f_out, ret_value);
+            // Arithmetic_op_div_b (root, path_ex_file, ret_value);
             break;
         case RETURN:
-            Handle_ret     (root, f_out);
+            DEB_INFO
+            ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
+            DEB_INFO
+            code.add_command (Mov64_RR (REGS::RAX, REGS::RCX));
+            code.add_command (Mov64_RR (REGS::RSP, REGS::RBP));
+            code.add_command (PopR (REGS::RBP));
+            code.add_command (Ret ());
             break;
         case OUTPUT:
-            fprintf (f_out, "\n\t\t;output\n\n");
-            ProgramToASM (_R , f_out, RBX);
-            fprintf (f_out, output_s);
+            // fprintf (f_out, "\n\t\t;output\n\n");
+            DEB_INFO
+            ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RBX);
+            DEB_INFO
+            assert (labels.find("itoa"));
+            code.add_command (OutputRBX (labels.find("itoa")->second));
+            DEB_INFO
+            // fprintf (path_ex_file, output_s);
             break;
         case INPUT:
-            fprintf (f_out, "\n\t\t;input\n\n");
-            fprintf (f_out, input_s);
-            fprintf (f_out, "\t\timul rax, %d\n"
-                            "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
+            // fprintf (path_ex_file, "\n\t\t;input\n\n");
+            // fprintf (path_ex_file, input_s);
+            // fprintf (path_ex_file, "\t\timul rax, %d\n"
+            //                "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
             break;
         case SQRT:
-            Handle_sqrt    (root, f_out, ret_value);
+            // Handle_sqrt_b    (root, path_ex_file, ret_value);
             break;  
         case BREAK:
-            ProgramToASM (_R , f_out);
-            fprintf (f_out, "\t\tBREAK\n");
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
+            // fprintf (path_ex_file, "\t\tBREAK\n");
             break;
         case DIFF:
-            ProgramToASM (_R , f_out);
-            fprintf (f_out, "\t\tDIFF\n");
+            ProgramToBinary (_R , code, labels, requests, path_ex_file);
+            // fprintf (path_ex_file, "\t\tDIFF\n");
             break;
         case VAR:
             if (ret_value != UNDEF) {
-                fprintf (f_out, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (root->num));    
+                code.add_command (Mov64_RM (reg_for_math[ret_value], Bytes * static_cast<int> (root->num)));
+                // fprintf (path_ex_file, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (root->num));    
             } 
             break;
         case NUM:
             if (ret_value != UNDEF) {
-                fprintf (f_out, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (root->num));    
+                code.add_command (Mov64_RImm (reg_for_math[ret_value], Precision * static_cast<int> (root->num)));
+                // fprintf (path_ex_file, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (root->num));    
             }
             break;
         default:
@@ -276,225 +310,234 @@ void ProgramToASM (Node* root, FILE* f_out, int ret_value) {
     
 }
 
-void RedusePrecision (FILE* f_out, Node* elem, int ret_value) {
-    if (ret_value != UNDEF) {
-        fprintf (f_out, "\n\t\tmov rax, %s\n"
-                        "\t\tmov r15 , %d\n"
-                        "\t\tcqo\n"
-                        "\t\tidiv r15\n"
-                        "\t\tmov qword %s, rax\n\n", reg_for_math[ret_value], Precision, reg_for_math[ret_value]);
-    } else {
-        if (elem->type == VAR) {
-            int var_offset = Bytes * static_cast<int> (elem->num);
-            fprintf (f_out, "\n\t\tmov rax, qword [rbp%+d]\n"
-                        "\t\tmov r15 , %d\n"
-                        "\t\tcqo\n"
-                        "\t\tidiv r15\n"
-                        "\t\tmov qword [rbp%+d], rax\n\n", var_offset, Precision, var_offset);
-        }
-    }
+// void RedusePrecision (FILE* f_out, Node* elem, int ret_value) {
+//     if (ret_value != UNDEF) {
+//         fprintf (f_out, "\n\t\tmov rax, %s\n"
+//                         "\t\tmov r15 , %d\n"
+//                         "\t\tcqo\n"
+//                         "\t\tidiv r15\n"
+//                         "\t\tmov qword %s, rax\n\n", reg_for_math[ret_value], Precision, reg_for_math[ret_value]);
+//     } else {
+//         if (elem->type == VAR) {
+//             int var_offset = Bytes * static_cast<int> (elem->num);
+//             fprintf (f_out, "\n\t\tmov rax, qword [rbp%+d]\n"
+//                         "\t\tmov r15 , %d\n"
+//                         "\t\tcqo\n"
+//                         "\t\tidiv r15\n"
+//                         "\t\tmov qword [rbp%+d], rax\n\n", var_offset, Precision, var_offset);
+//         }
+//     }
+// }
+
+// void Handle_start_b      (Node* root, const char* path_ex_file) {
+    
+//     // code2.add_command (GStart ());
+//     // labels.insert ("itoa", code2.get_code_buf_ptr ());
+//     // printf ("itoa the first pointer %p\n", code2.get_code_buf_ptr ());
+//     // code2.add_command (Itoa ());
+//     // printf ("atoi the first pointer %p\n", code2.get_code_buf_ptr ());
+//     // labels.insert ("atoi", code2.get_code_buf_ptr ());
+//     // code2.add_command (Atoi ());
+//     // labels.insert ("main", code2.get_code_buf_ptr ());
+
+
+//     fprintf (f_out, start_s);
+//     fprintf (f_out, itoa_s);
+//     fprintf (f_out, atoi_s);
+
+//     ProgramToASM (_R , f_out);
+    
+//     fprintf (f_out, data_s);
+//     fprintf(f_out, "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
+
+// }
+
+// void Handle_ret_b        (Node* root, const char* path_ex_file) {
+
+//     fprintf (f_out, "\n\t\t;return\n\n");
+
+//     ProgramToASM (_R , f_out, RBX);
+    
+//     fprintf (f_out, "\t\tmov rax, rbx\n");
+//     fprintf (f_out, ret_s);
+// }
+
+// void Handle_comma_b      (Node* root, const char* path_ex_file) {
+//     ProgramToASM (_Lf, f_out);
+    
+//     if (_R->type == NUM || _R->type == VAR) {
+    
+//         if (_R->type == NUM) fprintf (f_out, "\t\tpush qword %d\n", Precision * static_cast<int> (_R->num));
+//         if (_R->type == VAR) fprintf (f_out, "\t\tpush qword [rbp%+d]\n", Bytes * static_cast<int> (_R->num));
+    
+//     } else {
+    
+//         ProgramToASM (_R , f_out, RBX);
+//         fprintf (f_out, "\t\tpush qword rbx\n");
+    
+//     }
+// }
+
+void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
+    
+    labels.insert (_R->data, code.get_code_buf_ptr ());
+
+    code.add_command (PushR (REGS::RBP));
+    code.add_command (Mov64_RR (REGS::RBP, REGS::RSP));
+    code.add_command (Sub64_RImm (REGS::RSP, Bytes * static_cast<int> (_R->left->num)));
+
 }
 
-void Handle_start      (Node* root, FILE* f_out) {
+// void Handle_call_b       (Node* root, const char* path_ex_file, int ret_value) {
+
+//     fprintf (f_out, "\n\t\t;call\n\n");
+
+//     ProgramToASM (_Lf, f_out);
     
-    fprintf (f_out, start_s);
-    fprintf (f_out, itoa_s);
-    fprintf (f_out, atoi_s);
+//     fprintf (f_out, "\t\tcall %s\n", _R->data);
+//     fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
 
-    ProgramToASM (_R , f_out);
+//     if (ret_value != RAX) {
+//         fprintf (f_out, "\t\tmov %s, rax\n\n", reg_for_math[ret_value]); 
+//     }
+// }
+
+// void Handle_assign_b     (Node* root, const char* path_ex_file) {
+
+//     fprintf (f_out, "\t\t;assign\n");
+
+//     if (_R->type == NUM) {
     
-    fprintf (f_out, data_s);
-    fprintf(f_out, "\t\tSYMB_POINT equ %d\n", static_cast<int> (log10 (Precision)));
-
-}
-
-void Handle_ret        (Node* root, FILE* f_out) {
-
-    fprintf (f_out, "\n\t\t;return\n\n");
-
-    ProgramToASM (_R , f_out, RBX);
+//         fprintf (f_out, "\t\tmov qword [rbp%+d], %d\n", Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num));
     
-    fprintf (f_out, "\t\tmov rax, rbx\n");
-    fprintf (f_out, ret_s);
-}
+//     } else if (_R->type == CALL) {
+    
+//         ProgramToASM (_R , f_out, RAX);
+//         fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
+    
+//     } else {
+    
+//         ProgramToASM (_R , f_out, RBX);
+//         fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
+    
+//     }
+    
+//     fprintf (f_out, "\n\n");
+// }
 
-void Handle_comma      (Node* root, FILE* f_out) {
-    ProgramToASM (_Lf, f_out);
-    
-    if (_R->type == NUM || _R->type == VAR) {
-    
-        if (_R->type == NUM) fprintf (f_out, "\t\tpush qword %d\n", Precision * static_cast<int> (_R->num));
-        if (_R->type == VAR) fprintf (f_out, "\t\tpush qword [rbp%+d]\n", Bytes * static_cast<int> (_R->num));
-    
-    } else {
-    
-        ProgramToASM (_R , f_out, RBX);
-        fprintf (f_out, "\t\tpush qword rbx\n");
-    
-    }
-}
+// void Handle_sqrt_b       (Node* root, const char* path_ex_file, int ret_value) {
 
-void Handle_def        (Node* root, FILE* f_out) {
-    
-    fprintf (f_out, "%s:\n"
-                    "\t\tpush rbp\n"
-                    "\t\tmov rbp, rsp\n"
-                    "\t\tsub rsp, %d\n\n", _R->data, Bytes * static_cast<int> (_R->left->num));
-    
-    ProgramToASM (_R, f_out);
+//     fprintf (f_out, "\n\t\t;sqrt\n\n");
 
-}
-
-void Handle_call       (Node* root, FILE* f_out, int ret_value) {
-
-    fprintf (f_out, "\n\t\t;call\n\n");
-
-    ProgramToASM (_Lf, f_out);
+//     ProgramToASM (_R , f_out, ret_value);
     
-    fprintf (f_out, "\t\tcall %s\n", _R->data);
-    fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
-
-    if (ret_value != RAX) {
-        fprintf (f_out, "\t\tmov %s, rax\n\n", reg_for_math[ret_value]); 
-    }
-}
-
-void Handle_assign     (Node* root, FILE* f_out) {
-
-    fprintf (f_out, "\t\t;assign\n");
-
-    if (_R->type == NUM) {
-    
-        fprintf (f_out, "\t\tmov qword [rbp%+d], %d\n", Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num));
-    
-    } else if (_R->type == CALL) {
-    
-        ProgramToASM (_R , f_out, RAX);
-        fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
-    
-    } else {
-    
-        ProgramToASM (_R , f_out, RBX);
-        fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
-    
-    }
-    
-    fprintf (f_out, "\n\n");
-}
-
-void Handle_sqrt       (Node* root, FILE* f_out, int ret_value) {
-
-    fprintf (f_out, "\n\t\t;sqrt\n\n");
-
-    ProgramToASM (_R , f_out, ret_value);
-    
-    fprintf (f_out, "\n\t\tmov qword [sqrt_from], %s\n", reg_for_math[ret_value]);
-    fprintf (f_out, sqrt_s);
-    fprintf (f_out, "\t\tmov %s, qword [sqrt_res]\n\n", reg_for_math[ret_value]);
-    fprintf (f_out, "\t\timul %s, %d\n", reg_for_math[ret_value], static_cast<int> (sqrt (Precision)));
-}
+//     fprintf (f_out, "\n\t\tmov qword [sqrt_from], %s\n", reg_for_math[ret_value]);
+//     fprintf (f_out, sqrt_s);
+//     fprintf (f_out, "\t\tmov %s, qword [sqrt_res]\n\n", reg_for_math[ret_value]);
+//     fprintf (f_out, "\t\timul %s, %d\n", reg_for_math[ret_value], static_cast<int> (sqrt (Precision)));
+// }
 
 
 
-void Arithmetic_op_mul (Node* root, FILE* f_out, int ret_value) {
+// void Arithmetic_op_mul_b (Node* root, const char* path_ex_file, int ret_value) {
     
-    if (_Lf->type == NUM) {
+//     if (_Lf->type == NUM) {
     
-        ProgramToASM (_R,   f_out, ret_value);
-        fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_Lf->num));
+//         ProgramToASM (_R,   f_out, ret_value);
+//         fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_Lf->num));
 
-    } else if (_R->type == NUM) {
+//     } else if (_R->type == NUM) {
     
-        ProgramToASM (_Lf , f_out, ret_value);
-        fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_R->num));
+//         ProgramToASM (_Lf , f_out, ret_value);
+//         fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_R->num));
     
-    } else {
+//     } else {
 
-        ProgramToASM (_Lf , f_out, ret_value);
-        ProgramToASM (_R,   f_out, ret_value + 1);
+//         ProgramToASM (_Lf , f_out, ret_value);
+//         ProgramToASM (_R,   f_out, ret_value + 1);
 
-        RedusePrecision (f_out, _Lf, ret_value);
+//         RedusePrecision (f_out, _Lf, ret_value);
         
-        fprintf (f_out, "\t\timul %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+//         fprintf (f_out, "\t\timul %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
 
-    }
-}
+//     }
+// }
 
-void Arithmetic_op_div (Node* root, FILE* f_out, int ret_value) {
+// void Arithmetic_op_div_b (Node* root, const char* path_ex_file, int ret_value) {
     
-    ProgramToASM (_Lf, f_out, ret_value);
+//     ProgramToASM (_Lf, f_out, ret_value);
     
-    if (_R->type == NUM) {
+//     if (_R->type == NUM) {
 
-        fprintf (f_out, "\t\tmov %s, qword %lg\n", reg_for_math[ret_value + 1], _R->num);
+//         fprintf (f_out, "\t\tmov %s, qword %lg\n", reg_for_math[ret_value + 1], _R->num);
     
-    } else {
+//     } else {
 
-        ProgramToASM    (_R, f_out, ret_value + 1);
-        RedusePrecision (f_out, _R, ret_value + 1);
-    }
+//         ProgramToASM    (_R, f_out, ret_value + 1);
+//         RedusePrecision (f_out, _R, ret_value + 1);
+//     }
     
-    fprintf (f_out, "\t\tmov rax, %s\n", reg_for_math[ret_value]);
-    fprintf (f_out, "\t\tcqo\n"
-                    "\t\tidiv %s\n",     reg_for_math[ret_value + 1]);
+//     fprintf (f_out, "\t\tmov rax, %s\n", reg_for_math[ret_value]);
+//     fprintf (f_out, "\t\tcqo\n"
+//                     "\t\tidiv %s\n",     reg_for_math[ret_value + 1]);
     
-    if (ret_value != RAX) {
+//     if (ret_value != RAX) {
 
-        fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math[ret_value]);
+//         fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math[ret_value]);
 
-    }
-}
+//     }
+// }
 
-void Arithmetic_op_sub (Node* root, FILE* f_out, int ret_value) {
+// void Arithmetic_op_sub_b (Node* root, const char* path_ex_file, int ret_value) {
     
-    ProgramToASM (_Lf, f_out, ret_value);
+//     ProgramToASM (_Lf, f_out, ret_value);
 
-    if (_R->type == NUM) {
+//     if (_R->type == NUM) {
         
-        fprintf (f_out, "\t\tsub %s, qword %d\n",       reg_for_math[ret_value], Precision * static_cast<int> (_R->num));
+//         fprintf (f_out, "\t\tsub %s, qword %d\n",       reg_for_math[ret_value], Precision * static_cast<int> (_R->num));
     
-    } else if (_R->type == VAR) {
+//     } else if (_R->type == VAR) {
         
-        fprintf (f_out, "\t\tsub %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
+//         fprintf (f_out, "\t\tsub %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
     
-    } else {
+//     } else {
         
-        ProgramToASM (_R, f_out,  ret_value + 1);
-        fprintf   (f_out, "\t\tsub %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+//         ProgramToASM (_R, f_out,  ret_value + 1);
+//         fprintf   (f_out, "\t\tsub %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
     
-    }
-}
+//     }
+// }
 
-void Arithmetic_op_sum (Node* root, FILE* f_out, int ret_value) {
-    if (_Lf->type == VAR || _Lf->type == NUM) {
+// void Arithmetic_op_sum_b (Node* root, const char* path_ex_file, int ret_value) {
+//     if (_Lf->type == VAR || _Lf->type == NUM) {
         
-        ProgramToASM (_R, f_out, ret_value);
+//         ProgramToASM (_R, f_out, ret_value);
         
-        if (_Lf->type == VAR) {
-            fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_Lf->num));
-        }
-        if (_Lf->type == NUM)
-            fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (_Lf->num));
+//         if (_Lf->type == VAR) {
+//             fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_Lf->num));
+//         }
+//         if (_Lf->type == NUM)
+//             fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (_Lf->num));
 
-    } else if (_R->type == VAR || _R->type == NUM) {
+//     } else if (_R->type == VAR || _R->type == NUM) {
         
-        ProgramToASM (_Lf, f_out, ret_value);
+//         ProgramToASM (_Lf, f_out, ret_value);
         
-        if (_R->type == VAR)
-            fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
-        if (_R->type == NUM)
-            fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (_R->num));
+//         if (_R->type == VAR)
+//             fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
+//         if (_R->type == NUM)
+//             fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (_R->num));
     
-    } else {
+//     } else {
     
-        ProgramToASM (_Lf, f_out, ret_value);
-        ProgramToASM (_R, f_out, ret_value + 1);
-        fprintf (f_out, "\t\tadd %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+//         ProgramToASM (_Lf, f_out, ret_value);
+//         ProgramToASM (_R, f_out, ret_value + 1);
+//         fprintf (f_out, "\t\tadd %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
     
-    }
+//     }
 
 
-}
+// }
 
 int ReduseRsp (Node* root) {
     if (!_R) return 0;

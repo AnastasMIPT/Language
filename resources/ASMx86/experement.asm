@@ -32,6 +32,19 @@ main:
 		imul rax, rbp
 		imul rax, rsi
 		imul rax, rdi
+		
+		nop
+		nop
+		nop
+
+		imul r10, r8
+		imul rax, r9
+		imul rax, r10
+		imul rax, r11
+		imul rax, r12
+		imul rax, r13
+		imul rax, r14
+		imul rax, r15
 		nop
 		nop
 		nop
@@ -40,6 +53,13 @@ main:
 		imul rcx, rcx
 		imul rcx, rdx
 		imul rcx, rbx
+		nop
+		nop
+		nop
+		imul rcx, r8
+		imul rcx, r9
+		imul rcx, r10
+		imul rcx, r11
 		nop
 		nop
 		nop

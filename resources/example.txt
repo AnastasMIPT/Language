@@ -1,15 +1,7 @@
 start
-def factorial (n):
-{
-    if (n equal 1) {
-        return 1;
-    }
-    return n * factorial (n - 1);
-}
 def main ():
 {
-    input (num)
-    fact = factorial (num);
+    fact = 500;
     output (fact)
     return;
 }
