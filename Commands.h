@@ -91,6 +91,8 @@ public:
 };
 
 
+namespace Cmd {
+
 
 class Call : public Command {
     unsigned int byte_num = 5;
@@ -551,7 +553,7 @@ public:
     unsigned int get_byte_num () const override;
 };
 
-
+};
 
 
 #endif //COMMANDS_H

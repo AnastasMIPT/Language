@@ -105,6 +105,23 @@ int Hash (const char* str);
 void Handle_def_b        (Node* root, Code& code, HashTable_t& labels);
 
 
+/*! Функция переводящая получаемое целое число в строку
+*	@param[in] string Cтрока, в которую будет записан результат
+*	@param[in] base   Основание системы счисления
+*	
+*	@return Целое число
+*
+*/
+char * Itoa (int value, char * string, int base = 10);
+/*! Функция зеркально отображающая строку относительно среднего элемента
+*	@param [in] string Cтрока
+*	@param [in] size Фактический размер строки
+*
+*	@return Отображенная строка
+*
+*/
+char * reverse_string (char * string, int size);
+
 
 
 void Handle_of_label_requests (const Vector <Request>& requests, const HashTable <unsigned char*>& labels);
@@ -128,8 +145,13 @@ int main () {
 
 void Handle_of_label_requests (const Vector <Request>& requests, const HashTable_t& labels) {
     for (int i = 0; i < requests.size (); ++i) {
-        unsigned int offset = labels.find (requests[i].label)->second - (requests[i].address + 4);
-        *reinterpret_cast<unsigned int*> (requests[i].address) =  offset;
+        auto cur_label = labels.find (requests[i].label);
+        if (cur_label) {
+            unsigned int offset = cur_label->second - (requests[i].address + 4);
+            *reinterpret_cast<unsigned int*> (requests[i].address) =  offset;
+        } else {
+            printf ("ERROR: label \'%s\' wasn't found\n", requests[i].label);
+        }
     }
 }
 
@@ -141,27 +163,28 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
     
     
 
-    int buf = 0;
+    int label_number = 0;
     switch (root->type) {
         case START:
             {
             //Handle_start_b    (root, path_ex_file);
-            code.add_command (Call ("main", &requests));
-            code.add_command (GStart ());
+            code.add_command (Cmd::Call ("main", &requests));
+            code.add_command (Cmd::GStart ());
 
             labels.insert ("itoa", code.get_code_buf_ptr ());
-            code.add_command (Itoa ());
+            code.add_command (Cmd::Itoa ());
             //assert (labels.find ("itoa")->second);
             labels.insert ("atoi", code.get_code_buf_ptr ());
-            code.add_command (Atoi ());
+            code.add_command (Cmd::Atoi ());
             
             labels.insert ("main", code.get_code_buf_ptr ());
             //assert (labels.find ("itoa")->second);
             
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
 
-
+            DEB_INFO
             Handle_of_label_requests (requests, labels);
+            DEB_INFO
             ELF file (code);
             file.load_to_file (path_ex_file);
 
@@ -193,7 +216,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             break;
         case ASSIGN:
             if (_R->type == NUM) {
-                code.add_command (Mov64_MImm (Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num)));
+                code.add_command (Cmd::Mov64_MImm (Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num)));
                 DEB_INFO
                 
                 assert (labels.find ("itoa"));
@@ -201,13 +224,13 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
                 //fprintf (f_out, "\t\tmov qword [rbp%+d], %d\n", Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num));
             } else if (_R->type == CALL) {
                 ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RAX);
-                code.add_command (Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RAX));
+                code.add_command (Cmd::Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RAX));
                 //fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
             
             } else {
             
                 ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
-                code.add_command (Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RCX));
+                code.add_command (Cmd::Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RCX));
                 //fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
             
             }
@@ -216,33 +239,56 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             // Handle_assign_b  (root, path_ex_file);
             break;
         case IF:
-
-            buf = IfNumber;
+            {
+            label_number = IfNumber;
             ProgramToBinary (_Lf, code, labels, requests, path_ex_file);
             IfNumber++;
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
+            char * label = (char*) calloc (10, sizeof (char));
+            labels.insert (Itoa (label_number, label), code.get_code_buf_ptr ());
             // fprintf (f_out, "end_if%d:\n", buf);
             break;
+            }
         case EQUAL:
+            {
             ProgramToBinary (_Lf, code, labels, requests, path_ex_file, REGS::RCX);
             ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RDX);
-
+            code.add_command (Cmd::Cmp_RR (REGS::RCX, REGS::RDX));
+            
+            char * label = (char*) calloc (10, sizeof (char));
+            code.add_command (Cmd::Jne (Itoa (IfNumber, label), &requests));
+            //free (label);
             // fprintf (f_out, "\t\tcmp RCX, RDX\n"
             //                "\t\tjne end_if%d\n", IfNumber);
             break;
+            }
         case UNEQUAL:
+            {
             ProgramToBinary (_Lf, code, labels, requests, path_ex_file, REGS::RCX);
             ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RDX);
+            code.add_command (Cmd::Cmp_RR (REGS::RCX, REGS::RDX));
+
+            char * label = (char*) calloc (10, sizeof (char));
+            code.add_command (Cmd::Je (Itoa (IfNumber, label), &requests));
+            //free (label);
             // fprintf (f_out, "\t\tcmp RCX, RDX\n"
             //                "\t\tje end_if%d\n", IfNumber);
             break;
+            }
         case MORE:
+            {
             ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
             ProgramToBinary (_Lf, code, labels, requests, path_ex_file, REGS::RDX);
+            code.add_command (Cmd::Cmp_RR (REGS::RCX, REGS::RDX));
 
+
+            char * label = (char*) calloc (10, sizeof (char));
+            code.add_command (Cmd::Jg (Itoa (IfNumber, label), &requests));
+            //free (label);
             // fprintf (f_out, "\t\tcmp RCX, RDX\n"
             //                "\t\tjg end_if%d\n", IfNumber);
             break;
+            }
         case SUM:
             // Arithmetic_op_sum_b (root, path_ex_file, ret_value);
             break;
@@ -259,10 +305,10 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             DEB_INFO
             ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
             DEB_INFO
-            code.add_command (Mov64_RR (REGS::RAX, REGS::RCX));
-            code.add_command (Mov64_RR (REGS::RSP, REGS::RBP));
-            code.add_command (PopR (REGS::RBP));
-            code.add_command (Ret ());
+            code.add_command (Cmd::Mov64_RR (REGS::RAX, REGS::RCX));
+            code.add_command (Cmd::Mov64_RR (REGS::RSP, REGS::RBP));
+            code.add_command (Cmd::PopR (REGS::RBP));
+            code.add_command (Cmd::Ret ());
             break;
         case OUTPUT:
             // fprintf (f_out, "\n\t\t;output\n\n");
@@ -270,7 +316,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RBX);
             DEB_INFO
             assert (labels.find("itoa"));
-            code.add_command (OutputRBX (labels.find("itoa")->second));
+            code.add_command (Cmd::OutputRBX (labels.find("itoa")->second));
             DEB_INFO
             // fprintf (path_ex_file, output_s);
             break;
@@ -293,13 +339,13 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             break;
         case VAR:
             if (ret_value != UNDEF) {
-                code.add_command (Mov64_RM (reg_for_math[ret_value], Bytes * static_cast<int> (root->num)));
+                code.add_command (Cmd::Mov64_RM (reg_for_math[ret_value], Bytes * static_cast<int> (root->num)));
                 // fprintf (path_ex_file, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (root->num));    
             } 
             break;
         case NUM:
             if (ret_value != UNDEF) {
-                code.add_command (Mov64_RImm (reg_for_math[ret_value], Precision * static_cast<int> (root->num)));
+                code.add_command (Cmd::Mov64_RImm (reg_for_math[ret_value], Precision * static_cast<int> (root->num)));
                 // fprintf (path_ex_file, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (root->num));    
             }
             break;
@@ -331,13 +377,13 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
 
 // void Handle_start_b      (Node* root, const char* path_ex_file) {
     
-//     // code2.add_command (GStart ());
+//     // code2.add_command (Cmd::GStart ());
 //     // labels.insert ("itoa", code2.get_code_buf_ptr ());
 //     // printf ("itoa the first pointer %p\n", code2.get_code_buf_ptr ());
-//     // code2.add_command (Itoa ());
+//     // code2.add_command (Cmd::Itoa ());
 //     // printf ("atoi the first pointer %p\n", code2.get_code_buf_ptr ());
 //     // labels.insert ("atoi", code2.get_code_buf_ptr ());
-//     // code2.add_command (Atoi ());
+//     // code2.add_command (Cmd::Atoi ());
 //     // labels.insert ("main", code2.get_code_buf_ptr ());
 
 
@@ -382,9 +428,9 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
     
     labels.insert (_R->data, code.get_code_buf_ptr ());
 
-    code.add_command (PushR (REGS::RBP));
-    code.add_command (Mov64_RR (REGS::RBP, REGS::RSP));
-    code.add_command (Sub64_RImm (REGS::RSP, Bytes * static_cast<int> (_R->left->num)));
+    code.add_command (Cmd::PushR (REGS::RBP));
+    code.add_command (Cmd::Mov64_RR (REGS::RBP, REGS::RSP));
+    code.add_command (Cmd::Sub64_RImm (REGS::RSP, Bytes * static_cast<int> (_R->left->num)));
 
 }
 
@@ -672,4 +718,38 @@ Node* CreateNode (double num) {
     node->type  = NUM;
 
     return node;
+}
+
+char * reverse_string (char * string, int size)
+{
+	assert (size > 0);
+	assert (string != nullptr);
+
+	
+	int buf = '0';
+	int median = size / 2;
+	if (string[size] == '\n' || string[size] == '\0') size -= 1;
+
+	for (int i = 0; i != median; i++) {
+		buf = string[i];
+		string[i] = string[size - i];
+		string[size - i] = buf; 
+	}
+	
+		
+	return string;
+}
+
+
+char * Itoa (int value, char * string, int base)
+{
+    assert (base > 0);
+	char * begin = string;
+	while (value != 0) {
+		*string = value % base + '0';
+		value /= base;
+		string++;
+	}
+	
+	return reverse_string (begin, 2);
 }

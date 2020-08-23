@@ -2,7 +2,12 @@ start
 def main ():
 {
     fact = 500;
-    output (fact)
+    facto = 500;
+    res = 0;
+    if (fact equal facto) {
+        res = 1;
+    }
+    output (res)
     return;
 }
 end

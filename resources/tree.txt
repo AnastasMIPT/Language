@@ -1,1 +1,1 @@
-(START()(D()(DEF()(main(1()())(B()(OP(OP(OP()(RETURN()()))(OUTPUT()(@-1fact()())))('='(@-1fact()())(500()()))))))))
+(START()(D()(DEF()(main(3()())(B()(OP(OP(OP(OP(OP(OP()(RETURN()()))(OUTPUT()(@-3res()())))(IF(EQUAL(@-1fact()())(@-2facto()()))(B()(OP()('='(@-3res()())(1()()))))))('='(@-3res()())(0()())))('='(@-2facto()())(500()())))('='(@-1fact()())(500()()))))))))

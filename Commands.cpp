@@ -84,11 +84,11 @@ Code::~Code () {
 }
 
 
-unsigned int Call::get_byte_num () const {
+unsigned int Cmd::Call::get_byte_num () const {
     return byte_num;
 }
 
-void Call::write_to_buf (unsigned char* buf) const {
+void Cmd::Call::write_to_buf (unsigned char* buf) const {
     assert (buf);
 
     *buf = 0xe8;
@@ -100,7 +100,7 @@ void Call::write_to_buf (unsigned char* buf) const {
 
 
 
-void Je::write_to_buf (unsigned char* buf) const {
+void Cmd::Je::write_to_buf (unsigned char* buf) const {
     assert (buf);
 
     set_elems (buf, OpCode (0x0f), OpCode (0x84));
@@ -110,12 +110,12 @@ void Je::write_to_buf (unsigned char* buf) const {
     *reinterpret_cast<QWORD*> (buf + 2) = offset;
 }
 
-unsigned int Je::get_byte_num () const {
+unsigned int Cmd::Je::get_byte_num () const {
     return byte_num;
 }
 
 
-void Jne::write_to_buf (unsigned char* buf) const {
+void Cmd::Jne::write_to_buf (unsigned char* buf) const {
     assert (buf);
 
     set_elems (buf, OpCode (0x0f), OpCode (0x85));
@@ -125,12 +125,12 @@ void Jne::write_to_buf (unsigned char* buf) const {
     *reinterpret_cast<QWORD*> (buf + 2) = offset;
 }
 
-unsigned int Jne::get_byte_num () const {
+unsigned int Cmd::Jne::get_byte_num () const {
     return byte_num;
 }
 
 
-void Jg::write_to_buf (unsigned char* buf) const {
+void Cmd::Jg::write_to_buf (unsigned char* buf) const {
     assert (buf);
 
     set_elems (buf, OpCode (0x0f), OpCode (0x8f));
@@ -140,42 +140,42 @@ void Jg::write_to_buf (unsigned char* buf) const {
     *reinterpret_cast<QWORD*> (buf + 2) = offset;
 }
 
-unsigned int Jg::get_byte_num () const {
+unsigned int Cmd::Jg::get_byte_num () const {
     return byte_num;
 }
 
-void Mov64_RR::write_to_buf (unsigned char* buf) const {
+void Cmd::Mov64_RR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b11, RM_REG_by_registers (to, from)));
 }
 
-unsigned int Mov64_RR::get_byte_num () const {
+unsigned int Cmd::Mov64_RR::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-void Mov64_RAddr::write_to_buf (unsigned char* buf) const {
+void Cmd::Mov64_RAddr::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x8b) , ModRM (0b00, to << 3, 0b100), SIB (0b00, 0b100, 0b101), addr);
 }
 
-unsigned int Mov64_RAddr::get_byte_num () const {
+unsigned int Cmd::Mov64_RAddr::get_byte_num () const {
     return byte_num;
 }
 
 
-void Mov64_AddrR::write_to_buf (unsigned char* buf) const {
+void Cmd::Mov64_AddrR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x89) , ModRM (0b00, from << 3, 0b100), SIB (0b00, 0b100, 0b101), addr);
 }
 
-unsigned int Mov64_AddrR::get_byte_num () const {
+unsigned int Cmd::Mov64_AddrR::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-Mov64_RM::Mov64_RM (unsigned int _to, int _mem_offset)
+Cmd::Mov64_RM::Mov64_RM (unsigned int _to, int _mem_offset)
 : to (_to), mem_offset (_mem_offset) {
     setbuf (stdout, NULL);
     byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 4 : 7);
@@ -183,7 +183,7 @@ Mov64_RM::Mov64_RM (unsigned int _to, int _mem_offset)
     printf ("byte_num constr = %u\n", byte_num);
 }
 
-void Mov64_RM::write_to_buf (unsigned char* buf) const {
+void Cmd::Mov64_RM::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             DEB_INFO
             unsigned char displacment = mem_offset;
@@ -195,14 +195,14 @@ void Mov64_RM::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Mov64_RM::get_byte_num () const {
+unsigned int Cmd::Mov64_RM::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-Mov64_MR::Mov64_MR (int _mem_offset, unsigned int _to)
+Cmd::Mov64_MR::Mov64_MR (int _mem_offset, unsigned int _to)
 : to (_to), mem_offset (_mem_offset) {
     //setbuf (stdout, NULL);
     byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 4 : 7);
@@ -210,7 +210,7 @@ Mov64_MR::Mov64_MR (int _mem_offset, unsigned int _to)
     //printf ("byte_num constr = %u\n", byte_num);
 }
 
-void Mov64_MR::write_to_buf (unsigned char* buf) const {
+void Cmd::Mov64_MR::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             //DEB_INFO
             unsigned char displacment = mem_offset;
@@ -222,7 +222,7 @@ void Mov64_MR::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Mov64_MR::get_byte_num () const {
+unsigned int Cmd::Mov64_MR::get_byte_num () const {
     return byte_num;
 }
 
@@ -230,7 +230,7 @@ unsigned int Mov64_MR::get_byte_num () const {
 
 
 
-Mov64_MImm::Mov64_MImm (int _mem_offset, int _imm)
+Cmd::Mov64_MImm::Mov64_MImm (int _mem_offset, int _imm)
 : mem_offset (_mem_offset), imm (_imm) {
     //setbuf (stdout, NULL);
     byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 8 : 11);
@@ -238,7 +238,7 @@ Mov64_MImm::Mov64_MImm (int _mem_offset, int _imm)
     //printf ("byte_num constr = %u\n", byte_num);
 }
 
-void Mov64_MImm::write_to_buf (unsigned char* buf) const {
+void Cmd::Mov64_MImm::write_to_buf (unsigned char* buf) const {
         if (byte_num == 8) {
             //DEB_INFO
             unsigned char displacment = mem_offset;
@@ -250,14 +250,14 @@ void Mov64_MImm::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Mov64_MImm::get_byte_num () const {
+unsigned int Cmd::Mov64_MImm::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-Mov64_RImm::Mov64_RImm (unsigned int _to, int _imm)
+Cmd::Mov64_RImm::Mov64_RImm (unsigned int _to, int _imm)
 : to (_to), imm (_imm) {
     //setbuf (stdout, NULL);
     byte_num = ( imm < 0 ? 7 : 5);
@@ -265,7 +265,7 @@ Mov64_RImm::Mov64_RImm (unsigned int _to, int _imm)
     //printf ("byte_num constr = %u\n", byte_num);
 }
 
-void Mov64_RImm::write_to_buf (unsigned char* buf) const {
+void Cmd::Mov64_RImm::write_to_buf (unsigned char* buf) const {
         if (byte_num == 7) {
             set_elems (buf,  REX (1) , OpCode (0xc7) , ModRM (0b11, 0, to), imm);
         } else {
@@ -273,19 +273,19 @@ void Mov64_RImm::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Mov64_RImm::get_byte_num () const {
+unsigned int Cmd::Mov64_RImm::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-PushM::PushM (int _mem_offset)
+Cmd::PushM::PushM (int _mem_offset)
 : mem_offset (_mem_offset) {
     byte_num = (-128 <= mem_offset && mem_offset < 128 ? 3 : 6);
 }
 
-void PushM::write_to_buf (unsigned char* buf) const {
+void Cmd::PushM::write_to_buf (unsigned char* buf) const {
         if (byte_num == 3) {
             set_elems (buf,  OpCode (0xff) , ModRM (0b01, 0b110 << 3, 0b101), static_cast<unsigned char> (mem_offset));
         } else {
@@ -293,18 +293,18 @@ void PushM::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int PushM::get_byte_num () const {
+unsigned int Cmd::PushM::get_byte_num () const {
     return byte_num;
 }
 
 
 
-PushImm::PushImm (int _imm)
+Cmd::PushImm::PushImm (int _imm)
 : imm (_imm) {
     byte_num = (-128 <= imm && imm < 128 ? 2 : 5);
 }
 
-void PushImm::write_to_buf (unsigned char* buf) const {
+void Cmd::PushImm::write_to_buf (unsigned char* buf) const {
         if (byte_num == 2) {
             set_elems (buf,  OpCode (0x6a), static_cast<unsigned char> (imm));
         } else {
@@ -312,56 +312,56 @@ void PushImm::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int PushImm::get_byte_num () const {
+unsigned int Cmd::PushImm::get_byte_num () const {
     return byte_num;
 }
 
 
 
-PushR::PushR (unsigned int _reg)
+Cmd::PushR::PushR (unsigned int _reg)
 : reg (_reg), byte_num (1) {}
 
-void PushR::write_to_buf (unsigned char* buf) const {
+void Cmd::PushR::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  OpCode (0x50+reg));
 }
 
-unsigned int PushR::get_byte_num () const {
+unsigned int Cmd::PushR::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-PopR::PopR (unsigned int _reg)
+Cmd::PopR::PopR (unsigned int _reg)
 : reg (_reg), byte_num (1) {}
 
-void PopR::write_to_buf (unsigned char* buf) const {
+void Cmd::PopR::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  OpCode (0x58+reg));
 }
 
-unsigned int PopR::get_byte_num () const {
+unsigned int Cmd::PopR::get_byte_num () const {
     return byte_num;
 }
 
 
 
-void Add64_RR::write_to_buf (unsigned char* buf) const {
+void Cmd::Add64_RR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x01) , ModRM (0b11, RM_REG_by_registers (to, from)));
 }
 
-unsigned int Add64_RR::get_byte_num () const {
+unsigned int Cmd::Add64_RR::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-Add64_RM::Add64_RM (unsigned int _to, int _mem_offset)
+Cmd::Add64_RM::Add64_RM (unsigned int _to, int _mem_offset)
 : to (_to), mem_offset (_mem_offset) {
     byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 4 : 7);
 }
 
-void Add64_RM::write_to_buf (unsigned char* buf) const {
+void Cmd::Add64_RM::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             unsigned char displacment = mem_offset;
             set_elems (buf,  REX (1) , OpCode (0x03) , ModRM (0b01, to << 3, 0b101), displacment);
@@ -370,13 +370,13 @@ void Add64_RM::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Add64_RM::get_byte_num () const {
+unsigned int Cmd::Add64_RM::get_byte_num () const {
     return byte_num;
 }
 
 
 
-Add64_RImm::Add64_RImm (unsigned int _to, int _imm)
+Cmd::Add64_RImm::Add64_RImm (unsigned int _to, int _imm)
 : to (_to), imm (_imm) {
     if (to == REGS::RAX) {
         byte_num = ( -128 <= imm && imm < 128 ? 4 : 6);
@@ -385,7 +385,7 @@ Add64_RImm::Add64_RImm (unsigned int _to, int _imm)
     }
 }
 
-void Add64_RImm::write_to_buf (unsigned char* buf) const {
+void Cmd::Add64_RImm::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             set_elems (buf,  REX (1) , OpCode (0x83) , ModRM (0b11, 0, to), static_cast<char> (imm));
         } else if (byte_num == 6) {
@@ -395,14 +395,14 @@ void Add64_RImm::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Add64_RImm::get_byte_num () const {
+unsigned int Cmd::Add64_RImm::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-Sub64_RImm::Sub64_RImm (unsigned int _to, int _imm)
+Cmd::Sub64_RImm::Sub64_RImm (unsigned int _to, int _imm)
 : to (_to), imm (_imm) {
     if (to == REGS::RAX) {
         byte_num = ( -128 <= imm && imm < 128 ? 4 : 6);
@@ -411,7 +411,7 @@ Sub64_RImm::Sub64_RImm (unsigned int _to, int _imm)
     }
 }
 
-void Sub64_RImm::write_to_buf (unsigned char* buf) const {
+void Cmd::Sub64_RImm::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             set_elems (buf,  REX (1) , OpCode (0x83) , ModRM (0b11, 0b101 << 3, to), static_cast<char> (imm));
         } else if (byte_num == 6) {
@@ -421,19 +421,19 @@ void Sub64_RImm::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Sub64_RImm::get_byte_num () const {
+unsigned int Cmd::Sub64_RImm::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-Sub64_RM::Sub64_RM (unsigned int _to, int _mem_offset)
+Cmd::Sub64_RM::Sub64_RM (unsigned int _to, int _mem_offset)
 : to (_to), mem_offset (_mem_offset) {
     byte_num = ( -128 <= mem_offset && mem_offset < 128 ? 4 : 7);
 }
 
-void Sub64_RM::write_to_buf (unsigned char* buf) const {
+void Cmd::Sub64_RM::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             unsigned char displacment = mem_offset;
             set_elems (buf,  REX (1) , OpCode (0x2b) , ModRM (0b01, to << 3, 0b101), displacment);
@@ -442,28 +442,28 @@ void Sub64_RM::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Sub64_RM::get_byte_num () const {
+unsigned int Cmd::Sub64_RM::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-void Sub64_RR::write_to_buf (unsigned char* buf) const {
+void Cmd::Sub64_RR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x29) , ModRM (0b11, RM_REG_by_registers (to, from)));
 }
 
-unsigned int Sub64_RR::get_byte_num () const {
+unsigned int Cmd::Sub64_RR::get_byte_num () const {
     return byte_num;
 }
 
 
-Imul64_RImm::Imul64_RImm (unsigned int _to, int _imm)
+Cmd::Imul64_RImm::Imul64_RImm (unsigned int _to, int _imm)
 : to (_to), imm (_imm) {
     byte_num = ( -128 <= imm && imm < 128 ? 4 : 7);
 }
 
-void Imul64_RImm::write_to_buf (unsigned char* buf) const {
+void Cmd::Imul64_RImm::write_to_buf (unsigned char* buf) const {
         if (byte_num == 4) {
             set_elems (buf,  REX (1) , OpCode (0x6b) , ModRM (0b11, to << 3, to), static_cast<char> (imm));
         } else {
@@ -471,28 +471,28 @@ void Imul64_RImm::write_to_buf (unsigned char* buf) const {
         }
 }
 
-unsigned int Imul64_RImm::get_byte_num () const {
+unsigned int Cmd::Imul64_RImm::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-void Imul64_RR::write_to_buf (unsigned char* buf) const {
+void Cmd::Imul64_RR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x0f) , OpCode (0xaf), ModRM (0b11, to << 3, from));
 }
 
-unsigned int Imul64_RR::get_byte_num () const {
+unsigned int Cmd::Imul64_RR::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-Idiv_R::Idiv_R (unsigned int _reg)
+Cmd::Idiv_R::Idiv_R (unsigned int _reg)
 : reg (_reg), byte_num (3) {}
 
-void Idiv_R::write_to_buf (unsigned char* buf) const {
+void Cmd::Idiv_R::write_to_buf (unsigned char* buf) const {
     if (reg < 8) {
         set_elems (buf,  REX (1), OpCode (0xf7),ModRM (0b11, 0b110 << 3, 0b1000 + reg));
     } else {
@@ -500,100 +500,100 @@ void Idiv_R::write_to_buf (unsigned char* buf) const {
     }
 }
 
-unsigned int Idiv_R::get_byte_num () const {
+unsigned int Cmd::Idiv_R::get_byte_num () const {
     return byte_num;
 }
 
 
 
-Ret::Ret ()
+Cmd::Ret::Ret ()
 : byte_num (1) {}
 
-void Ret::write_to_buf (unsigned char* buf) const {
+void Cmd::Ret::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  OpCode (0xc3));
 }
 
-unsigned int Ret::get_byte_num () const {
+unsigned int Cmd::Ret::get_byte_num () const {
     return byte_num;
 }
 
 
 
-Itoa::Itoa ()
+Cmd::Itoa::Itoa ()
 : byte_num (SizeItoa) {}
 
-void Itoa::write_to_buf (unsigned char* buf) const {
+void Cmd::Itoa::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  itoa_b);
 }
 
-unsigned int Itoa::get_byte_num () const {
+unsigned int Cmd::Itoa::get_byte_num () const {
     return byte_num;
 }
 
-Atoi::Atoi ()
+Cmd::Atoi::Atoi ()
 : byte_num (SizeAtoi) {}
 
-void Atoi::write_to_buf (unsigned char* buf) const {
+void Cmd::Atoi::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  atoi_b);
 }
 
-unsigned int Atoi::get_byte_num () const {
+unsigned int Cmd::Atoi::get_byte_num () const {
     return byte_num;
 }
 
 
 
-GStart::GStart ()
+Cmd::GStart::GStart ()
 : byte_num (SizeGStart) {}
 
-void GStart::write_to_buf (unsigned char* buf) const {
+void Cmd::GStart::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  g_start_b);
 }
 
-unsigned int GStart::get_byte_num () const {
+unsigned int Cmd::GStart::get_byte_num () const {
     return byte_num;
 }
 
 
 
 
-OutputRBX::OutputRBX (unsigned char* _addr_of_itoa)
+Cmd::OutputRBX::OutputRBX (unsigned char* _addr_of_itoa)
 : addr_of_itoa (_addr_of_itoa) ,byte_num (SizeOutput) {}
 
-void OutputRBX::write_to_buf (unsigned char* buf) const {
+void Cmd::OutputRBX::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  output_b);
     printf ("output second pointer %p\n", buf+6);
     printf ("??? %x\n", (addr_of_itoa - (buf + 6)));
     *reinterpret_cast<unsigned int*> (buf + 2) = static_cast<unsigned int> (addr_of_itoa - (buf + 6));  // displacement by itoa ()
 }
 
-unsigned int OutputRBX::get_byte_num () const {
+unsigned int Cmd::OutputRBX::get_byte_num () const {
     return byte_num;
 }
 
 
 
-InputRAX::InputRAX (unsigned char* _addr_of_atoi)
+Cmd::InputRAX::InputRAX (unsigned char* _addr_of_atoi)
 : addr_of_atoi (_addr_of_atoi) ,byte_num (SizeInput) {}
 
-void InputRAX::write_to_buf (unsigned char* buf) const {
+void Cmd::InputRAX::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  input_b);
     printf ("input second pointer %p\n", buf+37);
     *reinterpret_cast<unsigned int*>(buf + 33) = static_cast<unsigned int> (addr_of_atoi - (buf + 37));  // displacement by atoi ()
 }
 
-unsigned int InputRAX::get_byte_num () const {
+unsigned int Cmd::InputRAX::get_byte_num () const {
     return byte_num;
 }
 
 
-Sqrt::Sqrt () : byte_num (SizeSqrt) {}
+Cmd::Sqrt::Sqrt () : byte_num (SizeSqrt) {}
 
-void Sqrt::write_to_buf (unsigned char* buf) const {
+void Cmd::Sqrt::write_to_buf (unsigned char* buf) const {
     set_elems (buf,  sqrt_b);
 }
 
-unsigned int Sqrt::get_byte_num () const {
+unsigned int Cmd::Sqrt::get_byte_num () const {
     return byte_num;
 }
 
@@ -601,11 +601,11 @@ unsigned int Sqrt::get_byte_num () const {
 
 
 
-void Cmp_RR::write_to_buf (unsigned char* buf) const {
+void Cmd::Cmp_RR::write_to_buf (unsigned char* buf) const {
         set_elems (buf,  REX (1) , OpCode (0x39) , ModRM (0b11, RM_REG_by_registers (to, from)));
 }
 
-unsigned int Cmp_RR::get_byte_num () const {
+unsigned int Cmd::Cmp_RR::get_byte_num () const {
     return byte_num;
 }
 
