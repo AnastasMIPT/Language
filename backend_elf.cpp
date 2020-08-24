@@ -175,12 +175,9 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
 
             labels.insert ("itoa", code.get_code_buf_ptr ());
             code.add_command (Cmd::Itoa ());
-            //assert (labels.find ("itoa")->second);
             labels.insert ("atoi", code.get_code_buf_ptr ());
             code.add_command (Cmd::Atoi ());
             
-            //labels.insert ("main", code.get_code_buf_ptr ());
-            //assert (labels.find ("itoa")->second);
             
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
 
@@ -393,7 +390,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
 void Handle_comma_b      (Node* root, Code& code, HashTable_t& labels, Vector <Request>& requests,
                           const char* path_ex_file) {
 
-    ProgramToBinary (_R , code, labels, requests, path_ex_file);
+    ProgramToBinary (_Lf , code, labels, requests, path_ex_file);
     
     if (_R->type == NUM) {
         

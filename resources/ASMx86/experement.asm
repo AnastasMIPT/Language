@@ -6,57 +6,32 @@ _start:
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
-func:
+main:
 		push rbp
 		mov rbp, rsp
-		sub rsp, 8
+		sub rsp, 16
 
-; _R->left->num 1.000000
+; _R->left->num 2.000000
 		;assign
-		mov qword [rbp-8], 0
+		mov qword [rbp-8], 50000
 
 
-		mov rcx, qword [rbp+24]
-		mov rdx, qword [rbp+16]
-		cmp rcx, rdx
-		jg end_if0
 		;assign
-		mov qword [rbp-8], 100
+		mov qword [rbp-16], 30000
 
-
-end_if0:
-
-		;output
-
-		mov rbx, qword [rbp+16]
-		push rbx
-		call itoa
-		sub rsp, 8
-
-		mov rax, 4
-		mov rbx, 1
-		mov rcx, number_new
-		mov rdx, 11
-		int 80h
 
 
 		;output
 
-		mov rbx, qword [rbp+24]
-		push rbx
-		call itoa
-		sub rsp, 8
 
-		mov rax, 4
-		mov rbx, 1
-		mov rcx, number_new
-		mov rdx, 11
-		int 80h
+		;call
 
+		push qword [rbp-16]
+		push qword [rbp-8]
+		call func
+		add rsp, 16
+		mov rbx, rax
 
-		;output
-
-		mov rbx, qword [rbp-8]
 		push rbx
 		call itoa
 		sub rsp, 8
@@ -76,21 +51,53 @@ end_if0:
 		pop rbp
 		ret
 
-main:
+funct:
 		push rbp
 		mov rbp, rsp
 		sub rsp, 0
 
 ; _R->left->num -0.000000
 
-		;call
+		;output
 
-		push qword 30000
-		push qword 50000
-		call func
-		add rsp, 16
+		mov rbx, qword [rbp+24]
+		push rbx
+		call itoa
+		sub rsp, 8
+
+		mov rax, 4
+		mov rbx, 1
+		mov rcx, number_new
+		mov rdx, 11
+		int 80h
+
 
 		;return
+
+		mov rcx, qword [rbp+24]
+		mov rax, rcx
+
+		mov rsp, rbp
+		pop rbp
+		ret
+
+func:
+		push rbp
+		mov rbp, rsp
+		sub rsp, 0
+
+; _R->left->num -0.000000
+
+		;return
+
+
+		;call
+
+		push qword [rbp+24]
+		push qword [rbp+16]
+		call funct
+		add rsp, 16
+		mov rcx, rax
 
 		mov rax, rcx
 
