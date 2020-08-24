@@ -819,8 +819,9 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
         }
     } else {
         num = ElementIsInArr (FuncArray, hash) + COL_WORDS + 1;
+        printf ("\t\t\t\t hash = %d\n", hash);
         if (num  != COL_WORDS) {
-            switch (num) {
+            switch (num - 1) {
                 case SIN:
                     return _SIN (nullptr);
                 case COS:
@@ -844,6 +845,8 @@ Node* NewFuncOrKeyWordNode (const char* word, IdsArray* FuncArray, int* KeyWords
                 case SQRT:
                     return CreateNode (SQRT, word, nullptr, nullptr);
                 case DIFF:
+                    printf ("AAAAAAAAAAAAAAAAAA\n");
+                    //printf ("%d\n", Hash (Words[30]));
                     return CreateNode (DIFF, word, nullptr, nullptr);
                 default:
                     printf ("ERROR: Undefined function ot operator\n");
@@ -954,7 +957,7 @@ Node** Tocens (IdsArray* Ids, IdsArray* IdsFunc, IdsArray* IdsParam, int* KeyWor
             }
             else
                 Nodes[i] = NewVarOrKeyWordNode (word, Ids, IdsParam, KeyWords, sign);
-            printf ("%s %s %d   num = %lg\n", word, Nodes[i]->data, Nodes[i]->type, Nodes[i]->num);
+            printf ("%s data = \'%s\' type = %d   num = %lg\n", word, Nodes[i]->data, Nodes[i]->type, Nodes[i]->num);
             i++;
             //printf ("********* %d  %d  %d********\n", KeyWords[10], KeyWords[11], Hash ("def"));
             //printf ("%s\n", word);
