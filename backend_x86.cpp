@@ -358,9 +358,11 @@ void Arithmetic_op_mul (Node* root, FILE* f_out, int ret_value) {
     } else {
 
         ProgramToASM (_Lf , f_out, ret_value);
+        RedusePrecision (f_out, _Lf, ret_value);
+
         ProgramToASM (_R,   f_out, ret_value + 1);
 
-        RedusePrecision (f_out, _Lf, ret_value);
+        
         
         fprintf (f_out, "\t\timul %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
 

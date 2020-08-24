@@ -101,7 +101,8 @@ void Arithmetic_op_sub_b (Node* root, Code& code, HashTable_t& labels,
                           Vector<Request>& requests, const char* path_ex_file, int ret_value);
 
 void Handle_call_b       (Node* root, Code& code, Vector <Request>& requests, int ret_value);
-// void Handle_sqrt_b       (Node* root, const char* path_ex_file, int ret_value);
+void Handle_sqrt_b       (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file, int ret_value);
 void Handle_assign_b     (Node* root, Code& code, HashTable_t& labels, 
                           Vector<Request>& requests, const char* path_ex_file);
 // void Handle_start_b      (Node* root, const char* path_ex_file, const HashTable <unsigned char*>& labels);
@@ -294,14 +295,12 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             code.add_command (Cmd::Ret ());
             break;
         case OUTPUT:
-            // fprintf (f_out, "\n\t\t;output\n\n");
             DEB_INFO
             ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RBX);
             DEB_INFO
             assert (labels.find ("itoa"));
             code.add_command (Cmd::OutputRBX (labels.find("itoa")->second));
-            DEB_INFO
-            // fprintf (path_ex_file, output_s);
+            
             break;
         case INPUT:
             // fprintf (path_ex_file, "\n\t\t;input\n\n");
@@ -310,7 +309,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             //                "\t\tmov qword [rbp%+d], rax\n\n", Precision, Bytes * static_cast<int> (_R->num));
             break;
         case SQRT:
-            // Handle_sqrt_b    (root, path_ex_file, ret_value);
+            Handle_sqrt_b (root , code, labels, requests, path_ex_file, ret_value);
             break;  
         case BREAK:
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
@@ -344,11 +343,7 @@ void RedusePrecision (Node* elem, Code& code, int ret_value) {
         code.add_command (Cmd::Cqo ());
         code.add_command (Cmd::Idiv_R (REGS::R15));
         code.add_command (Cmd::Mov64_RR (reg_for_math_b[ret_value], REGS::RAX));
-        // fprintf (f_out, "\n\t\tmov rax, %s\n"
-        //                 "\t\tmov r15 , %d\n"
-        //                 "\t\tcqo\n"
-        //                 "\t\tidiv r15\n"
-        //                 "\t\tmov qword %s, rax\n\n", reg_for_math_b[ret_value], Precision, reg_for_math_b[ret_value]);
+        
     } else {
         if (elem->type == VAR) {
             int var_offset = Bytes * static_cast<int> (elem->num);
@@ -358,12 +353,7 @@ void RedusePrecision (Node* elem, Code& code, int ret_value) {
             code.add_command (Cmd::Cqo ());
             code.add_command (Cmd::Idiv_R (REGS::R15));
             code.add_command (Cmd::Mov64_MR (var_offset, REGS::RAX));
-        //     fprintf (f_out, "\n\t\tmov rax, qword [rbp%+d]\n"
-        //                 "\t\tmov r15 , %d\n"
-        //                 "\t\tcqo\n"
-        //                 "\t\tidiv r15\n"
-        //                 "\t\tmov qword [rbp%+d], rax\n\n", var_offset, Precision, var_offset);
-        // }
+
         }
     }
 }
@@ -461,17 +451,17 @@ void Handle_assign_b     (Node* root, Code& code, HashTable_t& labels,
     }
 }
 
-// void Handle_sqrt_b       (Node* root, const char* path_ex_file, int ret_value) {
+void Handle_sqrt_b       (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file, int ret_value) {
 
-//     fprintf (f_out, "\n\t\t;sqrt\n\n");
+    ProgramToBinary (_R , code, labels, requests, path_ex_file, ret_value);
 
-//     ProgramToASM (_R , f_out, ret_value);
-    
-//     fprintf (f_out, "\n\t\tmov qword [sqrt_from], %s\n", reg_for_math_b[ret_value]);
-//     fprintf (f_out, sqrt_s);
-//     fprintf (f_out, "\t\tmov %s, qword [sqrt_res]\n\n", reg_for_math_b[ret_value]);
-//     fprintf (f_out, "\t\timul %s, %d\n", reg_for_math_b[ret_value], static_cast<int> (sqrt (Precision)));
-// }
+    code.add_command (Cmd::Mov64_AddrR (Addr_sqrt_from, reg_for_math_b[ret_value]));
+    code.add_command (Cmd::Sqrt ());
+    code.add_command (Cmd::Mov64_RAddr (reg_for_math_b[ret_value], Addr_sqrt_res));
+    code.add_command (Cmd::Imul64_RImm (reg_for_math_b[ret_value], static_cast<int> (sqrt (Precision))));
+
+}
 
 
 
@@ -491,9 +481,11 @@ void Arithmetic_op_mul_b (Node* root, Code& code, HashTable_t& labels,
     } else {
         assert (ret_value + 1 < UNDEF);
         ProgramToBinary (_Lf, code, labels, requests, path_ex_file, ret_value);
+        RedusePrecision (_Lf, code, ret_value);
+
         ProgramToBinary (_R, code, labels, requests, path_ex_file, ret_value + 1);
 
-        RedusePrecision (_Lf, code, ret_value);
+        
         
         code.add_command (Cmd::Imul64_RR (reg_for_math_b[ret_value], reg_for_math_b[ret_value + 1]));
 
