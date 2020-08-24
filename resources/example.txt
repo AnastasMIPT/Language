@@ -1,7 +1,7 @@
 start
 
 def funct (a, b, c, d, e, f): {
-    output ((a - b) + (c - d) + (e - f))
+    output (a * b + c * d + e * f)
 
     return;
 }

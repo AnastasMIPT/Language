@@ -93,7 +93,8 @@ int Hash (const char* str);
 
 void Arithmetic_op_sum_b (Node* root, Code& code, HashTable_t& labels, 
                           Vector<Request>& requests, const char* path_ex_file, int ret_value);
-// void Arithmetic_op_mul_b (Node* root, const char* path_ex_file, int ret_value);
+void Arithmetic_op_mul_b (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file, int ret_value);
 // void Arithmetic_op_div_b (Node* root, const char* path_ex_file, int ret_value);
 void Arithmetic_op_sub_b (Node* root, Code& code, HashTable_t& labels, 
                           Vector<Request>& requests, const char* path_ex_file, int ret_value);
@@ -277,7 +278,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             Arithmetic_op_sub_b (root , code, labels, requests, path_ex_file, ret_value);
             break;
         case MUL:
-            // Arithmetic_op_mul_b (root, path_ex_file, ret_value);
+            Arithmetic_op_mul_b (root , code, labels, requests, path_ex_file, ret_value);
             break;
         case DIV:
             // Arithmetic_op_div_b (root, path_ex_file, ret_value);
@@ -473,29 +474,30 @@ void Handle_assign_b     (Node* root, Code& code, HashTable_t& labels,
 
 
 
-// void Arithmetic_op_mul_b (Node* root, const char* path_ex_file, int ret_value) {
+void Arithmetic_op_mul_b (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file, int ret_value) {
     
-//     if (_Lf->type == NUM) {
+    if (_Lf->type == NUM) {
     
-//         ProgramToASM (_R,   f_out, ret_value);
-//         fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math_b[ret_value], static_cast<int> (_Lf->num));
+        ProgramToBinary (_R, code, labels, requests, path_ex_file, ret_value);
+        code.add_command (Cmd::Imul64_RImm (reg_for_math_b[ret_value], static_cast<int> (_Lf->num)));
 
-//     } else if (_R->type == NUM) {
+    } else if (_R->type == NUM) {
     
-//         ProgramToASM (_Lf , f_out, ret_value);
-//         fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math_b[ret_value], static_cast<int> (_R->num));
+        ProgramToBinary (_Lf, code, labels, requests, path_ex_file, ret_value);
+        code.add_command (Cmd::Imul64_RImm (reg_for_math_b[ret_value], static_cast<int> (_R->num)));
     
-//     } else {
+    } else {
+        assert (ret_value + 1 < UNDEF);
+        ProgramToBinary (_Lf, code, labels, requests, path_ex_file, ret_value);
+        ProgramToBinary (_R, code, labels, requests, path_ex_file, ret_value + 1);
 
-//         ProgramToASM (_Lf , f_out, ret_value);
-//         ProgramToASM (_R,   f_out, ret_value + 1);
-
-//         RedusePrecision (f_out, _Lf, ret_value);
+        RedusePrecision (_Lf, code, ret_value);
         
-//         fprintf (f_out, "\t\timul %s, %s\n", reg_for_math_b[ret_value], reg_for_math_b[ret_value + 1]);
+        code.add_command (Cmd::Imul64_RR (reg_for_math_b[ret_value], reg_for_math_b[ret_value + 1]));
 
-//     }
-// }
+    }
+}
 
 // void Arithmetic_op_div_b (Node* root, const char* path_ex_file, int ret_value) {
     
