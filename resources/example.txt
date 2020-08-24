@@ -1,12 +1,7 @@
 start
 
 def funct (a, b, c, d, e, f): {
-    output (a)
-    output (b)
-    output (c)
-    output (d)
-    output (e)
-    output (f)
+    output ((a + b) + (c + d) + (e + f))
 
     return;
 }
@@ -16,7 +11,7 @@ def main ():
     a = 500;
     b = 300;
     
-    funct (a, b, 3, 4, 5, 6)
+    funct (100, 2, 3, 4, 5, 6)
     return;
 }
 
