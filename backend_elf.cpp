@@ -142,6 +142,9 @@ int main () {
     Vector <Request> label_requests;
     HashTable <unsigned char*> labels (1009, CRC_32_fast);
     Code code (1024);
+    code.add_command (Cmd::Mov64_RImm (REGS::R8, 10));
+    code.add_command (Cmd::Mov64_RImm (REGS::R8, -12));
+    code.add_command (Cmd::Mov64_RImm (REGS::R15, 10));
     ProgramToBinary (root, code, labels, label_requests, "./resources/ASMx86/my_elf");
 
     return 0;
@@ -320,14 +323,12 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             break;
         case VAR:
             if (ret_value != UNDEF) {
-                code.add_command (Cmd::Mov64_RM (reg_for_math_b[ret_value], Bytes * static_cast<int> (root->num)));
-                // fprintf (path_ex_file, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math_b[ret_value], Bytes * static_cast<int> (root->num));    
+                code.add_command (Cmd::Mov64_RM (reg_for_math_b[ret_value], Bytes * static_cast<int> (root->num)));    
             } 
             break;
         case NUM:
             if (ret_value != UNDEF) {
                 code.add_command (Cmd::Mov64_RImm (reg_for_math_b[ret_value], Precision * static_cast<int> (root->num)));
-                // fprintf (path_ex_file, "\t\tmov %s, qword %d\n", reg_for_math_b[ret_value], Precision * static_cast<int> (root->num));    
             }
             break;
         default:
@@ -520,7 +521,7 @@ void Arithmetic_op_sub_b (Node* root, Code& code, HashTable_t& labels,
     if (_R->type == NUM) {
 
         code.add_command (Cmd::Sub64_RImm (reg_for_math_b[ret_value], Precision * static_cast<int> (_R->num)));
-        
+
     } else if (_R->type == VAR) {
         
         code.add_command (Cmd::Sub64_RM (reg_for_math_b[ret_value], Bytes * static_cast<int> (_R->num)));
