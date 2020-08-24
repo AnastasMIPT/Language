@@ -1,25 +1,23 @@
 start
 
+def funct (a, b, c, d, e, f): {
+    output (a)
+    output (b)
+    output (c)
+    output (d)
+    output (e)
+    output (f)
+
+    return;
+}
+
 def main ():
 {
     a = 500;
     b = 300;
     
-    output (func (a, b))
+    funct (a, b, 3, 4, 5, 6)
     return;
-}
-
-def funct (a, b): {
-    output (b)
-   
-    return b;
-}
-
-
-def func (fact, facto):
-{
-    
-    return funct (fact, facto);
 }
 
 
