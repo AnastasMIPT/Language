@@ -95,7 +95,8 @@ void Arithmetic_op_sum_b (Node* root, Code& code, HashTable_t& labels,
                           Vector<Request>& requests, const char* path_ex_file, int ret_value);
 // void Arithmetic_op_mul_b (Node* root, const char* path_ex_file, int ret_value);
 // void Arithmetic_op_div_b (Node* root, const char* path_ex_file, int ret_value);
-// void Arithmetic_op_sub_b (Node* root, const char* path_ex_file, int ret_value);
+void Arithmetic_op_sub_b (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file, int ret_value);
 
 void Handle_call_b       (Node* root, Code& code, Vector <Request>& requests, int ret_value);
 // void Handle_sqrt_b       (Node* root, const char* path_ex_file, int ret_value);
@@ -273,7 +274,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             Arithmetic_op_sum_b (root , code, labels, requests, path_ex_file, ret_value);
             break;
         case SUB:
-            // Arithmetic_op_sub_b (root, path_ex_file, ret_value);
+            Arithmetic_op_sub_b (root , code, labels, requests, path_ex_file, ret_value);
             break;
         case MUL:
             // Arithmetic_op_mul_b (root, path_ex_file, ret_value);
@@ -511,25 +512,26 @@ void Handle_assign_b     (Node* root, Code& code, HashTable_t& labels,
 //     }
 // }
 
-// void Arithmetic_op_sub_b (Node* root, const char* path_ex_file, int ret_value) {
+void Arithmetic_op_sub_b (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file, int ret_value) {
     
-//     ProgramToASM (_Lf, f_out, ret_value);
+    ProgramToBinary (_Lf, code, labels, requests, path_ex_file, ret_value);
 
-//     if (_R->type == NUM) {
+    if (_R->type == NUM) {
+
+        code.add_command (Cmd::Sub64_RImm (reg_for_math_b[ret_value], Precision * static_cast<int> (_R->num)));
         
-//         fprintf (f_out, "\t\tsub %s, qword %d\n",       reg_for_math_b[ret_value], Precision * static_cast<int> (_R->num));
-    
-//     } else if (_R->type == VAR) {
+    } else if (_R->type == VAR) {
         
-//         fprintf (f_out, "\t\tsub %s, qword [rbp%+d]\n", reg_for_math_b[ret_value], Bytes * static_cast<int> (_R->num));
-    
-//     } else {
+        code.add_command (Cmd::Sub64_RM (reg_for_math_b[ret_value], Bytes * static_cast<int> (_R->num)));
+    } else {
         
-//         ProgramToASM (_R, f_out,  ret_value + 1);
-//         fprintf   (f_out, "\t\tsub %s, %s\n", reg_for_math_b[ret_value], reg_for_math_b[ret_value + 1]);
+        assert (ret_value + 1 < UNDEF);
+        ProgramToBinary (_R, code, labels, requests, path_ex_file, ret_value + 1);
+        code.add_command (Cmd::Sub64_RR (reg_for_math_b[ret_value], reg_for_math_b[ret_value + 1]));
     
-//     }
-// }
+    }
+}
 
 void Arithmetic_op_sum_b (Node* root, Code& code, HashTable_t& labels, 
                           Vector<Request>& requests, const char* path_ex_file, int ret_value) {
