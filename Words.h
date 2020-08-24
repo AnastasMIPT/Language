@@ -161,12 +161,21 @@ const char* arithmeic[] = {
 
 constexpr unsigned int UNDEF = 7;
 
-constexpr unsigned int reg_for_math[] = {
+constexpr unsigned int reg_for_math_b[] = {
         REGS::RAX,
         REGS::RCX,
         REGS::RDX,
         REGS::RBX,
         REGS::RSI,
         REGS::RDI,
+};
+
+const char* reg_for_math[] = {
+        "rax",
+        "rcx",
+        "rdx",
+        "rbx",
+        "rsi",
+        "rdi",
 };
 #endif //LANGUAGE_WORDS_H

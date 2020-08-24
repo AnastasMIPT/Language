@@ -6,89 +6,169 @@ _start:
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
-
-
-
-main:
+func:
 		push rbp
 		mov rbp, rsp
+		sub rsp, 8
 
-		;04 = 00 000 100
-		;0c = 00 001 100
-		;14 = 00 010 100
+; _R->left->num 1.000000
+		;assign
+		mov qword [rbp-8], 0
 
 
-		;25 = 00 100 101
-		
-		
-		
-		
-		
-		imul rax, rax
-		imul rax, rcx
-		imul rax, rdx
-		imul rax, rbx
-		imul rax, rsp
-		imul rax, rbp
-		imul rax, rsi
-		imul rax, rdi
-		
-		nop
-		nop
-		nop
+		mov rcx, qword [rbp+24]
+		mov rdx, qword [rbp+16]
+		cmp rcx, rdx
+		jg end_if0
+		;assign
+		mov qword [rbp-8], 100
 
-		imul r10, r8
-		imul rax, r9
-		imul rax, r10
-		imul rax, r11
-		imul rax, r12
-		imul rax, r13
-		imul rax, r14
-		imul rax, r15
-		nop
-		nop
-		nop
 
-		imul rcx, rax
-		imul rcx, rcx
-		imul rcx, rdx
-		imul rcx, rbx
-		nop
-		nop
-		nop
-		imul rcx, r8
-		imul rcx, r9
-		imul rcx, r10
-		imul rcx, r11
-		nop
-		nop
-		nop
+end_if0:
 
-		imul rdx, rax
-		imul rdx, rcx
-		imul rdx, rdx
-		imul rdx, rbx
-		nop
-		nop
-		nop
+		;output
 
-		imul rbx, rax
-		imul rbx, rcx
-		imul rbx, rdx
-		imul rbx, rbx
-		nop
-		nop
-		nop
+		mov rbx, qword [rbp+16]
+		push rbx
+		call itoa
+		sub rsp, 8
 
+		mov rax, 4
+		mov rbx, 1
+		mov rcx, number_new
+		mov rdx, 11
+		int 80h
+
+
+		;output
+
+		mov rbx, qword [rbp+24]
+		push rbx
+		call itoa
+		sub rsp, 8
+
+		mov rax, 4
+		mov rbx, 1
+		mov rcx, number_new
+		mov rdx, 11
+		int 80h
+
+
+		;output
+
+		mov rbx, qword [rbp-8]
+		push rbx
+		call itoa
+		sub rsp, 8
+
+		mov rax, 4
+		mov rbx, 1
+		mov rcx, number_new
+		mov rdx, 11
+		int 80h
+
+
+		;return
+
+		mov rax, rcx
 
 		mov rsp, rbp
 		pop rbp
 		ret
 
+main:
+		push rbp
+		mov rbp, rsp
+		sub rsp, 0
 
+; _R->left->num -0.000000
 
+		;call
 
+		push qword 30000
+		push qword 50000
+		call func
+		add rsp, 16
 
+		;return
+
+		mov rax, rcx
+
+		mov rsp, rbp
+		pop rbp
+		ret
+
+itoa:
+		push rbp
+		mov rbp, rsp
+		xor rax, rax
+		mov rax, qword [rbp+16]
+		mov rbx, qword number_rev
+		mov rdi, number_new
+		xor r10, r10
+		or rax, rax
+		jns .Loop
+		neg rax
+		mov byte [rdi], '-'
+		inc rbx
+		inc rdi
+.Loop:
+		xor rdx, rdx
+		mov r8, 0ah
+		div r8
+		add rdx, '0'
+		mov byte [rbx+r10], dl
+		inc r10
+		cmp qword r10, SYMB_POINT
+		jne .NoPoint
+		mov byte [rbx+r10], '.'
+		inc r10
+.NoPoint:
+		cmp rax, 0
+		je .Loop2
+		jmp .Loop
+.Loop2:		;writing reversev
+		dec r10
+		mov al, [rbx+r10]
+		stosb
+		cmp r10, 0
+		je .Exit
+		jmp .Loop2
+.Exit:
+
+		mov byte [rdi+1], 10
+		mov rsp, rbp
+		pop rbp
+		ret
+atoi:
+		push rbp
+		mov rbp, rsp
+		xor rax, rax
+
+		mov byte [sign], 0
+		mov rbx, qword [rbp+16]
+		xor rcx, rcx
+		cmp byte [rbx], '-'
+		jne .Next
+		mov byte [sign], 1
+		inc rbx
+.Next:
+		cmp byte [rbx], 10
+		je .Exit
+		mov cl, byte [rbx]
+		sub rcx, '0'
+		imul rax, 10
+		add rax, rcx
+		inc rbx
+		jmp .Next
+.Exit:
+		cmp byte[sign], 1
+		jne .Exit_l
+		neg rax
+.Exit_l:
+		mov rsp, rbp
+		pop rbp
+		ret
 section .data
 		number times 10 db 0
 		db 0

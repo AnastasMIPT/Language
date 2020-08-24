@@ -12,7 +12,7 @@
 #include "my_vector.h"
 
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
     #define DEB_INFO printf ("DEBUG_INFO:  Called from FILE: %s from FUNCTION: %s   LINE: %d\n", __FILE__, __func__, __LINE__);
@@ -96,12 +96,14 @@ int Hash (const char* str);
 // void Arithmetic_op_div_b (Node* root, const char* path_ex_file, int ret_value);
 // void Arithmetic_op_sub_b (Node* root, const char* path_ex_file, int ret_value);
 
-// void Handle_call_b       (Node* root, const char* path_ex_file, int ret_value);
+void Handle_call_b       (Node* root, Code& code, Vector <Request>& requests, int ret_value);
 // void Handle_sqrt_b       (Node* root, const char* path_ex_file, int ret_value);
-// void Handle_assign_b     (Node* root, const char* path_ex_file);
+void Handle_assign_b     (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file);
 // void Handle_start_b      (Node* root, const char* path_ex_file, const HashTable <unsigned char*>& labels);
 // void Handle_ret_b        (Node* root, const char* path_ex_file);
-// void Handle_comma_b      (Node* root, const char* path_ex_file);
+void Handle_comma_b      (Node* root, Code& code, HashTable_t& labels, Vector <Request>& requests,
+                          const char* path_ex_file);
 void Handle_def_b        (Node* root, Code& code, HashTable_t& labels);
 
 
@@ -177,7 +179,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             labels.insert ("atoi", code.get_code_buf_ptr ());
             code.add_command (Cmd::Atoi ());
             
-            labels.insert ("main", code.get_code_buf_ptr ());
+            //labels.insert ("main", code.get_code_buf_ptr ());
             //assert (labels.find ("itoa")->second);
             
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
@@ -202,10 +204,11 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
             break;
         case CALL:
-            // Handle_call_b    (root, path_ex_file, ret_value);
+            ProgramToBinary (_Lf, code, labels, requests, path_ex_file);
+            Handle_call_b    (root, code, requests, ret_value);
             break;
         case COMMA:
-            // Handle_comma_b   (root, path_ex_file);
+            Handle_comma_b   (root, code, labels, requests, path_ex_file);
             break;
         case B:
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
@@ -215,28 +218,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             ProgramToBinary (_Lf, code, labels, requests, path_ex_file);
             break;
         case ASSIGN:
-            if (_R->type == NUM) {
-                code.add_command (Cmd::Mov64_MImm (Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num)));
-                DEB_INFO
-                
-                assert (labels.find ("itoa"));
-            
-                //fprintf (f_out, "\t\tmov qword [rbp%+d], %d\n", Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num));
-            } else if (_R->type == CALL) {
-                ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RAX);
-                code.add_command (Cmd::Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RAX));
-                //fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
-            
-            } else {
-            
-                ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
-                code.add_command (Cmd::Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RCX));
-                //fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
-            
-            }
-
-
-            // Handle_assign_b  (root, path_ex_file);
+            Handle_assign_b  (root, code, labels, requests, path_ex_file);
             break;
         case IF:
             {
@@ -315,7 +297,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             DEB_INFO
             ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RBX);
             DEB_INFO
-            assert (labels.find("itoa"));
+            assert (labels.find ("itoa"));
             code.add_command (Cmd::OutputRBX (labels.find("itoa")->second));
             DEB_INFO
             // fprintf (path_ex_file, output_s);
@@ -339,14 +321,14 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             break;
         case VAR:
             if (ret_value != UNDEF) {
-                code.add_command (Cmd::Mov64_RM (reg_for_math[ret_value], Bytes * static_cast<int> (root->num)));
-                // fprintf (path_ex_file, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (root->num));    
+                code.add_command (Cmd::Mov64_RM (reg_for_math_b[ret_value], Bytes * static_cast<int> (root->num)));
+                // fprintf (path_ex_file, "\t\tmov %s, qword [rbp%+d]\n", reg_for_math_b[ret_value], Bytes * static_cast<int> (root->num));    
             } 
             break;
         case NUM:
             if (ret_value != UNDEF) {
-                code.add_command (Cmd::Mov64_RImm (reg_for_math[ret_value], Precision * static_cast<int> (root->num)));
-                // fprintf (path_ex_file, "\t\tmov %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (root->num));    
+                code.add_command (Cmd::Mov64_RImm (reg_for_math_b[ret_value], Precision * static_cast<int> (root->num)));
+                // fprintf (path_ex_file, "\t\tmov %s, qword %d\n", reg_for_math_b[ret_value], Precision * static_cast<int> (root->num));    
             }
             break;
         default:
@@ -362,7 +344,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
 //                         "\t\tmov r15 , %d\n"
 //                         "\t\tcqo\n"
 //                         "\t\tidiv r15\n"
-//                         "\t\tmov qword %s, rax\n\n", reg_for_math[ret_value], Precision, reg_for_math[ret_value]);
+//                         "\t\tmov qword %s, rax\n\n", reg_for_math_b[ret_value], Precision, reg_for_math_b[ret_value]);
 //     } else {
 //         if (elem->type == VAR) {
 //             int var_offset = Bytes * static_cast<int> (elem->num);
@@ -408,21 +390,24 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
 //     fprintf (f_out, ret_s);
 // }
 
-// void Handle_comma_b      (Node* root, const char* path_ex_file) {
-//     ProgramToASM (_Lf, f_out);
+void Handle_comma_b      (Node* root, Code& code, HashTable_t& labels, Vector <Request>& requests,
+                          const char* path_ex_file) {
+
+    ProgramToBinary (_R , code, labels, requests, path_ex_file);
     
-//     if (_R->type == NUM || _R->type == VAR) {
+    if (_R->type == NUM) {
+        
+        code.add_command (Cmd::PushImm (Precision * static_cast<int> (_R->num))); 
     
-//         if (_R->type == NUM) fprintf (f_out, "\t\tpush qword %d\n", Precision * static_cast<int> (_R->num));
-//         if (_R->type == VAR) fprintf (f_out, "\t\tpush qword [rbp%+d]\n", Bytes * static_cast<int> (_R->num));
-    
-//     } else {
-    
-//         ProgramToASM (_R , f_out, RBX);
-//         fprintf (f_out, "\t\tpush qword rbx\n");
-    
-//     }
-// }
+    } else if (_R->type == VAR) {
+        
+        code.add_command (Cmd::PushM (Bytes * static_cast<int> (_R->num)));
+
+    } else {
+        ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
+        code.add_command (Cmd::PushR (REGS::RCX));
+    }
+}
 
 void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
     
@@ -434,42 +419,36 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
 
 }
 
-// void Handle_call_b       (Node* root, const char* path_ex_file, int ret_value) {
+void Handle_call_b       (Node* root, Code& code, Vector <Request>& requests, int ret_value) {
 
-//     fprintf (f_out, "\n\t\t;call\n\n");
+    code.add_command (Cmd::Call (_R->data, &requests));
+    code.add_command (Cmd::Add64_RImm (REGS::RSP, Bytes * ReduseRsp (_Lf)));
+    //printf ("WWWWW %d\n", ret_value);
 
-//     ProgramToASM (_Lf, f_out);
-    
-//     fprintf (f_out, "\t\tcall %s\n", _R->data);
-//     fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
+    if (ret_value != REGS::RAX && ret_value != UNDEF) {  
+        code.add_command (Cmd::Mov64_RR (reg_for_math_b[ret_value], REGS::RAX));
+    }
+}
 
-//     if (ret_value != RAX) {
-//         fprintf (f_out, "\t\tmov %s, rax\n\n", reg_for_math[ret_value]); 
-//     }
-// }
+void Handle_assign_b     (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file) {
 
-// void Handle_assign_b     (Node* root, const char* path_ex_file) {
+    if (_R->type == NUM) {
+        code.add_command (Cmd::Mov64_MImm (Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num)));
+        DEB_INFO
 
-//     fprintf (f_out, "\t\t;assign\n");
+    } else if (_R->type == CALL) {
 
-//     if (_R->type == NUM) {
+        ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RAX);
+        code.add_command (Cmd::Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RAX));
     
-//         fprintf (f_out, "\t\tmov qword [rbp%+d], %d\n", Bytes * static_cast<int> (_Lf->num), Precision * static_cast<int> (_R->num));
+    } else {
     
-//     } else if (_R->type == CALL) {
+        ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
+        code.add_command (Cmd::Mov64_MR (Bytes * static_cast<int> (_Lf->num), REGS::RCX));
     
-//         ProgramToASM (_R , f_out, RAX);
-//         fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
-    
-//     } else {
-    
-//         ProgramToASM (_R , f_out, RBX);
-//         fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
-    
-//     }
-    
-//     fprintf (f_out, "\n\n");
-// }
+    }
+}
 
 // void Handle_sqrt_b       (Node* root, const char* path_ex_file, int ret_value) {
 
@@ -477,10 +456,10 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
 
 //     ProgramToASM (_R , f_out, ret_value);
     
-//     fprintf (f_out, "\n\t\tmov qword [sqrt_from], %s\n", reg_for_math[ret_value]);
+//     fprintf (f_out, "\n\t\tmov qword [sqrt_from], %s\n", reg_for_math_b[ret_value]);
 //     fprintf (f_out, sqrt_s);
-//     fprintf (f_out, "\t\tmov %s, qword [sqrt_res]\n\n", reg_for_math[ret_value]);
-//     fprintf (f_out, "\t\timul %s, %d\n", reg_for_math[ret_value], static_cast<int> (sqrt (Precision)));
+//     fprintf (f_out, "\t\tmov %s, qword [sqrt_res]\n\n", reg_for_math_b[ret_value]);
+//     fprintf (f_out, "\t\timul %s, %d\n", reg_for_math_b[ret_value], static_cast<int> (sqrt (Precision)));
 // }
 
 
@@ -490,12 +469,12 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
 //     if (_Lf->type == NUM) {
     
 //         ProgramToASM (_R,   f_out, ret_value);
-//         fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_Lf->num));
+//         fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math_b[ret_value], static_cast<int> (_Lf->num));
 
 //     } else if (_R->type == NUM) {
     
 //         ProgramToASM (_Lf , f_out, ret_value);
-//         fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math[ret_value], static_cast<int> (_R->num));
+//         fprintf (f_out, "\t\timul %s, qword %d\n", reg_for_math_b[ret_value], static_cast<int> (_R->num));
     
 //     } else {
 
@@ -504,7 +483,7 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
 
 //         RedusePrecision (f_out, _Lf, ret_value);
         
-//         fprintf (f_out, "\t\timul %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+//         fprintf (f_out, "\t\timul %s, %s\n", reg_for_math_b[ret_value], reg_for_math_b[ret_value + 1]);
 
 //     }
 // }
@@ -515,7 +494,7 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
     
 //     if (_R->type == NUM) {
 
-//         fprintf (f_out, "\t\tmov %s, qword %lg\n", reg_for_math[ret_value + 1], _R->num);
+//         fprintf (f_out, "\t\tmov %s, qword %lg\n", reg_for_math_b[ret_value + 1], _R->num);
     
 //     } else {
 
@@ -523,13 +502,13 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
 //         RedusePrecision (f_out, _R, ret_value + 1);
 //     }
     
-//     fprintf (f_out, "\t\tmov rax, %s\n", reg_for_math[ret_value]);
+//     fprintf (f_out, "\t\tmov rax, %s\n", reg_for_math_b[ret_value]);
 //     fprintf (f_out, "\t\tcqo\n"
-//                     "\t\tidiv %s\n",     reg_for_math[ret_value + 1]);
+//                     "\t\tidiv %s\n",     reg_for_math_b[ret_value + 1]);
     
 //     if (ret_value != RAX) {
 
-//         fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math[ret_value]);
+//         fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math_b[ret_value]);
 
 //     }
 // }
@@ -540,16 +519,16 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
 
 //     if (_R->type == NUM) {
         
-//         fprintf (f_out, "\t\tsub %s, qword %d\n",       reg_for_math[ret_value], Precision * static_cast<int> (_R->num));
+//         fprintf (f_out, "\t\tsub %s, qword %d\n",       reg_for_math_b[ret_value], Precision * static_cast<int> (_R->num));
     
 //     } else if (_R->type == VAR) {
         
-//         fprintf (f_out, "\t\tsub %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
+//         fprintf (f_out, "\t\tsub %s, qword [rbp%+d]\n", reg_for_math_b[ret_value], Bytes * static_cast<int> (_R->num));
     
 //     } else {
         
 //         ProgramToASM (_R, f_out,  ret_value + 1);
-//         fprintf   (f_out, "\t\tsub %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+//         fprintf   (f_out, "\t\tsub %s, %s\n", reg_for_math_b[ret_value], reg_for_math_b[ret_value + 1]);
     
 //     }
 // }
@@ -560,25 +539,25 @@ void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
 //         ProgramToASM (_R, f_out, ret_value);
         
 //         if (_Lf->type == VAR) {
-//             fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_Lf->num));
+//             fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math_b[ret_value], Bytes * static_cast<int> (_Lf->num));
 //         }
 //         if (_Lf->type == NUM)
-//             fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (_Lf->num));
+//             fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math_b[ret_value], Precision * static_cast<int> (_Lf->num));
 
 //     } else if (_R->type == VAR || _R->type == NUM) {
         
 //         ProgramToASM (_Lf, f_out, ret_value);
         
 //         if (_R->type == VAR)
-//             fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math[ret_value], Bytes * static_cast<int> (_R->num));
+//             fprintf (f_out, "\t\tadd %s, qword [rbp%+d]\n", reg_for_math_b[ret_value], Bytes * static_cast<int> (_R->num));
 //         if (_R->type == NUM)
-//             fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math[ret_value], Precision * static_cast<int> (_R->num));
+//             fprintf (f_out, "\t\tadd %s, qword %d\n", reg_for_math_b[ret_value], Precision * static_cast<int> (_R->num));
     
 //     } else {
     
 //         ProgramToASM (_Lf, f_out, ret_value);
 //         ProgramToASM (_R, f_out, ret_value + 1);
-//         fprintf (f_out, "\t\tadd %s, %s\n", reg_for_math[ret_value], reg_for_math[ret_value + 1]);
+//         fprintf (f_out, "\t\tadd %s, %s\n", reg_for_math_b[ret_value], reg_for_math_b[ret_value + 1]);
     
 //     }
 

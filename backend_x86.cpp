@@ -145,23 +145,23 @@ void ProgramToASM (Node* root, FILE* f_out, int ret_value) {
                 fprintf (f_out, "end_if%d:\n", buf);
                 break;
             case EQUAL:
-                ProgramToASM (_Lf, f_out, RBX);
-                ProgramToASM (_R , f_out, RCX);
+                ProgramToASM (_Lf, f_out, REGS::RCX);
+                ProgramToASM (_R , f_out, REGS::RDX);
 
-                fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                fprintf (f_out, "\t\tcmp rcx, rdx\n"
                                 "\t\tjne end_if%d\n", IfNumber);
                 break;
             case UNEQUAL:
-                ProgramToASM (_Lf, f_out, RBX);
-                ProgramToASM (_R , f_out, RCX);
-                fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                ProgramToASM (_Lf, f_out, REGS::RCX);
+                ProgramToASM (_R , f_out, REGS::RDX);
+                fprintf (f_out, "\t\tcmp rcx, rdx\n"
                                 "\t\tje end_if%d\n", IfNumber);
                 break;
             case MORE:
-                ProgramToASM (_R , f_out, RBX);
-                ProgramToASM (_Lf, f_out, RCX);
+                ProgramToASM (_R , f_out, REGS::RCX);
+                ProgramToASM (_Lf, f_out, REGS::RDX);
 
-                fprintf (f_out, "\t\tcmp rbx, rcx\n"
+                fprintf (f_out, "\t\tcmp rcx, rdx\n"
                                 "\t\tjg end_if%d\n", IfNumber);
                 break;
             case SUM:
@@ -181,7 +181,7 @@ void ProgramToASM (Node* root, FILE* f_out, int ret_value) {
                 break;
             case OUTPUT:
                 fprintf (f_out, "\n\t\t;output\n\n");
-                ProgramToASM (_R , f_out, RBX);
+                ProgramToASM (_R , f_out, REGS::RBX);
                 fprintf (f_out, output_s);
                 break;
             case INPUT:
@@ -255,9 +255,9 @@ void Handle_ret        (Node* root, FILE* f_out) {
 
     fprintf (f_out, "\n\t\t;return\n\n");
 
-    ProgramToASM (_R , f_out, RBX);
+    ProgramToASM (_R , f_out, REGS::RCX);
     
-    fprintf (f_out, "\t\tmov rax, rbx\n");
+    fprintf (f_out, "\t\tmov rax, rcx\n");
     fprintf (f_out, ret_s);
 }
 
@@ -271,8 +271,8 @@ void Handle_comma      (Node* root, FILE* f_out) {
     
     } else {
     
-        ProgramToASM (_R , f_out, RBX);
-        fprintf (f_out, "\t\tpush qword rbx\n");
+        ProgramToASM (_R , f_out, REGS::RCX);
+        fprintf (f_out, "\t\tpush qword rcx\n");
     
     }
 }
@@ -300,7 +300,8 @@ void Handle_call       (Node* root, FILE* f_out, int ret_value) {
     fprintf (f_out, "\t\tcall %s\n", _R->data);
     fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
 
-    if (ret_value != RAX) {
+    if (ret_value != REGS::RAX && ret_value != UNDEF) {
+        printf ("WWWWW %d\n", ret_value);
         fprintf (f_out, "\t\tmov %s, rax\n\n", reg_for_math[ret_value]); 
     }
 }
@@ -315,13 +316,13 @@ void Handle_assign     (Node* root, FILE* f_out) {
     
     } else if (_R->type == CALL) {
     
-        ProgramToASM (_R , f_out, RAX);
+        ProgramToASM (_R , f_out, REGS::RAX);
         fprintf (f_out, "\t\tmov qword [rbp%+d], rax\n", Bytes * static_cast<int> (_Lf->num));
     
     } else {
     
-        ProgramToASM (_R , f_out, RBX);
-        fprintf (f_out, "\t\tmov qword [rbp%+d], rbx\n", Bytes * static_cast<int> (_Lf->num));
+        ProgramToASM (_R , f_out, REGS::RCX);
+        fprintf (f_out, "\t\tmov qword [rbp%+d], rcx\n", Bytes * static_cast<int> (_Lf->num));
     
     }
     
@@ -384,7 +385,7 @@ void Arithmetic_op_div (Node* root, FILE* f_out, int ret_value) {
     fprintf (f_out, "\t\tcqo\n"
                     "\t\tidiv %s\n",     reg_for_math[ret_value + 1]);
     
-    if (ret_value != RAX) {
+    if (ret_value != REGS::RAX) {
 
         fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math[ret_value]);
 

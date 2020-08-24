@@ -1,13 +1,19 @@
 start
-def main ():
+def func ():
 {
-    fact = 500;
-    facto = 500;
-    res = 0;
-    if (fact equal facto) {
-        res = 1;
-    }
-    output (res)
     return;
 }
+
+def main ():
+{
+    a = 500;
+    b = 300;
+    
+    output (a)
+    output (b)
+    return;
+}
+
+
+
 end

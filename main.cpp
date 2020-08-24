@@ -523,7 +523,9 @@ Node* GetP () {
     if (NT == SKOBKA1) {
         ind++;
         val = GetE ();
+        if (NT != SKOBKA2) printf ("EEEEEEEEEEEEE %s", Nods[ind]->data);
         assert (NT == SKOBKA2);
+       
         ind++;
         return val;
     }
