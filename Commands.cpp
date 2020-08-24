@@ -526,6 +526,19 @@ unsigned int Cmd::Ret::get_byte_num () const {
 
 
 
+Cmd::Cqo::Cqo ()
+: byte_num (2) {}
+
+void Cmd::Cqo::write_to_buf (unsigned char* buf) const {
+    set_elems (buf, REX (1), OpCode (0x99));
+}
+
+unsigned int Cmd::Cqo::get_byte_num () const {
+    return byte_num;
+}
+
+
+
 Cmd::Itoa::Itoa ()
 : byte_num (SizeItoa) {}
 

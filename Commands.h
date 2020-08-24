@@ -467,6 +467,16 @@ public:
     unsigned int get_byte_num () const override;
 };
 
+class Cqo : public Command {
+    unsigned int byte_num;
+    
+public:
+
+    Cqo ();
+
+    void write_to_buf (unsigned char* buf) const override;
+    unsigned int get_byte_num () const override;
+};
 
 
 class Itoa : public Command {

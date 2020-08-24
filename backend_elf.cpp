@@ -142,9 +142,6 @@ int main () {
     Vector <Request> label_requests;
     HashTable <unsigned char*> labels (1009, CRC_32_fast);
     Code code (1024);
-    code.add_command (Cmd::Mov64_RImm (REGS::R8, 10));
-    code.add_command (Cmd::Mov64_RImm (REGS::R8, -12));
-    code.add_command (Cmd::Mov64_RImm (REGS::R15, 10));
     ProgramToBinary (root, code, labels, label_requests, "./resources/ASMx86/my_elf");
 
     return 0;
@@ -338,24 +335,36 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
     
 }
 
-// void RedusePrecision (FILE* f_out, Node* elem, int ret_value) {
-//     if (ret_value != UNDEF) {
-//         fprintf (f_out, "\n\t\tmov rax, %s\n"
-//                         "\t\tmov r15 , %d\n"
-//                         "\t\tcqo\n"
-//                         "\t\tidiv r15\n"
-//                         "\t\tmov qword %s, rax\n\n", reg_for_math_b[ret_value], Precision, reg_for_math_b[ret_value]);
-//     } else {
-//         if (elem->type == VAR) {
-//             int var_offset = Bytes * static_cast<int> (elem->num);
-//             fprintf (f_out, "\n\t\tmov rax, qword [rbp%+d]\n"
-//                         "\t\tmov r15 , %d\n"
-//                         "\t\tcqo\n"
-//                         "\t\tidiv r15\n"
-//                         "\t\tmov qword [rbp%+d], rax\n\n", var_offset, Precision, var_offset);
-//         }
-//     }
-// }
+void RedusePrecision (Node* elem, Code& code, int ret_value) {
+    if (ret_value != UNDEF) {
+        code.add_command (Cmd::Mov64_RR (REGS::RAX, reg_for_math_b[ret_value]));
+        code.add_command (Cmd::Mov64_RImm (REGS::R15, Precision));
+        code.add_command (Cmd::Cqo ());
+        code.add_command (Cmd::Idiv_R (REGS::R15));
+        code.add_command (Cmd::Mov64_RR (reg_for_math_b[ret_value], REGS::RAX));
+        // fprintf (f_out, "\n\t\tmov rax, %s\n"
+        //                 "\t\tmov r15 , %d\n"
+        //                 "\t\tcqo\n"
+        //                 "\t\tidiv r15\n"
+        //                 "\t\tmov qword %s, rax\n\n", reg_for_math_b[ret_value], Precision, reg_for_math_b[ret_value]);
+    } else {
+        if (elem->type == VAR) {
+            int var_offset = Bytes * static_cast<int> (elem->num);
+
+            code.add_command (Cmd::Mov64_RM (REGS::RAX, var_offset));
+            code.add_command (Cmd::Mov64_RImm (REGS::R15, Precision));
+            code.add_command (Cmd::Cqo ());
+            code.add_command (Cmd::Idiv_R (REGS::R15));
+            code.add_command (Cmd::Mov64_MR (var_offset, REGS::RAX));
+        //     fprintf (f_out, "\n\t\tmov rax, qword [rbp%+d]\n"
+        //                 "\t\tmov r15 , %d\n"
+        //                 "\t\tcqo\n"
+        //                 "\t\tidiv r15\n"
+        //                 "\t\tmov qword [rbp%+d], rax\n\n", var_offset, Precision, var_offset);
+        // }
+        }
+    }
+}
 
 // void Handle_start_b      (Node* root, const char* path_ex_file) {
     
