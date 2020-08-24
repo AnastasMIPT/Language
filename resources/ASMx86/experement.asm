@@ -6,33 +6,40 @@ _start:
 		mov rax, 1           ; номер системного вызова  sys_exit
 		mov rbx, 0           ; код завершения программы
 		int 80h
-funct:
+factorial:
 		push rbp
 		mov rbp, rsp
 		sub rsp, 0
 
 ; _R->left->num -0.000000
+		mov rcx, qword [rbp+16]
+		mov rdx, qword 100
+		cmp rcx, rdx
+		jne end_if0
 
-		;output
+		;return
 
-		mov rbx, qword [rbp+48]
-		push rbx
-		call itoa
-		sub rsp, 8
+		mov rcx, qword 100
+		mov rax, rcx
 
-		mov rax, 4
-		mov rbx, 1
-		mov rcx, number_new
-		mov rdx, 11
-		int 80h
+		mov rsp, rbp
+		pop rbp
+		ret
 
+end_if0:
 
 		;return
 
 
-		;sqrt
+		;call $$
 
-		mov rcx, qword [rbp+48]
+		mov rcx, qword [rbp+16]
+		sub rcx, qword 100
+		push qword rcx
+		call factorial
+		add rsp, 8
+		mov rcx, rax
+
 
 		mov rax, rcx
 		mov r15 , 100
@@ -40,17 +47,8 @@ funct:
 		idiv r15
 		mov qword rcx, rax
 
-		mov rdx, qword [rbp+48]
+		mov rdx, qword [rbp+16]
 		imul rcx, rdx
-
-		mov qword [sqrt_from], rcx
-		finit
-		fild qword [sqrt_from]
-		fsqrt
-		fistp qword [sqrt_res]
-		mov rcx, qword [sqrt_res]
-
-		imul rcx, 10
 		mov rax, rcx
 
 		mov rsp, rbp
@@ -63,30 +61,35 @@ main:
 		sub rsp, 16
 
 ; _R->left->num 2.000000
-		;assign
-		mov qword [rbp-8], 50000
+
+		;input
 
 
+		mov rax, 3
+		mov rbx, 2
+		mov rcx, number
+		mov rdx, 10
+		int 80h
+		push qword number
+		call atoi
+		sub rsp, 8
+		imul rax, 100
+		mov qword [rbp-8], rax
+
 		;assign
-		mov qword [rbp-16], 30000
+
+		;call $$
+
+		push qword [rbp-8]
+		call factorial
+		add rsp, 8
+		mov qword [rbp-16], rax
 
 
 
 		;output
 
-
-		;call
-
-		push qword 600
-		push qword 500
-		push qword 400
-		push qword 300
-		push qword 200
-		push qword 10000
-		call funct
-		add rsp, 48
-		mov rbx, rax
-
+		mov rbx, qword [rbp-16]
 		push rbx
 		call itoa
 		sub rsp, 8

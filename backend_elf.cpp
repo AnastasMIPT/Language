@@ -108,7 +108,7 @@ void Handle_assign_b     (Node* root, Code& code, HashTable_t& labels,
 // void Handle_start_b      (Node* root, const char* path_ex_file, const HashTable <unsigned char*>& labels);
 // void Handle_ret_b        (Node* root, const char* path_ex_file);
 void Handle_comma_b      (Node* root, Code& code, HashTable_t& labels, Vector <Request>& requests,
-                          const char* path_ex_file);
+                          const char* path_ex_file, int ret_value);
 void Handle_def_b        (Node* root, Code& code, HashTable_t& labels);
 
 
@@ -206,11 +206,11 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
             break;
         case CALL:
-            ProgramToBinary (_Lf, code, labels, requests, path_ex_file);
+            ProgramToBinary (_Lf, code, labels, requests, path_ex_file, ret_value);
             Handle_call_b    (root, code, requests, ret_value);
             break;
         case COMMA:
-            Handle_comma_b   (root, code, labels, requests, path_ex_file);
+            Handle_comma_b   (root, code, labels, requests, path_ex_file, ret_value);
             break;
         case B:
             ProgramToBinary (_R , code, labels, requests, path_ex_file);
@@ -303,6 +303,9 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             
             break;
         case INPUT:
+            code.add_command (Cmd::InputRAX  (labels.find ("atoi")->second));
+            code.add_command (Cmd::Imul64_RImm (REGS::RAX, Precision));
+            code.add_command (Cmd::Mov64_MR (Bytes * static_cast<int> (_R->num), REGS::RAX));
             // fprintf (path_ex_file, "\n\t\t;input\n\n");
             // fprintf (path_ex_file, input_s);
             // fprintf (path_ex_file, "\t\timul rax, %d\n"
@@ -392,7 +395,7 @@ void RedusePrecision (Node* elem, Code& code, int ret_value) {
 // }
 
 void Handle_comma_b      (Node* root, Code& code, HashTable_t& labels, Vector <Request>& requests,
-                          const char* path_ex_file) {
+                          const char* path_ex_file, int ret_value) {
 
     ProgramToBinary (_Lf , code, labels, requests, path_ex_file);
     
@@ -406,7 +409,7 @@ void Handle_comma_b      (Node* root, Code& code, HashTable_t& labels, Vector <R
 
     } else {
         ProgramToBinary (_R , code, labels, requests, path_ex_file, REGS::RCX);
-        code.add_command (Cmd::PushR (REGS::RCX));
+        code.add_command (Cmd::PushR (reg_for_math_b[ret_value]));
     }
 }
 

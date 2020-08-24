@@ -75,7 +75,7 @@ void Handle_sqrt       (Node* root, FILE* f_out, int ret_value);
 void Handle_assign     (Node* root, FILE* f_out);
 void Handle_start      (Node* root, FILE* f_out);
 void Handle_ret        (Node* root, FILE* f_out);
-void Handle_comma      (Node* root, FILE* f_out);
+void Handle_comma      (Node* root, FILE* f_out, int ret_value);
 void Handle_def        (Node* root, FILE* f_out);
 
 
@@ -124,7 +124,7 @@ void ProgramToASM (Node* root, FILE* f_out, int ret_value) {
                 Handle_call    (root, f_out, ret_value);
                 break;
             case COMMA:
-                Handle_comma   (root, f_out);
+                Handle_comma   (root, f_out, ret_value);
                 break;
             case B:
                 ProgramToASM (_R , f_out);
@@ -261,7 +261,7 @@ void Handle_ret        (Node* root, FILE* f_out) {
     fprintf (f_out, ret_s);
 }
 
-void Handle_comma      (Node* root, FILE* f_out) {
+void Handle_comma      (Node* root, FILE* f_out, int ret_value) {
     ProgramToASM (_Lf, f_out);
     
     if (_R->type == NUM || _R->type == VAR) {
@@ -271,8 +271,8 @@ void Handle_comma      (Node* root, FILE* f_out) {
     
     } else {
     
-        ProgramToASM (_R , f_out, REGS::RCX);
-        fprintf (f_out, "\t\tpush qword rcx\n");
+        ProgramToASM (_R , f_out, ret_value);
+        fprintf (f_out, "\t\tpush qword %s\n", reg_for_math[ret_value]);
     
     }
 }
@@ -293,9 +293,9 @@ void Handle_def        (Node* root, FILE* f_out) {
 
 void Handle_call       (Node* root, FILE* f_out, int ret_value) {
 
-    fprintf (f_out, "\n\t\t;call\n\n");
+    fprintf (f_out, "\n\t\t;call $$\n\n");
 
-    ProgramToASM (_Lf, f_out);
+    ProgramToASM (_Lf, f_out, ret_value);
     
     fprintf (f_out, "\t\tcall %s\n", _R->data);
     fprintf (f_out, "\t\tadd rsp, %d\n", Bytes * ReduseRsp (_Lf));
