@@ -135,6 +135,7 @@ const int HashTreeWords[] = {
         -1,              //TH
         -1,             //CTH
         54460,            //SQRT
+        53853,               //DIFF
         -1,                 //FUNCCOL
         -1,             //NUM
         1280,          //SUM
