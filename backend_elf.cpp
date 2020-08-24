@@ -95,7 +95,8 @@ void Arithmetic_op_sum_b (Node* root, Code& code, HashTable_t& labels,
                           Vector<Request>& requests, const char* path_ex_file, int ret_value);
 void Arithmetic_op_mul_b (Node* root, Code& code, HashTable_t& labels, 
                           Vector<Request>& requests, const char* path_ex_file, int ret_value);
-// void Arithmetic_op_div_b (Node* root, const char* path_ex_file, int ret_value);
+void Arithmetic_op_div_b (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file, int ret_value);
 void Arithmetic_op_sub_b (Node* root, Code& code, HashTable_t& labels, 
                           Vector<Request>& requests, const char* path_ex_file, int ret_value);
 
@@ -281,7 +282,7 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             Arithmetic_op_mul_b (root , code, labels, requests, path_ex_file, ret_value);
             break;
         case DIV:
-            // Arithmetic_op_div_b (root, path_ex_file, ret_value);
+            Arithmetic_op_div_b (root , code, labels, requests, path_ex_file, ret_value);
             break;
         case RETURN:
             DEB_INFO
@@ -499,30 +500,33 @@ void Arithmetic_op_mul_b (Node* root, Code& code, HashTable_t& labels,
     }
 }
 
-// void Arithmetic_op_div_b (Node* root, const char* path_ex_file, int ret_value) {
+void Arithmetic_op_div_b (Node* root, Code& code, HashTable_t& labels, 
+                          Vector<Request>& requests, const char* path_ex_file, int ret_value) {
     
-//     ProgramToASM (_Lf, f_out, ret_value);
-    
-//     if (_R->type == NUM) {
+    assert (ret_value + 1 < UNDEF);
+    assert (root);
 
-//         fprintf (f_out, "\t\tmov %s, qword %lg\n", reg_for_math_b[ret_value + 1], _R->num);
+    ProgramToBinary (_Lf, code, labels, requests, path_ex_file, ret_value);
+        
+    if (_R->type == NUM) {
+        code.add_command (Cmd::Mov64_RImm (reg_for_math_b[ret_value + 1], _R->num));
+        
     
-//     } else {
+    } else {
 
-//         ProgramToASM    (_R, f_out, ret_value + 1);
-//         RedusePrecision (f_out, _R, ret_value + 1);
-//     }
+        ProgramToBinary (_R, code, labels, requests, path_ex_file, ret_value + 1);
+        RedusePrecision (_R, code,  ret_value + 1);
+    }
     
-//     fprintf (f_out, "\t\tmov rax, %s\n", reg_for_math_b[ret_value]);
-//     fprintf (f_out, "\t\tcqo\n"
-//                     "\t\tidiv %s\n",     reg_for_math_b[ret_value + 1]);
+    code.add_command (Cmd::Mov64_RR (REGS::RAX, reg_for_math_b[ret_value]));
+    code.add_command (Cmd::Cqo ());
+    code.add_command (Cmd::Idiv_R (reg_for_math_b[ret_value + 1]));
     
-//     if (ret_value != RAX) {
+    if (ret_value != REGS::RAX) {
 
-//         fprintf (f_out, "\t\tmov %s, rax\n", reg_for_math_b[ret_value]);
-
-//     }
-// }
+        code.add_command (Cmd::Mov64_RR (reg_for_math_b[ret_value], REGS::RAX));
+    }
+}
 
 void Arithmetic_op_sub_b (Node* root, Code& code, HashTable_t& labels, 
                           Vector<Request>& requests, const char* path_ex_file, int ret_value) {
