@@ -90,14 +90,35 @@ ELF::ELF (const Code& _code) : bf_size (_code.get_size () /* + SizeItoa + SizeOu
 
 void ELF::load_to_file (const char * path) {
     DEB_INFO
-    FILE* f_out = fopen (path, "wb");
+
+    char command [50];
+    strcpy (command, "find ");
+    strcat (command, path);
+    int find = system (command);
     
-    if (!f_out) {
+    printf ("find = %d\n", find);
+   
+    if (find) {
+
         DEB_INFO
-        const char * command =  strcat (const_cast<char*> ("touch "), path);
+        
+        strcpy (command, "touch ");
+        strcat (command, path);
+        printf ("%s\n", command);
+
+        DEB_INFO
         system (command);
-        f_out = fopen (path, "wb");
+        
+        strcpy (command, "chmod +x ");
+        strcat (command, path);
+        printf ("%s\n", command);
+        system (command);
+        DEB_INFO
+        
     }
+    
+    FILE* f_out = fopen (path, "wb");
+    assert (f_out);
     DEB_INFO
     fwrite (buf, sizeof (char), bf_size, f_out);
     DEB_INFO
