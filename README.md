@@ -6,10 +6,15 @@ My language:
 * Turing-complete
 * Supports loops and conditions
 * Supports functions and recursion
-* Supports a special operator that differentiates an expression
+* Supports a special operator that differentiates an expression.
+
 The [master](https://github.com/AnastasMIPT/Language/tree/master) branch contains the first version of my language interpreter, implemented using [my stack processor and assembler](https://github.com/AnastasMIPT/Kompil) I wrote. The current branch contains the latest version of my compiler which compiles a program written in my language into an executable elf file on the x86 architecture.
 
 ## How does it works?
+There are several stages here:
+1) The program text is split into tokens
+2) An array of tokens is converted into an abstract syntax tree ([AST](https://en.wikipedia.org/wiki/Abstract_syntax_tree)) by the [recursive descent algorithm](https://en.wikipedia.org/wiki/Recursive_descent_parser). At this stage most of the compilation errors are found (incorrect type of expression, etc.)
+3) The AST is compiled into executable code. Some more compilation errors are found here (e.g. double declaration of a variable or function). The algorithm is two-passed to support conditional constructs, loops and recursion.
 ### The first stage: building a tree according to the program
 Here is an example program on my language:
 
