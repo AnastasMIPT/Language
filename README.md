@@ -1,5 +1,13 @@
 
 # My own programming language and compiler for it.
+
+This repository contains a compiler for my own c-like programming language.
+My language: 
+* Turing-complete
+* Supports loops and conditions
+* Supports functions and recursion.
+The [master](https://github.com/AnastasMIPT/Language/tree/master) branch contains the first version of my language interpreter, implemented using my stack [processor and assembler](https://github.com/AnastasMIPT/Kompil) I wrote. The current branch contains the latest version of my compiler which compiles a program written in my language into an executable elf file on the x86 architecture.
+
 ## The first stage: building a tree according to the program
 Here is an example program on my language:
 
