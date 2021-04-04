@@ -1,16 +1,64 @@
 start
-def factorial (n):
-{
-    if (n equal 1) {
-        return 1;
-    }
-    return  factorial (n - 1) * n;
-}
 def main ():
 {
-    input (num)
-    fact = factorial (num);
-    output (fact)
+    input (a)
+    input (b)
+    input (c)
+    res = 0;
+    if (a equal 0) {
+        res = linear (b,c);
+        output (res)
+        return;
+    }
+    if (b equal 0) {
+        if (c more 0) {
+            if (a more 0) {
+                output (0)
+                return;
+            }
+            output (2)
+            root = sqrt ((-1) * c / a);
+            output (root)
+            output ((-1) * root)
+            return;
+        }
+        if (a more 0) {
+             output (2)
+             root = sqrt ((-1) * c / a);
+             output (root)
+             output ((-1) * root)
+             return;
+        }
+        output (0)
+        return;
+    }
+    diskr = diskriminant (a, b, c);
+    if (diskr more 0) {
+        output (2)
+        output ((sqrt(diskr)-b) / (2 * a))
+        output ((0-sqrt(diskr)-b) / (2 * a))
+       
+        return;
+    }
+    if (diskr equal 0) {
+        output (1)
+        output (-b / (2 * a))
+        return;
+    }
+    output (0)
     return;
+}
+def diskriminant (a, b, c): {
+    return (b * b - 4 * a * c);
+}
+def linear (b,c): {
+    if (b equal 0) {
+        if (c unequal 0) {
+            return 0;
+        }
+        return -1;
+    }
+    output (1)
+    return  -(c / b);
 }
 end

@@ -12,7 +12,7 @@
 #include "my_vector.h"
 
 
-//#define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
     #define DEB_INFO printf ("DEBUG_INFO:  Called from FILE: %s from FUNCTION: %s   LINE: %d\n", __FILE__, __func__, __LINE__);
@@ -144,7 +144,7 @@ int main () {
 
     Vector <Request> label_requests;
     HashTable <unsigned char*> labels (1009, CRC_32_fast);
-    Code code (1024);
+    Code code (2048);
     ProgramToBinary (root, code, labels, label_requests, "./resources/ASMx86/my_elf");
 
     return 0;
@@ -190,8 +190,9 @@ void ProgramToBinary (Node* root, Code& code, HashTable_t& labels, Vector<Reques
             Handle_of_label_requests (requests, labels);
             DEB_INFO
             ELF file (code);
+            DEB_INFO
             file.load_to_file (path_ex_file);
-
+            DEB_INFO
             break;
             }
         case D:
@@ -416,7 +417,7 @@ void Handle_comma_b      (Node* root, Code& code, HashTable_t& labels, Vector <R
 void Handle_def_b        (Node* root, Code& code, HashTable_t& labels) {
     
     labels.insert (_R->data, code.get_code_buf_ptr ());
-
+    printf ("FUNC###########################     %s\n", _R->data);
     code.add_command (Cmd::PushR (REGS::RBP));
     code.add_command (Cmd::Mov64_RR (REGS::RBP, REGS::RSP));
     code.add_command (Cmd::Sub64_RImm (REGS::RSP, Bytes * static_cast<int> (_R->left->num)));
