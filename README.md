@@ -18,8 +18,8 @@ After tranclation by backend_x86.cpp:
 
 ![after transl](resources/after_translation1.png)
 
-##ELF file and compilation to binary code.
+## ELF file and compilation to binary code.
 
 ![ELF](resources/ELF.png)
 
-You can read about this heare:
+You can read about this [here](https://en.wikipedia.org/wiki/Executable_and_Linkable_Format)
